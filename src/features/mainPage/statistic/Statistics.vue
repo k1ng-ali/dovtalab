@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { HeFilledBioPharma, UnLetterEnglishA, CaFunctionMath, AdPhase } from '@kalimahapps/vue-icons'
 import {useStats} from "@/features/mainPage/statistic/store.ts";
 import {computed, onMounted} from "vue";
-import {temeFormat, timeFormat} from "@/shared/utils.ts"
+import { timeFormat} from "@/shared/utils.ts"
 // Когда бэкенд будет готов — убери isEmpty и подключи реальные данные
 
 const statStore = useStats()
@@ -20,12 +19,6 @@ onMounted(() => {
   }
 })
 
-const topics = [
-  { name: "Биология ММТ2025",   progress: 90, color: "#4EBEC2", ico: HeFilledBioPharma  },
-  { name: "English elementary", progress: 20, color: "#85ed8a", ico: UnLetterEnglishA   },
-  { name: "Математика",         progress: 60, color: "#C2654E", ico: CaFunctionMath     },
-  { name: "Физика",             progress: 55, color: "#A54EC2", ico: AdPhase            },
-]
 </script>
 
 <template>

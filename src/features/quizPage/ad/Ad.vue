@@ -22,37 +22,42 @@ watch(
 
 
       init(() => {
-        gsap.fromTo(adRef.value,
-            {
-              height: 0,
-              opacity: 0,
-              scale: 0.9,
-              y: -30,
-            },
-            {
-              height: adRef.value.scrollHeight - 40,
-              opacity: 1,
-              y: 0,
-              scale: 1,
-              duration: 0.7,
-              ease: "power2.out",
-              onComplete: () => {
-                adRef.value.style.height = "auto"
-              }
-        });
-        gsap.fromTo(adRef.value.getElementsByClassName("btn"), {
-          y: -50,
-          x: 5,
-          opacity: 0,
-        },
-            {
-              y: 0,
-              x: 0,
-              opacity: 1,
-              duration: 0.7,
-              ease: "power2.out",
-            })
+        if (adRef.value) {
+          gsap.fromTo(adRef.value,
+              {
+                height: 0,
+                opacity: 0,
+                scale: 0.9,
+                y: -30,
+              },
+              {
+                height: adRef.value.scrollHeight - 40,
+                opacity: 1,
+                y: 0,
+                scale: 1,
+                duration: 0.7,
+                ease: "power2.out",
+                onComplete: () => {
+                  if (adRef.value) {
+                    adRef.value.style.height = "auto"
+                  }
+                }
+              });
+          gsap.fromTo(adRef.value.getElementsByClassName("btn"), {
+                y: -50,
+                x: 5,
+                opacity: 0,
+              },
+              {
+                y: 0,
+                x: 0,
+                opacity: 1,
+                duration: 0.7,
+                ease: "power2.out",
+              })
+        }
       });
+
 
     },
     { flush: 'post' } // 🔥 важно

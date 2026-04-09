@@ -24,7 +24,6 @@ const user   = computed(() => userStore.user)
 const config = computed(() => userStore.config)
 const is_creator = computed(() => userStore.is_creator)
 const is_pro = computed(() => userStore.is_pro)
-const is_admin = computed(() => userStore.is_admin)
 
 // Инициалы для фоллбэка аватара
 const initials = computed(() => {

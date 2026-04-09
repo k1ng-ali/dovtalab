@@ -1,24 +1,10 @@
 <script setup lang="ts">
-import { computed } from "vue"
 import type { QuizIn } from "src/features/quizPage/types.ts"
 
 const props = defineProps<{
   quiz: QuizIn
 }>()
 
-const hasProgress = computed(() => !!props.quiz.details)
-
-const isCompleted = computed(() => {
-  if (!props.quiz.details) return false
-  return props.quiz.details!.completed === props.quiz.details.total
-})
-
-const percent = computed(() => {
-  if (!props.quiz.details) return 0
-  const { total, completed } = props.quiz.details
-  if (!total || !completed) return 0
-  return Math.round((completed / total) * 100)
-})
 </script>
 
 <template>
@@ -39,7 +25,7 @@ const percent = computed(() => {
         {{ quiz.description }}
       </p>
 
-      <!-- Прогресс -->
+      <!-- Прогресс
       <div class="progress-wrapper" v-if="hasProgress">
         <div class="progress-bar">
           <div
@@ -50,14 +36,14 @@ const percent = computed(() => {
         </div>
 
         <div class="progress-info">
-          {{ quiz.details!.completed }} / {{ quiz.details!.total }}
+          {{ quiz.details?.stat.completed }} / {{ quiz.details!.total }}
           • {{ percent }}%
         </div>
       </div>
 
       <div v-else class="no-progress">
         Начните викторину
-      </div>
+      </div>-->
     </div>
   </div>
 </template>

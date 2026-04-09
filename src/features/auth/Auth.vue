@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import TelegramLoginButton from "@/features/auth/TelegramLoginButton.vue";
 import { useRouter } from 'vue-router'
-import { useAuthStore } from './store'
 
 const router = useRouter()
-const authStore = useAuthStore()
 
 async function onSuccess() {
   await router.push('/')

@@ -85,7 +85,6 @@ const hasAnswer = computed(() => {
 })
 
 // ── Прогресс ───────────────────────────────────────────────────────────────────
-const total = computed(() => props.quiz.details?.total ?? 0)
 
 /*
 const progressPercent = computed(() => {
@@ -235,7 +234,7 @@ const finishQuiz = () => {
       <div class="finish-icon">🎉</div>
       <h2 class="finish-title">Тест завершён!</h2>
       <p class="finish-sub">
-        Вы ответили на {{ answeredCount }} из {{ total || answeredCount }} вопросов
+        Вы ответили на {{ answeredCount }} вопросов
       </p>
       <button class="finish-btn" @click="emit('finish')">Вернуться к тесту</button>
     </div>
