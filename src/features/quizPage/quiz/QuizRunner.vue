@@ -16,6 +16,7 @@ import MultipleChoice from './questions/MultipleChoice.vue'
 import Matching       from './questions/Matching.vue'
 import InputQuestion  from './questions/InputQuestion.vue'
 import ContextModal   from './ContextModal.vue'
+import {useHeaderStore} from "@/shared/stores/useHeaderStore.ts";
 
 const props = defineProps<{
   quiz: QuizIn
@@ -28,6 +29,7 @@ const emit = defineEmits<{
 
 const quizStore = useQuiz()
 const navStore  = useNavStore()
+const headerStore = useHeaderStore()
 
 // ── Состояние ──────────────────────────────────────────────────────────────────
 const loading         = ref(true)
@@ -43,9 +45,9 @@ const lastResult  = ref<AttemptResult | null>(null)
 const currentQuestion = ref<QuestionPublic | null>(null)
 
 // ── Таймер ─────────────────────────────────────────────────────────────────────
-const timeLeft  = ref(props.quiz.time_limit)
+// const timeLeft  = ref(props.quiz.time_limit)
 let timerHandle: ReturnType<typeof setInterval> | null = null
-
+/*
 const timerLabel = computed(() => {
   const m = Math.floor(timeLeft.value / 60).toString().padStart(2, '0')
   const s = (timeLeft.value % 60).toString().padStart(2, '0')
@@ -66,6 +68,8 @@ const startTimer = () => {
   }, 1000)
 }
 
+ */
+
 const stopTimer = () => {
   if (timerHandle) clearInterval(timerHandle)
 }
@@ -83,10 +87,13 @@ const hasAnswer = computed(() => {
 // ── Прогресс ───────────────────────────────────────────────────────────────────
 const total = computed(() => props.quiz.details?.total ?? 0)
 
+/*
 const progressPercent = computed(() => {
   if (!total.value) return 0
   return Math.round((answeredCount.value / total.value) * 100)
 })
+*/
+
 
 // ── Синхронизируем кнопку в навбаре ───────────────────────────────────────────
 const syncNavButton = () => {
@@ -166,16 +173,28 @@ const submitOrNext = async () => {
     if (!answerPayload) return
 
     try {
-      const attempt = await quizStore.submitAnswer(
+      const answer = await quizStore.submitAnswer(
           {
             id: currentQuestion.value.attempt.id,
             answer: answerPayload,
           } as SubmitAnswer
       )
 
-      lastResult.value  = attempt.result ?? null
+      lastResult.value  = answer.attempt.result ?? null
       answeredCount.value++
       phase.value = 'submitted'
+
+      const result = answer.progress
+      if (answer.attempt.result?.is_correct === true) {
+        if (result.earned_points && result.earned_points > 0) {
+          headerStore.showNotification(`+${result.earned_points} баллов`, 'success', 2000)
+        } else {
+          headerStore.showNotification("Правильно 🎉", 'success', 2000)
+        }
+      }
+      if (answer.attempt.result?.is_correct === false) {
+        headerStore.showNotification("Неправильно", 'error', 2000)
+      }
     } catch (e) {
       console.error('Ошибка при отправке ответа', e)
     }
@@ -238,8 +257,7 @@ const finishQuiz = () => {
 
       <!-- Счётчик -->
       <p class="counter">
-        Вопрос {{ answeredCount + (phase === 'answering' ? 1 : 0) }}
-        <template v-if="total"> из {{ total }}</template>
+        Вопрос {{currentQuestion?.order}}
       </p>
 
       <!-- Карточка вопроса -->
@@ -281,7 +299,7 @@ const finishQuiz = () => {
         </div>
       </Transition>
 
-      <!-- Результат ответа -->
+      <!-- Результат ответа
       <Transition name="result-fade">
         <div
             v-if="phase === 'submitted' && lastResult"
@@ -296,7 +314,7 @@ const finishQuiz = () => {
             </p>
           </div>
         </div>
-      </Transition>
+      </Transition>-->
 
     </template>
 

@@ -5,7 +5,7 @@ import {onMounted, computed, ref} from 'vue'
 const userStore = useUserStore();
 
 onMounted(() => {
-  userStore.fetchMe()
+  userStore.fetchProfile()
 })
 
 
@@ -83,6 +83,11 @@ const avatarError = ref(false)
     padding: 0 20px;
   }
   .title{
+    display: flex;
+    align-items: end;
+    gap: 10px;
+    padding-bottom: 0;
+    margin-bottom: 0;
 
     & .beta {
       font-size: 16px;
@@ -92,6 +97,7 @@ const avatarError = ref(false)
       border-radius: 7px;
       border: 2px solid rgb(78, 190, 194);
       text-align: center;
+      margin-bottom: clamp(5px, 0.4rem, 10px);
     }
 
 

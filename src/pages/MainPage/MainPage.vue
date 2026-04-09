@@ -27,17 +27,22 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
   .content {
-    margin-top: 250px;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    width: calc(100% - 40px);
-    height: 100%;
-    max-height: 100vh;
+    margin-top: clamp(250px, 30vw, 300px);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    grid-auto-rows: max-content;
+    gap: 20px;
+    justify-content: center;
+    justify-items: center;
+    min-height: 100vh;
     background: #F6F6F6;
+    width: calc(100% - 40px);
     padding: 20px;
     border-radius: 30px 30px 0 0;
-    padding-bottom: 300px;
 
+    & > * {
+      max-width: 700px;
+      width: 100%;
+    }
   }
 </style>

@@ -15,13 +15,16 @@ onMounted(async () => {
   navStore.showTabs()
 
   await Promise.all([
-    userStore.fetchMe(),
-    userStore.fetchConfig(),
+    userStore.fetchProfile()
   ])
+  //console.log(userStore.user, userStore.config, userStore.roles)
 })
 
 const user   = computed(() => userStore.user)
 const config = computed(() => userStore.config)
+const is_creator = computed(() => userStore.is_creator)
+const is_pro = computed(() => userStore.is_pro)
+const is_admin = computed(() => userStore.is_admin)
 
 // Инициалы для фоллбэка аватара
 const initials = computed(() => {
@@ -102,7 +105,7 @@ const avatarError = ref(false)
         </div>
 
         <!-- Pro badge на аватаре -->
-        <div v-if="config?.is_pro" class="avatar-badge pro">PRO</div>
+        <div v-if="is_pro" class="avatar-badge pro">PRO</div>
       </div>
 
       <div class="hero-info">
@@ -110,7 +113,7 @@ const avatarError = ref(false)
           <h2 class="name">
             {{ user?.first_name }} {{ user?.last_name }}
           </h2>
-          <span v-if="config?.is_creator" class="badge creator">✦ Creator</span>
+          <span v-if="is_creator" class="badge creator">✦ Creator</span>
         </div>
         <p class="username" v-if="user?.username">@{{ user.username }}</p>
         <p class="joined">С нами с {{ joinedLabel }}</p>
@@ -217,6 +220,8 @@ const avatarError = ref(false)
   gap: 24px;
   min-height: 100vh;
   background: #F6F6F6;
+  max-width: 900px;
+  margin-left: calc((100% - 900px)/2);
 }
 
 /* ── Hero ── */

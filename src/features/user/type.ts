@@ -1,3 +1,5 @@
+export type UserRole = "creator" | "pro" | "admin"
+
 export interface User {
     id: number
     first_name: string,
@@ -8,14 +10,14 @@ export interface User {
 export interface Config {
     language: string,
     is_active: boolean,
-    is_pro: boolean,
     timer: boolean,
-    is_creator: boolean,
     quiz_time: number,
     quiz_count: number,
-    joined_at: Date
+    joined_at: Date | string | null,
 }
+
 export interface UserProfile {
     user: User,
     config: Config,
+    roles: UserRole[],
 }

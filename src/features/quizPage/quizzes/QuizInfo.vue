@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import type { QuizIn, ContextIn } from '@/features/quizPage/types.ts'
 import { useQuiz } from '@/features/quizPage/store.ts'
 
+
 const props = defineProps<{
   quiz: QuizIn
   selectedContext: ContextIn | null
@@ -15,8 +16,11 @@ const emit = defineEmits<{
 const quizStore = useQuiz()
 const contexts  = ref<ContextIn[]>([])
 const loading   = ref(false)
+const Stats = computed(() => quizStore.quizStat(props.quiz.id))
 
 onMounted(async () => {
+  await quizStore.fetchQuizStat(props.quiz.id)
+
   if (props.quiz.contexts?.length) {
     contexts.value = props.quiz.contexts
     return
@@ -43,18 +47,55 @@ const typeIcons: Record<string, string> = {
   input:           "✏️",
 }
 
-const minutes = computed(() => Math.floor(props.quiz.time_limit / 60))
-const seconds = computed(() => props.quiz.time_limit % 60)
+const minutes = computed(() =>
+    Math.floor((Stats.value?.current_attempt_stat?.duration_sec ?? 0) / 60)
+)
+
+const seconds = computed(() =>
+    (Stats.value?.current_attempt_stat.duration_sec ?? 0) % 60)
 
 const timeLabel = computed(() => {
   if (seconds.value === 0) return `${minutes.value} мин`
   return `${minutes.value} мин ${seconds.value} сек`
 })
 
-const percent = computed(() => {
-  const d = props.quiz.details
-  if (!d?.total || !d?.completed) return 0
-  return Math.round((d.completed / d.total) * 100)
+const accuracy = computed(() => {
+  if (Stats.value?.current_attempt_stat?.accuracy_percent) {
+    return Math.round(Stats.value.current_attempt_stat?.accuracy_percent)
+  }
+  return
+})
+
+const progress = computed(() => {
+  if (Stats.value?.total_questions && Stats.value?.current_attempt_stat?.total_count) {
+    return Math.round((Stats.value?.current_attempt_stat?.total_count / Stats.value?.total_questions ) * 100)
+  }
+})
+
+const best_duration = computed(() => {
+  if (Stats.value?.completed_attempt_stats.length??0 > 0) {
+    let duration = Stats.value?.completed_attempt_stats[0].duration_sec
+    Stats.value?.completed_attempt_stats.forEach((attemp) => {
+      if (duration && duration > attemp.duration_sec) {
+        duration = attemp.duration_sec
+      }
+    })
+    return duration
+  }
+})
+
+const bestTimeLabel = computed(() => {
+  if (best_duration.value != null) {
+    if (best_duration.value < 60) {
+      return `${best_duration.value} сек`
+    }
+
+    const minutes = Math.floor(best_duration.value / 60)
+    const seconds = Math.floor(best_duration.value % 60)
+
+    return `${minutes} мин ${seconds} сек`
+  }
+  return
 })
 
 const toggleContext = (ctx: ContextIn) => {
@@ -80,7 +121,7 @@ const toggleContext = (ctx: ContextIn) => {
     <div class="meta-grid">
       <div class="meta-item">
         <span class="meta-icon">⏱</span>
-        <span class="meta-label">Время</span>
+        <span class="meta-label">Проведенная время</span>
         <span class="meta-value">{{ timeLabel }}</span>
       </div>
 
@@ -90,33 +131,42 @@ const toggleContext = (ctx: ContextIn) => {
         <span class="meta-value">{{ typeLabels[quiz.details.type] }}</span>
       </div>
 
-      <div class="meta-item" v-if="quiz.details?.total">
+      <div class="meta-item" v-if="Stats?.total_questions">
         <span class="meta-icon">📝</span>
         <span class="meta-label">Вопросов</span>
-        <span class="meta-value">{{ quiz.details.total }}</span>
+        <span class="meta-value">{{ Stats?.total_questions }}</span>
       </div>
 
-      <div class="meta-item" v-if="quiz.details?.completed != null">
+      <div class="meta-item" v-if="Stats?.current_attempt_stat?.correct_count != null">
         <span class="meta-icon">✅</span>
         <span class="meta-label">Выполнено</span>
-        <span class="meta-value">{{ quiz.details!.completed }}</span>
+        <span class="meta-value">{{ Stats?.current_attempt_stat?.correct_count }}</span>
+      </div>
+
+      <div class="meta-item" v-if="Stats?.completed_attempt_stats?.length?? 0 > 0">
+        <span class="meta-header">Пройдено: {{Stats?.completed_attempt_stats.length}} раза</span>
+        <span class="meta-value">Лучший результат <br>{{ bestTimeLabel }}</span>
       </div>
     </div>
 
     <!-- ── Прогресс ── -->
-    <div class="progress-block" v-if="quiz.details?.total">
+    <div class="progress-block" v-if="progress != null && accuracy != null">
       <div class="progress-header">
         <span>Прогресс</span>
-        <span class="progress-pct">{{ percent }}%</span>
+        <span class="progress-pct">{{ Math.round(progress * accuracy / 100) }}%</span>
       </div>
       <div class="progress-bar">
         <div
             class="progress-fill"
-            :class="{ done: percent === 100 }"
-            :style="{ width: percent + '%' }"
+            :style="{ width: progress + '%'}"
+        />
+        <div
+            class="accuracy-fill"
+            :style="{ width: Math.round(progress * accuracy / 100) + '%'}"
         />
       </div>
     </div>
+
 
     <!-- ── Контексты ── -->
     <div class="section" v-if="!loading && contexts.length > 0">
@@ -221,9 +271,15 @@ const toggleContext = (ctx: ContextIn) => {
   font-weight: 500;
 }
 
-.meta-value {
+.meta-header {
+  font-size: large;
   font-weight: 700;
   color: #234970;
+}
+
+.meta-value {
+  font-weight: 500;
+  color: rgba(64, 64, 64);
 }
 
 /* ── Progress ── */
@@ -249,6 +305,7 @@ const toggleContext = (ctx: ContextIn) => {
 }
 
 .progress-bar {
+  position: relative;
   height: 8px;
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.06);
@@ -256,14 +313,20 @@ const toggleContext = (ctx: ContextIn) => {
 }
 
 .progress-fill {
+  position: absolute;
+  height: 100%;
+  background: rgba(64, 64, 64, 0.3);
+  transition: width 0.4s ease;
+  border-radius: 8px;
+}
+
+.accuracy-fill {
+  position: absolute;
   height: 100%;
   background: linear-gradient(90deg, #4EBEC2, #234970);
   transition: width 0.4s ease;
   border-radius: 8px;
-
-  &.done {
-    background: linear-gradient(90deg, #22c55e, #16a34a);
-  }
+  z-index: 2;
 }
 
 /* ── Section ── */

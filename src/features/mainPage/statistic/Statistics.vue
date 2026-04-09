@@ -1,8 +1,24 @@
 <script setup lang="ts">
 import { HeFilledBioPharma, UnLetterEnglishA, CaFunctionMath, AdPhase } from '@kalimahapps/vue-icons'
-
+import {useStats} from "@/features/mainPage/statistic/store.ts";
+import {computed, onMounted} from "vue";
+import {temeFormat, timeFormat} from "@/shared/utils.ts"
 // Когда бэкенд будет готов — убери isEmpty и подключи реальные данные
-const isEmpty = true
+
+const statStore = useStats()
+const userStats = computed(() => statStore.stats)
+const attemptHistory = computed(() => statStore.attempts)
+
+const isEmpty = computed(() => !userStats.value)
+
+onMounted(() => {
+  try {
+    statStore.fetchStats()
+    statStore.fetchAttemptsHistory(0,5)
+  } catch (error) {
+    console.error(error)
+  }
+})
 
 const topics = [
   { name: "Биология ММТ2025",   progress: 90, color: "#4EBEC2", ico: HeFilledBioPharma  },
@@ -21,18 +37,45 @@ const topics = [
 
     <!-- Обычный контент -->
     <div class="content" v-if="!isEmpty">
-      <div
-          class="item"
-          v-for="(topic, i) in topics"
-          :key="i"
-          :style="{ '--color': topic.color, '--progress': topic.progress + '%' }"
-      >
-        <div class="ico">
-          <component :is="topic.ico" />
+      <div class="meta-grid">
+        <div class="meta-item" v-if="userStats && userStats.total_quizzes_completed">
+          <span class="meta-icon">📌</span>
+          <span class="meta-label">Тестов пройдено</span>
+          <span class="meta-value">{{userStats.total_quizzes_completed}}</span>
         </div>
-        <div class="container">
-          <h4 class="topic-title">{{ topic.name }}</h4>
-          <p class="progress">{{ topic.progress }}%</p>
+
+        <div class="meta-item" v-if="userStats && userStats.total_questions_answered">
+          <span class="meta-icon">💠</span>
+          <span class="meta-label">Ответили вопросов</span>
+          <span class="meta-value">{{userStats.total_questions_answered}}</span>
+        </div>
+
+        <div class="meta-item" v-if="userStats && userStats.correct_answers">
+          <span class="meta-icon">✅</span>
+          <span class="meta-label">Правильных ответов</span>
+          <span class="meta-value">{{userStats.correct_answers}}</span>
+        </div>
+
+        <div class="meta-item" v-if="userStats && userStats.accuracy_percent">
+          <span class="meta-icon">📈</span>
+          <span class="meta-label">Точность</span>
+          <span class="meta-value">{{userStats.accuracy_percent}}</span>
+        </div>
+      </div>
+
+      <h4 class="attempt-tile">История попыток</h4>
+      <div class="attempt-contnet" v-if="attemptHistory">
+        <div class="attempt-history"
+             v-for="attempt in attemptHistory.filter(a => a.correct_count)"
+             :key="attemptHistory.indexOf(attempt)"
+        >
+          <h5 class="title">{{attempt.quiz_title}}</h5>
+          <div class="desc" v-if="attempt.correct_count && attempt.questions_count">
+            <p>✅{{attempt.correct_count}} • {{Math.round(attempt.correct_count/attempt.questions_count*100)}}%</p>
+            <p v-if="attempt.duration_sec">
+              {{timeFormat(attempt.duration_sec)}}
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -71,7 +114,7 @@ const topics = [
   display: flex;
   flex-direction: column;
   width: calc(100% - 40px);
-  background: white;
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 15px;
   box-shadow: rgba(34, 34, 34, 0.2) 0 0 20px;
   padding: 20px;
@@ -130,6 +173,82 @@ const topics = [
 }
 
 p { font-weight: 500; }
+
+/* ── Meta grid ── */
+.meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 18px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+}
+
+.meta-icon {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.meta-label {
+  font-size: 14px;
+  color: #9CA3AF;
+  font-weight: 500;
+}
+
+.meta-header {
+  font-size: large;
+  font-weight: 700;
+  color: #234970;
+}
+
+.meta-value {
+  font-weight: 500;
+  color: rgba(64, 64, 64);
+}
+
+/* ── Attempt History ── */
+
+.attempt-tile {
+  margin-top: 30px;
+}
+
+.attempt-contnet {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  .attempt-history {
+    display: flex;
+    flex-direction: column;
+    background: white;
+    padding: 20px;
+    border-radius: 20px;
+
+    .title {
+      margin: 0;
+    }
+
+    .desc {
+      display: flex;
+      justify-content: space-between;
+      color: #6B7280;
+    }
+    p {
+      margin-bottom: 0;
+    }
+  }
+}
 
 /* ── Empty state ── */
 .empty {

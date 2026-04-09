@@ -7,9 +7,9 @@ const view           = ref<FlowView>("list")
 const selectedQuiz   = ref<QuizIn | null>(null)
 const selectedContext = ref<ContextIn | null>(null)
 
-export function useQuizFlow() {
 
-    const openInfo = (quiz: QuizIn) => {
+export function useQuizFlow() {
+    const openInfo = async (quiz: QuizIn) => {
         selectedQuiz.value    = quiz
         selectedContext.value = null
         view.value            = "info"

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import type { QuestionPublic, AttemptResult } from '@/features/quizPage/types.ts'
-
+import {isMatchingAnswer} from "@/features/quizPage/types.ts"
 const props = defineProps<{
   question: QuestionPublic
   disabled?: boolean
@@ -61,7 +61,10 @@ const tapRight = (id: number) => {
   selectedRight.value = selectedRight.value === id ? null : id
 }
 
-const correctPairs = computed(() => props.result?.correct_answer?.pairs ?? null)
+const correctPairs = computed(() => {
+  const ans = props.result?.correct_answer
+  return isMatchingAnswer(ans) ? ans.pairs : null
+})
 
 const pairResultClass = (leftId: number): '' | 'correct' | 'wrong' => {
   if (!correctPairs.value) return ''

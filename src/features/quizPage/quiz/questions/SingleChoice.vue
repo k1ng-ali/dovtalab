@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import type { QuestionPublic, AttemptResult } from '@/features/quizPage/types.ts'
+import type { QuestionPublic, AttemptResult} from '@/features/quizPage/types.ts'
+import {isSingleAnswer} from "@/features/quizPage/types.ts"
 
 const props = defineProps<{
   question: QuestionPublic
@@ -28,8 +29,10 @@ const select = (id: number) => {
 const options = props.question.payload.single_choice?.options ?? []
 
 // Правильный id из ответа сервера
-const correctId = computed(() =>
-    props.result?.correct_answer?.selected_option_id ?? null)
+const correctId = computed(() =>{
+  const ans = props.result?.correct_answer
+  return isSingleAnswer(ans) ? ans.selected_option_id : null
+})
 
 const optionClass = (id: number) => {
   if (!props.result) return { selected: selected.value === id }

@@ -2,7 +2,7 @@ import {useAuthStore} from "@/features/auth/store.ts";
 import axios from "axios";
 
 export const http = axios.create({
-    baseURL: "http://82.38.71.121:8000/",
+    baseURL: "https://api.dovtalab.app/",
     withCredentials: true,
 })
 
@@ -12,7 +12,6 @@ http.interceptors.request.use((config) => {
     if (auth.accessToken) {
         config.headers.Authorization = `Bearer ${auth.accessToken}`
     }
-
     return config;
 })
 

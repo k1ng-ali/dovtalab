@@ -17,7 +17,6 @@ export interface AttemptResult {
     is_correct: boolean
     correct_answer?: UserAnswerPayload
     explanation?: string
-    score?: number
 }
 
 // UserAnswerPayload — то что фронт шлёт на POST /attempts/{id}/submit
@@ -41,6 +40,18 @@ export type UserAnswerPayload =
     answer_text: string
 }
 
+export const isInputAnswer = (a?: UserAnswerPayload): a is Extract<UserAnswerPayload, { type: 'input' }> =>
+    a?.type === 'input'
+
+export const isMatchingAnswer = (a?: UserAnswerPayload): a is Extract<UserAnswerPayload, { type: 'matching' }> =>
+    a?.type === 'matching'
+
+export const isMultipleAnswer = (a?: UserAnswerPayload): a is Extract<UserAnswerPayload, { type: 'multiple_choice' }> =>
+    a?.type === 'multiple_choice'
+
+export const isSingleAnswer = (a?: UserAnswerPayload): a is Extract<UserAnswerPayload, { type: 'single_choice' }> =>
+    a?.type === 'single_choice'
+
 export interface SubmitAnswer {
     id: number // attempt_id
     answer: UserAnswerPayload
@@ -56,6 +67,20 @@ export interface QuestionAttemptOut {
     result?: AttemptResult
 }
 
+export interface Progress {
+    correct_count: number
+    earned_points: number
+    is_finished: boolean
+    score: number
+    total_count: number
+    total_questions: number
+}
+
+export interface SubmitIn {
+    attempt: QuestionAttemptOut
+    progress: Progress
+}
+
 // ─── Quiz response ────────────────────────────────────────────────────────────
 
 export interface QuizIn {
@@ -68,9 +93,30 @@ export interface QuizIn {
     created_at: string
     details?: {
         type?: "single_choice" | "multiple_choice" | "matching" | "input"
-        total?: number
-        completed?: number
+        stat?: AttemptStat,
     }
+}
+
+// --- QUIZ STAT ----------------------------------------------
+
+export interface AttemptStat {
+    quiz_attempt_id: number,
+    quiz_id: number,
+    quiz_title: string,
+    correct_count: number,
+    total_count: number,
+    score: number,
+    duration_sec: number,
+    started_at: Date,
+    finished_at: Date,
+    accuracy_percent: number
+}
+
+export interface QuizStat {
+    quiz_id: number,
+    total_questions: number,
+    current_attempt_stat: AttemptStat,
+    completed_attempt_stats: [AttemptStat],
 }
 
 // ─── Question payload types ───────────────────────────────────────────────────

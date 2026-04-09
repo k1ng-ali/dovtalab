@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import type { QuestionPublic, AttemptResult } from '@/features/quizPage/types.ts'
+import type { QuestionPublic, AttemptResult} from '@/features/quizPage/types.ts'
+import {isInputAnswer} from "@/features/quizPage/types.ts"
 
 const props = defineProps<{
   question: QuestionPublic
@@ -33,9 +34,10 @@ const inputClass = computed(() => {
   return props.result.is_correct ? 'input-correct' : 'input-wrong'
 })
 
-const correctValue = computed(() =>
-    !props.result?.is_correct ? (props.result?.correct_answer?.answer_text ?? null) : null
-)
+const correctValue = computed(() => {
+  const ans = props.result?.correct_answer
+  return isInputAnswer(ans) ? ans.answer_text : null
+})
 </script>
 
 <template>

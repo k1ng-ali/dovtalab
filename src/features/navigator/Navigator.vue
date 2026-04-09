@@ -119,7 +119,7 @@ const onTab = (index: number) => {
     background: rgba(78, 190, 194, 0.25);
     color: #234970;
     font-weight: 600;
-    border: rgba(78, 190, 194, 0.3) solid 1px;
+    border: 1px solid rgba(78, 190, 194, 0.3);
 
     .icon { fill: #234970; }
   }

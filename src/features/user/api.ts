@@ -10,5 +10,5 @@ export const profile = () =>
 export const config = () =>
     http.get('/users/config')
 
-export const updateConfig = (data: Config) =>
+export const updateConfig = (data: Partial<Config>) =>
     http.patch('/users/config', data)

@@ -2,80 +2,64 @@
 import Navigator from "@/features/navigator/Navigator.vue";
 import { useAuthStore } from "@/features/auth/store.ts";
 import Header from "@/features/quizPage/header/Header.vue";
-import { onMounted, ref } from "vue"
+import {onMounted, ref, watch} from "vue"
+import { useRouter } from 'vue-router'
+import Auth from "@/features/auth/Auth.vue";  // добавь импорт
+import { useTelegramEnv } from '@/features/auth/composables/useTelegramEnv'
 
-const authStore = useAuthStore();
+const { isTelegramEnv, getInitData } = useTelegramEnv()
 
+const authStore = useAuthStore()
+const router = useRouter()
 // 'loading' | 'ok' | 'error'
-const appState = ref<'loading' | 'ok' | 'error'>('loading')
-
-const MINI_APP_URL = 'https://t.me/your_bot/app'
+const appState = ref<'loading' | 'ok' | 'error' | 'auth'>('loading')
 
 // ── Debug log ──────────────────────────────────────────────────
-const logs = ref<{ type: 'info' | 'ok' | 'err', msg: string }[]>([])
-const showDebug = ref(true)
-
-const log    = (msg: string) => logs.value.push({ type: 'info', msg })
-const logOk  = (msg: string) => logs.value.push({ type: 'ok',   msg })
-const logErr = (msg: string) => logs.value.push({ type: 'err',  msg })
 
 // ───────────────────────────────────────────────────────────────
 
+watch(() => authStore.isAuthenticated, (authenticated) => {
+  if (authenticated) {
+    appState.value = 'ok'
+  }
+})
+
 onMounted(async () => {
-  try {
-
-    if (authStore.accessToken) {
-      logOk('already have accessToken')
-      appState.value = 'ok'
-      return
-    }
-
-    const refreshToken = localStorage.getItem("refresh_token")
-    log(`refreshToken in LS: ${refreshToken ? 'yes' : 'no'}`)
-
-    if (refreshToken) {
-      try {
-        await authStore.refresh()
-        logOk('refresh success')
-        appState.value = 'ok'
-        return
-      } catch (e: any) {
-        logErr(`refresh failed: ${e?.message ?? e}`)
-        localStorage.removeItem("refresh_token")
-      }
-    }
-
-    const tg = (window as any)?.Telegram?.WebApp
-    log(`Telegram object: ${tg ? 'found' : 'NOT FOUND'}`)
-
-    const tgInitData = tg?.initData
-    log(`initData: ${tgInitData ? tgInitData.slice(0, 80) + '...' : 'EMPTY'}`)
-    log(`tg.version: ${tg?.version ?? 'n/a'}`)
-    log(`tg.platform: ${tg?.platform ?? 'n/a'}`)
-
-    if (!tgInitData) {
-      logErr('initData is empty — cannot login')
-      appState.value = 'error'
-      return
-    }
-
-    try {
-      const tgInitData = tg?.initData
-      log(`initData raw: ${tgInitData}`)
-      log(`initData length: ${tgInitData?.length}`)
-      await authStore.login(tgInitData)
-      logOk('login success')
-      appState.value = 'ok'
-    } catch (e: any) {
-      logErr(`login failed: ${e?.message ?? JSON.stringify(e)}`)
-      appState.value = 'error'
-    }
-
-  } catch (e: any) {
-    logErr(`unexpected: ${e?.message ?? e}`)
-    appState.value = 'error'
+  // 1. Уже есть accessToken в памяти
+  if (authStore.accessToken) {
+    appState.value = 'ok'
+    await router.push('/')
+    return
   }
 
+  // 2. Есть refresh token → пробуем тихо обновить
+  const refreshToken = localStorage.getItem('refresh_token')
+  if (refreshToken) {
+    try {
+      await authStore.refresh()
+      appState.value = 'ok'
+      await router.push('/')
+      return
+    } catch {
+      localStorage.removeItem('refresh_token')
+    }
+  }
+
+  // 3. Telegram Mini App / встроенный браузер
+  if (isTelegramEnv) {
+    const initData = getInitData()!
+    try {
+      await authStore.login(initData)   // уже есть в store
+      appState.value = 'ok'
+      await router.push('/')
+    } catch {
+      appState.value = 'error'          // покажет экран с ошибкой
+    }
+    return
+  }
+
+  // 4. Обычный браузер → показываем Auth с кнопкой виджета
+  appState.value = 'auth'
 })
 </script>
 
@@ -101,7 +85,7 @@ onMounted(async () => {
       </div>
       <div v-if="logs.length === 0" class="debug-line info">Ожидание...</div>
     </div>
-  </div>  -->
+  </div> -->
 
   <!-- Загрузка -->
   <Transition name="fade">
@@ -117,20 +101,8 @@ onMounted(async () => {
 
   <!-- Ошибка авторизации -->
   <Transition name="fade">
-    <div v-if="appState === 'error'" class="error-screen">
-      <div class="error-icon">🔒</div>
-      <h2 class="error-title">Не удалось авторизоваться</h2>
-      <p class="error-desc">
-        Для входа в платформу откройте её через Telegram Mini App
-      </p>
-      <a :href="MINI_APP_URL" target="_blank" class="error-btn">
-        <span class="btn-icon">✈️</span>
-        Открыть в Telegram
-      </a>
-      <!-- Показать лог прямо на экране ошибки если оверлей закрыт -->
-      <button v-if="!showDebug" class="debug-toggle" @click="showDebug = true">
-        Показать лог
-      </button>
+    <div v-if="appState === 'error' || appState === 'auth'" class="error-screen">
+      <Auth/>
     </div>
   </Transition>
 

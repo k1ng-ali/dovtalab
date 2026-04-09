@@ -42,6 +42,17 @@ const headerStore = useHeaderStore()
       <!-- Пустой спейсер, если правой кнопки нет, но есть левая (для центровки заголовка) -->
       <div v-else-if="headerStore.leftAction" class="spacer" />
 
+      <!-- ✅ Уведомление-оверлей: накладывается поверх содержимого контейнера -->
+      <Transition name="notify">
+        <div
+            v-if="headerStore.notification"
+            class="notification-overlay"
+            :class="`notification-overlay--${headerStore.notification.type}`"
+        >
+          {{ headerStore.notification.message }}
+        </div>
+      </Transition>
+
     </div>
   </div>
 </template>
@@ -61,7 +72,6 @@ const headerStore = useHeaderStore()
   -webkit-backdrop-filter: blur(10px);
 
   mask-image: linear-gradient(to bottom, black 0%, black 40%, transparent 100%);
-
 }
 
 .container {
@@ -79,6 +89,10 @@ const headerStore = useHeaderStore()
   box-shadow: rgba(34, 34, 34, 0.3) 0 0 20px;
   user-select: none;
   gap: 8px;
+
+  /* Нужно для того, чтобы оверлей не вылезал за скруглённые края */
+  position: relative;
+  overflow: hidden;
 }
 
 .path {
@@ -95,7 +109,6 @@ const headerStore = useHeaderStore()
 }
 
 .spacer {
-  /* зеркалит ширину левой кнопки для центровки заголовка */
   width: 36px;
   flex-shrink: 0;
 }
@@ -133,6 +146,64 @@ const headerStore = useHeaderStore()
     &:active {
       background: rgba(78, 190, 194, 0.3);
     }
+  }
+}
+
+/* ─── Оверлей уведомления ─────────────────────────────── */
+.notification-overlay {
+  /* Занимает всё пространство .container, не смещает соседние элементы */
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  border-radius: inherit; /* берёт border-radius от .container */
+
+  &--success {
+    background: #E6F7ED;
+    color: #166534;
+  }
+
+  &--error {
+    background: #FCEEEE;
+    color: #991b1b;
+  }
+}
+
+/* ─── Анимация появления / исчезновения ───────────────── */
+.notify-enter-active {
+  animation: notify-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.notify-leave-active {
+  animation: notify-fade-out 0.3s ease forwards;
+}
+
+@keyframes notify-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes notify-fade-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9);
   }
 }
 </style>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import type { QuestionPublic, AttemptResult} from '@/features/quizPage/types.ts'
-
+import {isMultipleAnswer} from "@/features/quizPage/types.ts"
 const props = defineProps<{
   question: QuestionPublic
   disabled?: boolean
@@ -39,7 +39,10 @@ const toggle = (id: number) => {
 const isSelected = (id: number) => selected.value.has(id)
 
 // Правильные id из ответа сервера
-const correctIds = computed(() => new Set(props.result?.correct_answer?.selected_option_ids ?? []))
+const correctIds = computed(() => {
+  const ans = props.result?.correct_answer
+  return new Set(isMultipleAnswer(ans) ? ans.selected_option_ids : [])
+})
 
 const optionClass = (id: number) => {
   if (!props.result) {

@@ -10,7 +10,6 @@ import { useNavStore }    from "@/shared/stores/useNavStore.ts"
 import { useHeaderStore } from "@/shared/stores/useHeaderStore.ts"
 import { useQuizFlow }    from "@/features/quizPage/useQuizFlow"
 
-
 const navStore    = useNavStore()
 const headerStore = useHeaderStore()
 const flow        = useQuizFlow()
@@ -98,7 +97,7 @@ watch(
 
         <!-- Список квизов -->
         <div v-if="flow.view.value === 'list'" key="list">
-          <Ad class="ad"/>
+          <Ad class="ad" @select="flow.openInfo"/>
           <Quizzes @select="flow.openInfo" />
         </div>
 
@@ -129,11 +128,14 @@ watch(
 .quiz-page {
   min-height: 100vh;
   background: #F6F6F6;
+  display: flex;
+  justify-content: center;
 }
 
 .page-body {
   padding-top: 80px;   /* под фиксированным Header */
   padding-bottom: 100px; /* над фиксированным Navigator */
+  max-width: 900px;
 }
 
 /* ── Slide transition ── */
@@ -150,9 +152,5 @@ watch(
 .slide-leave-to {
   opacity: 0;
   transform: translateX(-30px);
-}
-.ad {
-  margin: 0 25px;
-  width: calc(100% - 50px);
 }
 </style>

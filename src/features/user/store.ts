@@ -1,70 +1,62 @@
 import { defineStore } from 'pinia'
 import * as api from './api.ts'
-import type { User, Config } from './type.ts'
+import type { User, Config, UserProfile, UserRole } from './type.ts'
 
 export const useUserStore = defineStore("user", {
     state: () => ({
-        user:   null as User   | null,
-        config: null as Config | null,
+        profile: null as UserProfile | null,
+        loading: false,
     }),
 
+    getters: {
+      user: (state): User | null => state.profile?.user ?? null,
+      config: (state): Config | null => state.profile?.config ?? null,
+      roles: (state): UserRole[] => state.profile?.roles ?? [],
+
+      is_creator: (state) => state.profile?.roles.includes("creator") ?? false,
+      is_pro: (state) => state.profile?.roles.includes("pro") ?? false,
+      is_admin: (state) => state.profile?.roles.includes("admin") ?? false,
+    },
+
     actions: {
-        async fetchMe() {
-            // Не делаем повторный запрос если данные уже есть
-            if (this.user) return this.user
+        async fetchProfile(force = false) {
+            if (this.profile && !force) return this.profile
 
+            this.loading = true
             try {
-                const { data } = await api.getMe()
-                this.user = data as User
-                return data as User
+                const { data } = await api.profile()
+                //console.log(data)
+                this.profile = data as UserProfile
+                return this.profile
             } catch (error) {
                 console.error(error)
+                throw error
+            } finally {
+                this.loading = false
             }
         },
 
-        async fetchConfig() {
-            // Не делаем повторный запрос если данные уже есть
-            if (this.config) return this.config
+        async patchConfig(updated: Partial<Config>) {
+            if (!this.profile) return
 
-            try {
-                const { data } = await api.config()
-                this.config = data as Config
-                return data as Config
-            } catch (error) {
-                console.error(error)
-            }
-        },
-
-        async patchConfig(updated: Config) {
-            // Сохраняем предыдущее состояние для отката
-            const previous = this.config ? { ...this.config } : null
-
-            // Оптимистичное обновление — UI меняется мгновенно
-            this.config = { ...this.config, ...updated }
+            // Оптимистичное обновление
+            const previous = { ...this.profile.config }
+            this.profile.config = { ...this.profile.config, ...updated }
 
             try {
                 const { data } = await api.updateConfig(updated)
-                // Merge: сервер может вернуть неполный объект —
-                // сохраняем все имеющиеся поля и поверх кладём ответ
-                this.config = { ...this.config, ...(data as Partial<Config>) }
-                return this.config as Config
+                this.profile.config = { ...this.profile.config, ...(data as Partial<Config>) }
+                return this.profile.config
             } catch (error) {
-                // Откат при ошибке
-                this.config = previous
+                // Откат
+                this.profile.config = previous
                 console.error(error)
                 throw error
             }
         },
 
-        /** Принудительное обновление (например, pull-to-refresh) */
-        async forceRefreshConfig() {
-            try {
-                const { data } = await api.config()
-                this.config = data as Config
-                return data as Config
-            } catch (error) {
-                console.error(error)
-            }
+        clearProfile() {
+            this.profile = null
         },
     },
 })

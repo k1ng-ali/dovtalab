@@ -1,12 +1,21 @@
 <script setup lang="ts">
+import {useLeadersStore} from "@/features/mainPage/leaderboard/store.ts";
+import {computed, onMounted} from "vue";
 // Когда бэкенд будет готов — убери isEmpty и подключи реальные данные
-const isEmpty = true
 
-const users = [
-  { name: "Jaemy",   score: "1100", img: "./leaderboard/2.png", order: 2, profile: "default" },
-  { name: "Ali",     score: "1200", img: "./leaderboard/1.png", order: 1, profile: "gold"    },
-  { name: "Кристина", score: "650", img: "./leaderboard/3.png", order: 3, profile: "default" },
-]
+
+const leadersStore = useLeadersStore()
+const leaders = computed(() => leadersStore.getLeaders)
+const first = computed(() => leadersStore.first)
+const second = computed(() => leadersStore.second)
+const third = computed(() => leadersStore.third)
+
+const isEmpty = computed(() => !leaders.value || !leaders.value?.length)
+
+onMounted(() => {
+   leadersStore.fetchLeaders();
+})
+
 </script>
 
 <template>
@@ -17,19 +26,83 @@ const users = [
     </div>
 
     <!-- Обычный контент -->
+
     <div class="content" v-if="!isEmpty">
       <div
-          class="item"
-          v-for="(user, i) in users"
-          :key="i"
-          :class="user.profile"
-          :style="{ '--order': `'${user.order}'` }"
+          class="item gold"
+          v-if="first"
+          :style="{ '--order': `'${first.rank}'` }"
       >
-        <div class="ico">
-          <img :src="user.img" />
+        <div class="item--left">
+          <img
+              v-if="first?.avatar_url"
+              :src="first.avatar_url"
+              class="avatar gold"
+              alt="avatar"
+          />
+          <div v-else class="avatar avatar--fallback gold">
+            {{ first.first_name?.[0] }}
+          </div>
+          <div>
+            <h4 class="name">{{ first.first_name }}</h4>
+            <p class="score">{{ first.total_points }} xp</p>
+          </div>
         </div>
-        <h4 class="name">{{ user.name }}</h4>
-        <p class="score">{{ user.score }} xp</p>
+        <div class="item--rank gold">
+          {{first.rank}}
+        </div>
+      </div>
+
+      <!------------------------------------------>
+      <div
+          class="item silver"
+          v-if="second"
+          :style="{ '--order': `'${second.rank}'` }"
+      >
+        <div class="item--left">
+          <img
+              v-if="second?.avatar_url"
+              :src="second.avatar_url"
+              class="avatar silver"
+              alt="avatar"
+          />
+          <div v-else class="avatar avatar--fallback silver">
+            {{ second.first_name?.[0] }}
+          </div>
+          <div>
+            <h4 class="name">{{ second.first_name }}</h4>
+            <p class="score">{{ second.total_points }} xp</p>
+          </div>
+        </div>
+        <div class="item--rank silver">
+          {{second.rank}}
+        </div>
+      </div>
+
+      <!------------------------------------------>
+      <div
+          class="item bronze"
+          v-if="third"
+          :style="{ '--order': `'${third.rank}'` }"
+      >
+        <div class="item--left">
+          <img
+              v-if="third?.avatar_url"
+              :src="third.avatar_url"
+              class="avatar bronze"
+              alt="avatar"
+          />
+          <div v-else class="avatar avatar--fallback bronze">
+            {{ third.first_name?.[0] }}
+          </div>
+          <div>
+            <h4 class="name">{{ third.first_name }}</h4>
+            <p class="score">{{ third.total_points }} xp</p>
+          </div>
+        </div>
+        <div class="item--rank bronze">
+          {{third.rank}}
+        </div>
       </div>
     </div>
 
@@ -55,57 +128,140 @@ const users = [
 
 .header {
   display: flex;
-  width: 100%;
+  width: calc(100% - 20px);
   justify-content: space-between;
-  align-items: center;
+  align-items: end;
+  margin-bottom: 10px;
+  padding: 0 10px;
+
+  & .title {
+    margin-bottom: 0;
+  }
+  & .all {
+    margin-bottom: 0;
+  }
 }
 
 .content {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .item {
-  background: #D8DBE4;
+  background: linear-gradient(to bottom, white, rgb(235, 238, 241));
+  border: 1px solid rgba(35, 73, 112, 0.3);
   border-radius: 20px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  padding: 20px 10px;
+  padding: 10px 10px;
   box-shadow:
       0 8px 25px rgba(0, 0, 0, 0.12),
       0 2px 6px rgba(0, 0, 0, 0.06);
-  color: #5B6C85;
+  color: #234970;
+  justify-content: space-between;
 
   &.gold {
-    background: #4EBEC2;
-    scale: 1.05;
-    color: white;
-
-    .ico::before { background: #CDAE64; }
+    background:  linear-gradient(to bottom, rgba(239, 191, 4, 0.1), rgba(239, 191, 4, 0.2));
+    color: #856A00;
+    border: #EFBF04 1px solid;
+    margin-bottom: 10px;
   }
 
-  .name  { margin: 10px 0 0 0; }
+  &.silver {
+    background:  linear-gradient(to bottom, rgba(217, 217, 217, 0.3), #D9D9D9);
+    color: #4F4F4F;
+    border: #C4C4C4 1px solid;
+  }
+
+  &.bronze {
+    background:  linear-gradient(to bottom, rgba(252, 169, 86, 0.1), rgba(252, 169, 86, 0.3));
+    color: #82572C;
+    border: #CE8946 1px solid;
+  }
+
+  &--left {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  &--rank {
+    background: linear-gradient(to bottom, rgba(35, 73, 112, 0.3), rgb(203, 218, 232));
+    border: 1px solid rgba(35, 73, 112, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+
+    width: clamp(30px, 1.5rem, 40px);
+    height: clamp(30px, 1.5rem, 40px);
+    border-radius: 50%;
+
+    &.gold {
+      background: linear-gradient(to bottom, rgba(253, 232, 137, 0.8), rgb(239, 191, 4));
+      border: #EFBF04 1px solid;
+      color: #856A00;
+    }
+
+    &.silver {
+      background:  linear-gradient(to bottom, #D9D9D9, #C4C4C4);
+      color: #4F4F4F;
+      border: #aeaeae 1px solid;
+    }
+
+    &.bronze {
+      background:  linear-gradient(to bottom, rgba(252, 169, 86, 0.2), rgba(252, 169, 86, 0.4));
+      color: #82572C;
+      border: #CE8946 1px solid;
+    }
+  }
+
+  .name  { margin: 0; }
   .score { margin: 0; }
 
-  .ico {
-    position: relative;
+  .avatar {
+    width: clamp(40px, 1.5rem, 60px);
+    height: clamp(40px, 1.5rem, 60px);
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #234970;
+    box-shadow: 0 6px 20px rgba(35, 73, 112, 0.18);
 
-    &::before {
-      content: var(--order);
-      position: absolute;
-      bottom: -7px;
-      left: calc(50% - 12.5px);
-      width: 25px;
-      height: 25px;
-      background: white;
-      border-radius: 50%;
+    &.gold {
+      border: 2px solid #efbf04;
+    }
+    &.silver {
+      border: #4F4F4F 2px solid;
+    }
+    &.bronze {
+      border: #CE8946 2px solid;
+    }
+
+    &--fallback {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: bold;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+      background: linear-gradient(to bottom, rgba(35, 73, 112, 0.3), rgb(203, 218, 232));
+      color: #234970;
+      font-size: 30px;
+      font-weight: 700;
+      letter-spacing: -1px;
+
+      &.gold {
+        background:  linear-gradient(to bottom, rgba(239, 191, 4, 0.1), rgba(239, 191, 4, 0.2));
+        color: #856A00;
+      }
+
+      &.silver {
+        background:  linear-gradient(to bottom, #D9D9D9, #C4C4C4);
+        color: #4F4F4F;
+      }
+      &.bronze {
+        background:  linear-gradient(to bottom, rgba(252, 169, 86, 0.2), rgba(252, 169, 86, 0.4));
+        color: #82572C;
+      }
     }
   }
 }

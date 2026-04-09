@@ -12,20 +12,29 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* базовый размер текста остаётся 1rem (16px) – можно не трогать */
+  /* ── Breakpoints ── */
+  --bp-md: 768px;
+  --bp-lg: 1200px;
+
+  /* ── Layout ── */
+  --nav-width: 220px;          /* ширина бокового навигатора на десктопе */
+  --content-max: 860px;        /* максимальная ширина центральной колонки */
+  --header-height: 64px;       /* высота топ-хедера */
+
+  /* базовый размер текста остаётся 1rem (16px) */
   --font-size-base: 1rem;
 
   /* заголовки с плавным изменением */
-  --font-size-h1: clamp(2rem, 5vw, 3rem);       /* от 32px до 48px */
-  --font-size-h2: clamp(1.75rem, 4vw, 2.5rem);  /* от 28px до 40px */
-  --font-size-h3: clamp(1.5rem, 3.5vw, 2rem);   /* от 24px до 32px */
-  --font-size-h4: clamp(1.25rem, 3vw, 1.75rem); /* от 20px до 28px */
-  --font-size-h5: clamp(1.125rem, 2.5vw, 1.5rem);/* от 18px до 24px */
-  --font-size-h6: clamp(1rem, 2vw, 1.25rem);    /* от 16px до 20px */
+  --font-size-h1: clamp(2rem, 5vw, 3rem);
+  --font-size-h2: clamp(1.75rem, 4vw, 2.5rem);
+  --font-size-h3: clamp(1.5rem, 3.5vw, 2rem);
+  --font-size-h4: clamp(1.25rem, 3vw, 1.75rem);
+  --font-size-h5: clamp(1.125rem, 2.5vw, 1.5rem);
+  --font-size-h6: clamp(1rem, 2vw, 1.25rem);
 
-  --font-size-small: clamp(0.75rem, 1.5vw, 0.875rem); /* от 12px до 14px */
-  --font-size-large: clamp(1.125rem, 2.5vw, 1.25rem); /* от 18px до 20px */
-  --font-size-p: clamp(1rem, 2vw, 1.125rem); /* от 16px до 18px */
+  --font-size-small: clamp(0.75rem, 1.5vw, 0.875rem);
+  --font-size-large: clamp(1.125rem, 2.5vw, 1.25rem);
+  --font-size-p: clamp(1rem, 2vw, 1.125rem);
   --heading-line-height: 1.2;
 
   --font-weight-light: 300;
@@ -34,7 +43,6 @@
   --font-weight-bold: 700;
   --font-weight-black: 900;
 
-  /* Рекомендуемая жирность для заголовков */
   --font-weight-h1: 700;
   --font-weight-h2: 700;
   --font-weight-h3: 600;
@@ -47,41 +55,31 @@ html {
   font-size: 16px;
 }
 
+/* body больше не ограничиваем — layout управляется внутри App.vue */
 body {
   font-size: var(--font-size-base);
   margin: 0;
   -webkit-tap-highlight-color: transparent;
-  max-width: 800px;
+
 }
 
-/* Применяем переменные к элементам */
 h1, h2, h3, h4, h5, h6 {
   line-height: var(--heading-line-height);
   margin: 0.5em 0;
-}
-h1, h2, h3, h4, h5, h6 {
-  font-weight: var(--font-weight-bold); /* или точечно для каждого */
+  font-weight: var(--font-weight-bold);
 }
 
 p {
   font-size: var(--font-size-p);
-  margin: 0 0 1em 0; /* отступ снизу для ритма */
+  margin: 0 0 1em 0;
 }
 
-
-h1 { font-size: var(--font-size-h1); }
-h2 { font-size: var(--font-size-h2); }
-h3 { font-size: var(--font-size-h3); }
-h4 { font-size: var(--font-size-h4); }
-h5 { font-size: var(--font-size-h5); }
-h6 { font-size: var(--font-size-h6); }
-
-h1 { font-weight: var(--font-weight-h1); }
-h2 { font-weight: var(--font-weight-h2); }
-h3 { font-weight: var(--font-weight-h3); }
-h4 { font-weight: var(--font-weight-h4); }
-h5 { font-weight: var(--font-weight-h5); }
-h6 { font-weight: var(--font-weight-h6); }
+h1 { font-size: var(--font-size-h1); font-weight: var(--font-weight-h1); }
+h2 { font-size: var(--font-size-h2); font-weight: var(--font-weight-h2); }
+h3 { font-size: var(--font-size-h3); font-weight: var(--font-weight-h3); }
+h4 { font-size: var(--font-size-h4); font-weight: var(--font-weight-h4); }
+h5 { font-size: var(--font-size-h5); font-weight: var(--font-weight-h5); }
+h6 { font-size: var(--font-size-h6); font-weight: var(--font-weight-h6); }
 
 .text-small { font-size: var(--font-size-small); }
 .text-large { font-size: var(--font-size-large); }

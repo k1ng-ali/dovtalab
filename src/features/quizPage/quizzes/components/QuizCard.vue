@@ -16,7 +16,7 @@ const isCompleted = computed(() => {
 const percent = computed(() => {
   if (!props.quiz.details) return 0
   const { total, completed } = props.quiz.details
-  if (!total) return 0
+  if (!total || !completed) return 0
   return Math.round((completed / total) * 100)
 })
 </script>
