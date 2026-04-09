@@ -3,7 +3,7 @@ name: Deploy Frontend
 on:
   push:
     branches:
-      - release   # 👈 только эта ветка деплоится
+      - release
 
 jobs:
   build-and-deploy:
@@ -13,6 +13,9 @@ jobs:
       contents: read
       pages: write
       id-token: write
+
+    environment:
+      name: github-pages
 
     steps:
       - name: Checkout
@@ -35,7 +38,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist   # 👈 Vite build
+          path: ./dist
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
