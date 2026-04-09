@@ -9,7 +9,7 @@
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist --cname=dovtalab.app"
+    "deploy": "gh-pages -d dist --repo=https://github.com/k1ng-ali/dovtalab.git --cname=dovtalab.app"
   },
   "dependencies": {
     "@kalimahapps/vue-icons": "^1.9.5",
