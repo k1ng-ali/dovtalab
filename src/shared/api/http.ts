@@ -2,7 +2,7 @@ import {useAuthStore} from "@/features/auth/store.ts";
 import axios from "axios";
 
 export const http = axios.create({
-    baseURL: "https://api.dovtalab.app/",
+    baseURL: "https:// http://127.0.0.1:8000/",
     withCredentials: true,
 })
 
