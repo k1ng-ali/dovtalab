@@ -70,6 +70,10 @@ export const useAuthStore = defineStore("auth", {
         async refresh() {
             const {data} = await api.refreshToken();
             this.accessToken = data.access_token
+            this.status = 'authenticated'
+            if (data.refresh_token) {
+                saveRefreshToken(data.refresh_token)
+            }
         },
 
         logout() {

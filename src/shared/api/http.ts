@@ -33,7 +33,10 @@ http.interceptors.response.use(
             originalRequest._retry = true
 
             try {
-                const { data } = await http.post("/auth/refresh")
+                const storedToken = localStorage.getItem('refresh_token')
+                const { data } = await http.post("/auth/refresh",
+                    storedToken ? { refresh_token: storedToken } : undefined
+                )
 
                 auth.accessToken = data.access_token
 

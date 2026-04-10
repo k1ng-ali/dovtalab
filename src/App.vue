@@ -25,6 +25,35 @@ watch(() => authStore.isAuthenticated, (authenticated) => {
 })
 
 onMounted(async () => {
+  // 0. Вернулись с мобильного редиректа Telegram OAuth
+  const redirectCode = sessionStorage.getItem('tg_auth_code')
+  const redirectState = sessionStorage.getItem('tg_auth_state_returned')
+  const savedState = sessionStorage.getItem('tg_auth_state')
+
+  if (redirectCode) {
+    sessionStorage.removeItem('tg_auth_code')
+    sessionStorage.removeItem('tg_auth_state_returned')
+    sessionStorage.removeItem('tg_auth_state')
+
+    if (redirectState !== savedState) {
+      appState.value = 'auth'  // State mismatch — показать экран входа
+    } else {
+      const nonce = sessionStorage.getItem('tg_auth_nonce') ?? ''
+      const codeVerifier = sessionStorage.getItem('tg_code_verifier') ?? ''
+      sessionStorage.removeItem('tg_auth_nonce')
+      sessionStorage.removeItem('tg_code_verifier')
+
+      try {
+        await authStore.loginWithTelegram({ code: redirectCode, nonce, code_verifier: codeVerifier })
+        appState.value = 'ok'
+        await router.push('/')
+      } catch {
+        appState.value = 'auth'
+      }
+    }
+    return
+  }
+
   // 1. Уже есть accessToken в памяти
   if (authStore.accessToken) {
     appState.value = 'ok'
