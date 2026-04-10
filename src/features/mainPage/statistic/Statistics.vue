@@ -8,12 +8,15 @@ const statStore = useStats()
 const userStats = computed(() => statStore.stats)
 const attemptHistory = computed(() => statStore.attempts)
 
-const isEmpty = computed(() => !userStats.value?.total_questions_answered)
+const isEmpty = computed(() => {
+  const stats = userStats.value
+  return !stats || stats.total_questions_answered === 0
+})
 
-onMounted(() => {
+onMounted(async () => {
   try {
-    statStore.fetchStats()
-    statStore.fetchAttemptsHistory(0,5)
+    await statStore.fetchStats()
+    await statStore.fetchAttemptsHistory(0,5)
   } catch (error) {
     console.error(error)
   }
@@ -31,7 +34,7 @@ onMounted(() => {
     <!-- Обычный контент -->
     <div class="content" v-if="!isEmpty">
       <div class="meta-grid">
-        <div class="meta-item" v-if="userStats && userStats.total_quizzes_completed">
+        <div class="meta-item" v-if="userStats && userStats.total_quizzes_completed > 0">
           <span class="meta-icon">📌</span>
           <span class="meta-label">Тестов пройдено</span>
           <span class="meta-value">{{userStats.total_quizzes_completed}}</span>
