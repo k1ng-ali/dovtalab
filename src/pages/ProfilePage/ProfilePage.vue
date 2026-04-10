@@ -220,7 +220,8 @@ const avatarError = ref(false)
   min-height: 100vh;
   background: #F6F6F6;
   max-width: 900px;
-  margin-left: calc((100% - 900px)/2);
+  margin: 0 auto;   // ← вместо margin-left: calc(...)
+  width: 100%;
 }
 
 /* ── Hero ── */
