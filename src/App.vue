@@ -62,17 +62,16 @@ onMounted(async () => {
   }
 
   // 2. Есть refresh token → пробуем тихо обновить
-  const refreshToken = localStorage.getItem('refresh_token')
-  if (refreshToken) {
+
     try {
       await authStore.refresh()
       appState.value = 'ok'
       await router.push('/')
       return
     } catch {
-      localStorage.removeItem('refresh_token')
+      appState.value = isTelegramEnv ? 'loading' : "auth"
     }
-  }
+
 
   // 3. Telegram Mini App / встроенный браузер
   if (isTelegramEnv) {

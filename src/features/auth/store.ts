@@ -3,17 +3,6 @@ import * as api from "./api";
 import type {AuthStatus, AuthTokensResponse} from "@/features/auth/types.ts";
 
 
-
-const REFRESH_TOKEN_KEY = "refresh_token";
-
-// -- HELPERS ----------
-
-function saveRefreshToken(token: string) {
-    // В идеале refresh_token — httpOnly cookie, выставленная бэкендом.
-    // Если бэк возвращает его в JSON — храним в localStorage как fallback.
-    localStorage.setItem(REFRESH_TOKEN_KEY, token)
-}
-
 // ----- Store----------------
 export const useAuthStore = defineStore("auth", {
     // ------ State -------------
@@ -71,14 +60,10 @@ export const useAuthStore = defineStore("auth", {
             const {data} = await api.refreshToken();
             this.accessToken = data.access_token
             this.status = 'authenticated'
-            if (data.refresh_token) {
-                saveRefreshToken(data.refresh_token)
-            }
         },
 
         logout() {
             this.accessToken = null;
-            localStorage.removeItem('refresh_token');
         },
 
         // --- Internal Helpers ----
@@ -86,7 +71,6 @@ export const useAuthStore = defineStore("auth", {
             this.accessToken = data.access_token
             this.status = 'authenticated'
             this.error = null;
-            saveRefreshToken(data.refresh_token)
         },
 
         setError(e: unknown) {
