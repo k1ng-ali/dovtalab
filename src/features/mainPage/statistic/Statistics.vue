@@ -10,7 +10,7 @@ const attemptHistory = computed(() => statStore.attempts)
 
 const isEmpty = computed(() => {
   const stats = userStats.value
-  return !stats || stats.total_questions_answered === 0
+  return !stats
 })
 
 onMounted(async () => {
