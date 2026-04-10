@@ -8,7 +8,7 @@ const statStore = useStats()
 const userStats = computed(() => statStore.stats)
 const attemptHistory = computed(() => statStore.attempts)
 
-const isEmpty = computed(() => !userStats.value?.accuracy_percent)
+const isEmpty = computed(() => !userStats.value?.total_questions_answered)
 
 onMounted(() => {
   try {
