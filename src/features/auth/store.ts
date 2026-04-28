@@ -22,7 +22,7 @@ export const useAuthStore = defineStore("auth", {
             try {
                 const { data } = await api.telegramAuth({ init_data: tg_data })
                 this.accessToken = data.access_token
-                localStorage.setItem('refresh_token', data.refresh_token)
+                this.status = 'authenticated'
             } catch (e: any) {
                 console.error('login error:', e)
                 // Добавь это чтобы видеть в дебаг оверлее
@@ -64,6 +64,8 @@ export const useAuthStore = defineStore("auth", {
 
         logout() {
             this.accessToken = null;
+            this.status = 'idle'
+            this.error = null as string | null
         },
 
         // --- Internal Helpers ----

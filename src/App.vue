@@ -6,6 +6,7 @@ import {onMounted, ref, watch} from "vue"
 import { useRouter } from 'vue-router'
 import Auth from "@/features/auth/Auth.vue";  // добавь импорт
 import { useTelegramEnv } from '@/features/auth/composables/useTelegramEnv'
+import { http } from "./shared/api/http";
 
 const { isTelegramEnv, getInitData } = useTelegramEnv()
 
@@ -25,6 +26,20 @@ watch(() => authStore.isAuthenticated, (authenticated) => {
 })
 
 onMounted(async () => {
+  // 0. Dev bypass
+  if (import.meta.env.VITE_DEV_MODE === 'true') {
+    try {
+      const { data } = await http.post('/auth/dev-login')
+      authStore.accessToken = data.access_token
+      authStore.status = 'authenticated'
+      appState.value = 'ok'
+      await router.push('/')
+    } catch {
+      appState.value = 'auth'
+    }
+    return
+  }
+
   // 0. Вернулись с мобильного редиректа Telegram OAuth
   const redirectCode = sessionStorage.getItem('tg_auth_code')
   const redirectState = sessionStorage.getItem('tg_auth_state_returned')
@@ -61,30 +76,29 @@ onMounted(async () => {
     return
   }
 
-  // 2. Есть refresh token → пробуем тихо обновить
-
-    try {
-      await authStore.refresh()
-      appState.value = 'ok'
-      await router.push('/')
-      return
-    } catch {
-      appState.value = isTelegramEnv ? 'loading' : "auth"
-    }
-
-
-  // 3. Telegram Mini App / встроенный браузер
+  // 2. Telegram Mini App — initData есть, сразу логиним
   if (isTelegramEnv) {
     const initData = getInitData()!
     try {
-      await authStore.login(initData)   // уже есть в store
+      await authStore.login(initData)
       appState.value = 'ok'
       await router.push('/')
     } catch {
-      appState.value = 'error'          // покажет экран с ошибкой
+      appState.value = 'error'
     }
     return
   }
+
+  // 3. Обычный браузер — пробуем тихий рефреш (есть кука)
+  try {
+    await authStore.refresh()
+    appState.value = 'ok'
+    await router.push('/')
+    return
+  } catch {
+    appState.value = 'auth'  // показываем кнопку виджета
+  }
+
 
   // 4. Обычный браузер → показываем Auth с кнопкой виджета
   appState.value = 'auth'

@@ -16,7 +16,8 @@ export default defineConfig({
   },
   server: {
     host: true,
-    allowedHosts: ["http://82.38.71.121:8000",
+    allowedHosts: [
+        "http://127.0.0.1:8000/",
         "https://api.dovtalab.app/"
     ]
   }

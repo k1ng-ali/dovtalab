@@ -7,8 +7,7 @@ export const telegramAuth = (data: any) =>
     http.post('/auth/web_app', data)
 
 export const refreshToken = () => {
-    const token = localStorage.getItem("refresh_token");
-    return http.post('/auth/refresh', token ? {refresh_token: token} : undefined)
+    return http.post('/auth/refresh')
 }
 
 export const testLogin = () => http.get('/auth/test')

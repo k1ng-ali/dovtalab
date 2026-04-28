@@ -2,7 +2,7 @@ import {useAuthStore} from "@/features/auth/store.ts";
 import axios from "axios";
 
 export const http = axios.create({
-    baseURL: "https:// http://127.0.0.1:8000/",
+    baseURL: import.meta.env.VITE_API_URL ?? "https://api.dovtalab.app/",
     withCredentials: true,
 })
 
@@ -33,10 +33,7 @@ http.interceptors.response.use(
             originalRequest._retry = true
 
             try {
-                const storedToken = localStorage.getItem('refresh_token')
-                const { data } = await http.post("/auth/refresh",
-                    storedToken ? { refresh_token: storedToken } : undefined
-                )
+                const { data } = await http.post("/auth/refresh")
 
                 auth.accessToken = data.access_token
 

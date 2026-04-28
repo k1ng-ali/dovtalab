@@ -7,6 +7,11 @@ const router = useRouter()
 async function onSuccess() {
   await router.push('/')
 }
+
+const redirect = (url:string) => {
+  window.open(url, '_blank')
+}
+
 </script>
 
 <template>
@@ -16,6 +21,9 @@ async function onSuccess() {
       <h3 class="auth__title">Войдите в аккаунт</h3>
       <p class="auth__desc">Используйте Telegram для быстрой и безопасной авторизации</p>
       <TelegramLoginButton @success="onSuccess" />
+      <button class="btn-redirect"
+              @click="redirect('https://t.me/Dovtalabbot/dovtalab_app', '_blank')"
+      >Открыть в mini-apps</button>
     </div>
   </div>
 </template>
@@ -47,6 +55,25 @@ async function onSuccess() {
   }
   &__desc {
     color: #4F4F4F;
+  }
+
+  .btn-redirect {
+    background: #4ade80;
+    height: 50px;
+    border-radius: 10px;
+    margin-top: 10px;
+    font-size: 15px;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(42, 171, 238, 0.35);
+    border: none;
+    cursor: pointer;
+    overflow: hidden;
+    user-select: none;
+    transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+
+    &:hover{
+      background: #45ca76;
+    }
   }
 }
 

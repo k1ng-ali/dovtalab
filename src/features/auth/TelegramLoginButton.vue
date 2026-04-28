@@ -67,6 +67,7 @@ async function handleClick() {
   align-items: center;
   justify-content: center;
   padding: 0;
+  height: 50px;
   background: var(--tg-blue);
   color: #fff;
   border: none;
