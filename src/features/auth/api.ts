@@ -4,7 +4,7 @@ import type {
 } from "@/features/auth/types.ts";
 
 export const telegramAuth = (data: any) =>
-    http.post('/telegram/webapp', data)
+    http.post('/auth/telegram/webapp', data)
 
 export const refreshToken = () => {
     return http.post('/auth/refresh')
