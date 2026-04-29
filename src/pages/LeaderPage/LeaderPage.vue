@@ -179,7 +179,7 @@ onUnmounted(() => { observer?.disconnect() })
   flex-direction: column;
   gap: 10px;
   padding: 20px;
-  margin-top: 100px;
+  margin-top: 70px;
   width: 100%;
   max-width: 800px;
 }
