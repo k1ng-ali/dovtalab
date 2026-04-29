@@ -324,7 +324,7 @@ onUnmounted(() => { observer?.disconnect() })
 .sticky-user {
   position: fixed;
   // Подбери bottom под высоту своего Navigator'а
-  bottom: 150px;
+  bottom: 100px;
   left: 0;
   right: 0;
   z-index: 50;
