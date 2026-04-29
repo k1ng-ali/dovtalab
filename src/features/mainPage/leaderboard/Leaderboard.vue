@@ -1,14 +1,24 @@
 <script setup lang="ts">
 import {useLeadersStore} from "@/features/mainPage/leaderboard/store.ts";
 import {computed, onMounted} from "vue";
+import {useUserStore} from "@/features/user/store.ts";
+import {useRouter} from "vue-router";
 // Когда бэкенд будет готов — убери isEmpty и подключи реальные данные
 
+const userStore = useUserStore();
+const router   = useRouter()
 
 const leadersStore = useLeadersStore()
 const leaders = computed(() => leadersStore.getLeaders)
 const first = computed(() => leadersStore.first)
 const second = computed(() => leadersStore.second)
 const third = computed(() => leadersStore.third)
+const user = computed(() => {
+  let _user = leaders.value?.find(s => s.user_id === userStore.user?.id)
+  if (_user?.rank !== 1 && _user?.rank !== 2 && _user?.rank !== 3) {
+    return _user
+  } else {return null}
+})
 
 const isEmpty = computed(() => !leaders.value || !leaders.value?.length)
 
@@ -22,88 +32,69 @@ onMounted(() => {
   <div class="leaderboard">
     <div class="header">
       <h2 class="title">Топ игроков 🏆</h2>
-      <p class="all" v-if="!isEmpty">ещё</p>
+      <button class="all" v-if="!isEmpty"
+        @click="router.push('/leaders')"
+      >ещё</button>
     </div>
 
     <!-- Обычный контент -->
 
     <div class="content" v-if="!isEmpty">
-      <div
-          class="item gold"
-          v-if="first"
-          :style="{ '--order': `'${first.rank}'` }"
-      >
+      <!-- ── ТОП 3 ─────────────────────────────────────────────── -->
+      <div class="item gold" v-if="first">
         <div class="item--left">
-          <img
-              v-if="first?.avatar_url"
-              :src="first.avatar_url"
-              class="avatar gold"
-              alt="avatar"
-          />
-          <div v-else class="avatar avatar--fallback gold">
-            {{ first.first_name?.[0] }}
-          </div>
+          <img v-if="first.avatar_url" :src="first.avatar_url" class="avatar gold" alt="avatar" />
+          <div v-else class="avatar avatar--fallback gold">{{ first.first_name?.[0] }}</div>
           <div>
             <h4 class="name">{{ first.first_name }}</h4>
             <p class="score">{{ first.total_points }} xp</p>
           </div>
         </div>
-        <div class="item--rank gold">
-          {{first.rank}}
-        </div>
+        <div class="item--rank gold">🥇</div>
       </div>
 
-      <!------------------------------------------>
-      <div
-          class="item silver"
-          v-if="second"
-          :style="{ '--order': `'${second.rank}'` }"
-      >
+      <div class="item silver" v-if="second">
         <div class="item--left">
-          <img
-              v-if="second?.avatar_url"
-              :src="second.avatar_url"
-              class="avatar silver"
-              alt="avatar"
-          />
-          <div v-else class="avatar avatar--fallback silver">
-            {{ second.first_name?.[0] }}
-          </div>
+          <img v-if="second.avatar_url" :src="second.avatar_url" class="avatar silver" alt="avatar" />
+          <div v-else class="avatar avatar--fallback silver">{{ second.first_name?.[0] }}</div>
           <div>
             <h4 class="name">{{ second.first_name }}</h4>
             <p class="score">{{ second.total_points }} xp</p>
           </div>
         </div>
-        <div class="item--rank silver">
-          {{second.rank}}
-        </div>
+        <div class="item--rank silver">🥈</div>
       </div>
 
-      <!------------------------------------------>
-      <div
-          class="item bronze"
-          v-if="third"
-          :style="{ '--order': `'${third.rank}'` }"
-      >
+      <div class="item bronze" v-if="third">
         <div class="item--left">
-          <img
-              v-if="third?.avatar_url"
-              :src="third.avatar_url"
-              class="avatar bronze"
-              alt="avatar"
-          />
-          <div v-else class="avatar avatar--fallback bronze">
-            {{ third.first_name?.[0] }}
-          </div>
+          <img v-if="third.avatar_url" :src="third.avatar_url" class="avatar bronze" alt="avatar" />
+          <div v-else class="avatar avatar--fallback bronze">{{ third.first_name?.[0] }}</div>
           <div>
             <h4 class="name">{{ third.first_name }}</h4>
             <p class="score">{{ third.total_points }} xp</p>
           </div>
         </div>
-        <div class="item--rank bronze">
-          {{third.rank}}
-        </div>
+        <div class="item--rank bronze">🥉</div>
       </div>
+
+      <!------------------------------------------>
+      <div class="item me"
+       v-if="user"
+      >
+        <div class="item--left">
+          <img v-if="user.avatar_url" :src="user.avatar_url" class="avatar" alt="avatar" />
+          <div v-else class="avatar avatar--fallback">{{ user.first_name?.[0] }}</div>
+          <div>
+            <h4 class="name">
+              {{ user.first_name }}
+              <span class="you-badge">Вы</span>
+            </h4>
+            <p class="score">{{ user.total_points }} xp</p>
+          </div>
+        </div>
+        <div class="item--rank">{{ user.rank }}</div>
+      </div>
+      <!------------------------------------------>
     </div>
 
     <!-- Empty state -->
@@ -146,6 +137,15 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 10px;
+
+  .all {
+    background: none;
+    border: none;
+    color: #4F4F4F;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+  }
 }
 
 .item {
@@ -194,30 +194,49 @@ onMounted(() => {
     align-items: center;
     justify-content: center;
     font-weight: 900;
-
-    width: clamp(30px, 1.5rem, 40px);
-    height: clamp(30px, 1.5rem, 40px);
-    border-radius: 50%;
+    min-width: unset;
+    white-space: nowrap;
+    min-height: 36px;
+    border-radius: 20px;
+    padding: 0 10px;
+    font-size: 14px;
 
     &.gold {
-      background: linear-gradient(to bottom, rgba(253, 232, 137, 0.8), rgb(239, 191, 4));
-      border: #EFBF04 1px solid;
-      color: #856A00;
+      border: none;
+      background: none;
+      font-size: 25px;
     }
-
     &.silver {
-      background:  linear-gradient(to bottom, #D9D9D9, #C4C4C4);
-      color: #4F4F4F;
-      border: #aeaeae 1px solid;
+      border: none;
+      background: none;
+      font-size: 25px;
+    }
+    &.bronze {
+      border: none;
+      background: none;
+      font-size: 25px;
     }
 
-    &.bronze {
-      background:  linear-gradient(to bottom, rgba(252, 169, 86, 0.2), rgba(252, 169, 86, 0.4));
-      color: #82572C;
-      border: #CE8946 1px solid;
-    }
   }
 
+  &.me {
+    border: 1.5px solid #4EBEC2;
+    background: linear-gradient(to bottom, rgba(78, 190, 194, 0.05), rgba(78, 190, 194, 0.12));
+  }
+
+  // ── Бейдж "Вы" ──────────────────────────────────────────────────
+  .you-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    background: #4EBEC2;
+    color: white;
+    border-radius: 20px;
+    padding: 1px 7px;
+    vertical-align: middle;
+    line-height: 1.6;
+  }
   .name  { margin: 0; }
   .score { margin: 0; }
 
