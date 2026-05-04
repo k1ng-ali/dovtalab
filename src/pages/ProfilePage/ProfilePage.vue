@@ -521,7 +521,7 @@ const avatarError = ref(false)
   font-family: inherit;
   cursor: pointer;
   transition: all 0.2s ease;
-  user-select: none;
+  user-select: none;git
 
   &:active { transform: scale(0.96); }
 
