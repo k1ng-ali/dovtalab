@@ -5,6 +5,7 @@ export interface HeaderAction {
     icon?: Component
     label?: string
     onClick: () => void
+    variant?: "default" | "active" | "inactive"
 }
 
 export type NotificationType = "success" | "error"
@@ -21,6 +22,7 @@ export const useHeaderStore = defineStore("header", {
         rightAction: null as HeaderAction | null,
         is_visible: true,
         notification: null as HeaderNotification | null,
+        actions: [] as HeaderAction[],
     }),
 
     actions: {
@@ -63,6 +65,14 @@ export const useHeaderStore = defineStore("header", {
 
         clearNotification() {
             this.notification = null
+        },
+
+        showActions(actions: HeaderAction[]) {
+            this.actions = actions
+        },
+
+        hideActions() {
+            this.actions = []
         },
 
         /** Сброс к дефолтному состоянию (список квизов) */

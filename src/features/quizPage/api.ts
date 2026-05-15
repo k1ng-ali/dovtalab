@@ -22,3 +22,11 @@ export const submitAnswer = (submit_answer: SubmitAnswer) =>
 // STATS
 export const myStat = (quiz_id: number) =>
     http.get<QuizStat>(`/quizzes/${quiz_id}/my-stat`)
+
+
+// FAVORITES
+export const favorites = () => http.get<QuizIn[]>('/quizzes/favorites')
+
+export const add_favorite = (quiz_id: number) => http.post(`/quizzes/${quiz_id}/favorite`)
+
+export const dell_favorite = (quiz_id: number) => http.delete(`/quizzes/${quiz_id}/favorite`)

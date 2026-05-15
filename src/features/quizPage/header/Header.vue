@@ -23,7 +23,19 @@ const headerStore = useHeaderStore()
       </button>
 
       <!-- Заголовок -->
-      <h3 class="path">{{ headerStore.title }}</h3>
+      <h3 class="path" v-if="headerStore.actions.length < 1">{{ headerStore.title }}</h3>
+
+      <div class="actions-container" v-else>
+        <button
+          v-for="(btn, i) in headerStore.actions"
+          :key="i"
+          class="actions-btn"
+          :class="[`actions-btn--${btn.variant ?? 'default'}`]"
+          @click="btn.onClick()"
+        >
+          <span class="btn-label">{{btn.label}}</span>
+        </button>
+      </div>
 
       <!-- Правая кнопка (опционально) -->
       <button
@@ -68,10 +80,13 @@ const headerStore = useHeaderStore()
   width: 100%;
   padding: 20px 0;
   z-index: 99;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
 
-  mask-image: linear-gradient(to bottom, black 0%, black 40%, transparent 100%);
+  background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.5) 1%,
+          rgba(255, 255, 255, 0.3) 50%,
+          rgba(255, 255, 255, 0) 80%
+  );
 }
 
 .container {
@@ -83,7 +98,7 @@ const headerStore = useHeaderStore()
   max-width: calc(100% - 40px);
   background: rgba(255, 255, 255, 0.6);
   border: 2px solid rgba(255, 255, 255, 1);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(5px);
   padding: 5px 5px 5px 10px;
   border-radius: 50px;
   box-shadow: rgba(34, 34, 34, 0.3) 0 0 20px;
@@ -93,6 +108,35 @@ const headerStore = useHeaderStore()
   /* Нужно для того, чтобы оверлей не вылезал за скруглённые края */
   position: relative;
   overflow: hidden;
+}
+
+.actions-container {
+  display: flex;
+  width: 100%;
+  gap: 20px;
+}
+
+.actions-btn {
+  width: 100%;
+  align-items: center;
+  background: rgba(35, 73, 112, 0.08);
+  border: none;
+  border-radius: 30px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  color: #234970;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &--active {
+    background: rgba(78, 190, 194, 0.25);
+    color: #234970;
+    font-weight: 600;
+    border: 1px solid rgba(78, 190, 194, 0.3);
+  }
 }
 
 .path {

@@ -55,6 +55,12 @@ export const useUserStore = defineStore("user", {
             }
         },
 
+        async logout() {
+            if (!this.profile) return
+            await api.logout()
+            this.profile = null
+        },
+
         clearProfile() {
             this.profile = null
         },

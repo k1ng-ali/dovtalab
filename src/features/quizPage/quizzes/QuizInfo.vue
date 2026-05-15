@@ -2,8 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import type { QuizIn, ContextIn } from '@/features/quizPage/types.ts'
 import { useQuiz } from '@/features/quizPage/store.ts'
-
-
+import { MdRoundFavoriteBorder, MdRoundFavorite } from '@kalimahapps/vue-icons';
 const props = defineProps<{
   quiz: QuizIn
   selectedContext: ContextIn | null
@@ -98,6 +97,16 @@ const bestTimeLabel = computed(() => {
   return
 })
 
+const addToFavorite = async (id: number) => {
+  await quizStore.addFavorite(id)
+  props.quiz.on_fav = true
+}
+
+const deleteFavorite = async (id: number) => {
+  await quizStore.deleteFavorite(id)
+  props.quiz.on_fav = false
+}
+
 const toggleContext = (ctx: ContextIn) => {
   if (props.selectedContext?.id === ctx.id) {
     emit('select-context', null)
@@ -112,6 +121,16 @@ const toggleContext = (ctx: ContextIn) => {
 
     <!-- ── Шапка ── -->
     <div class="hero">
+      <MdRoundFavorite
+          v-if="quiz.on_fav"
+          class="fav-ico active"
+          @click="deleteFavorite(quiz.id)"
+      />
+      <MdRoundFavoriteBorder
+          v-if="!quiz.on_fav"
+          class="fav-ico"
+          @click="addToFavorite(quiz.id)"
+      />
       <div class="hero-icon">📘</div>
       <h2 class="hero-title">{{ quiz.title }}</h2>
       <p class="hero-desc">{{ quiz.description }}</p>
@@ -213,6 +232,7 @@ const toggleContext = (ctx: ContextIn) => {
 /* ── Hero ── */
 .hero {
   display: flex;
+  position: relative;
   flex-direction: column;
   align-items: center;
   text-align: center;
@@ -222,6 +242,24 @@ const toggleContext = (ctx: ContextIn) => {
   border: 1px solid rgba(255, 255, 255, 0.9);
   border-radius: 24px;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.07);
+}
+
+.fav-ico {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  width: 30px;
+  height: 30px;
+  color: #4F4F4F;
+  cursor: pointer;
+
+  &:hover{
+    fill: rgba(153, 27, 27, 0.5);
+  }
+
+  &.active {
+    fill: #d82e2e;
+  }
 }
 
 .hero-icon {

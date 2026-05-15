@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch } from 'vue'
+import {watch} from 'vue'
 import { BsArrowLeft, MdOutlinedMenuBook } from '@kalimahapps/vue-icons'
 import Quizzes  from "@/features/quizPage/quizzes/Quizzes.vue"
 import QuizInfo from "@/features/quizPage/quizzes/QuizInfo.vue"
@@ -9,17 +9,22 @@ import Ad from "@/features/quizPage/ad/Ad.vue";
 import { useNavStore }    from "@/shared/stores/useNavStore.ts"
 import { useHeaderStore } from "@/shared/stores/useHeaderStore.ts"
 import { useQuizFlow }    from "@/features/quizPage/useQuizFlow"
+import {useRouter} from "vue-router";
 
 const navStore    = useNavStore()
 const headerStore = useHeaderStore()
 const flow        = useQuizFlow()
 
+const router = useRouter()
+
 // ── Синхронизируем header и navigator при смене экрана ────────────────────────
+
+
 watch(
     () => flow.view.value,
     (v) => {
       if (v === "list") {
-        headerStore.reset()
+
         navStore.showTabs()
       }
 
@@ -30,6 +35,7 @@ watch(
           onClick: () => flow.backToList(),
         })
         headerStore.setRightAction(null)
+        headerStore.hideActions()
 
         navStore.showActions([
           {
@@ -52,6 +58,7 @@ watch(
           icon: BsArrowLeft,
           onClick: () => flow.backToInfo(),
         })
+        headerStore.hideActions()
 
         const hasContexts = (flow.selectedQuiz.value?.contexts?.length ?? 0) > 0
         if (hasContexts) {
@@ -136,6 +143,7 @@ watch(
   padding-top: 80px;   /* под фиксированным Header */
   padding-bottom: 100px; /* над фиксированным Navigator */
   max-width: 900px;
+  width: 100%;
 }
 
 /* ── Slide transition ── */

@@ -3,7 +3,10 @@ import { onMounted, computed, ref } from 'vue'
 import { useUserStore } from '@/features/user/store.ts'
 import { useHeaderStore } from '@/shared/stores/useHeaderStore.ts'
 import { useNavStore } from '@/shared/stores/useNavStore.ts'
+import { AkSignOut } from '@kalimahapps/vue-icons';
+import {useRouter} from "vue-router";
 
+const router = useRouter()
 const userStore   = useUserStore()
 const headerStore = useHeaderStore()
 const navStore    = useNavStore()
@@ -81,6 +84,11 @@ const setLanguage = async (code: string) => {
   }
 }
 
+const logOut = async() =>{
+  await userStore.logout()
+  router.push('/')
+}
+
 const avatarError = ref(false)
 </script>
 
@@ -90,6 +98,10 @@ const avatarError = ref(false)
     <!-- ── Hero ──────────────────────────────────────────────────── -->
     <div class="hero">
       <div class="hero-bg" />
+
+      <AkSignOut class="sign-out-btn"
+        @click="logOut()"
+      />
 
       <div class="avatar-wrap">
         <img
@@ -239,6 +251,24 @@ const avatarError = ref(false)
   align-items: center;
   gap: 16px;
   overflow: hidden;
+}
+
+.sign-out-btn {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  width: 30px;
+  height: 30px;
+  background: #f4f4f4;
+  border-radius: 7px;
+  border: 1px solid rgba(107, 114, 128, 0.1);
+  border-block-start-color: white;
+  border-block-end-color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+  padding: 5px;
+  padding-left: 7px;
+  color: #4F4F4F;
+  cursor: pointer;
 }
 
 .hero-bg {
