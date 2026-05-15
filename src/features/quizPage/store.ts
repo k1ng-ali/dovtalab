@@ -11,6 +11,7 @@ export const useQuiz = defineStore("quiz", {
         questions: [] as QuestionPublic[],
         contexts:  [] as ContextIn[],
         quiz_stats: [] as QuizStat[],
+        favorites: [] as QuizIn[],
     }),
 
     getters: {
@@ -84,6 +85,22 @@ export const useQuiz = defineStore("quiz", {
             console.log(data)
             return data as QuizStat;
         },
+
+        // ─── Favorites ────────────────────────────────────────────────────────
+        async fetchFavorites() {
+            const { data } = await api.favorites();
+            this.favorites = data as QuizIn[];
+        },
+
+        async addFavorite(quiz_id: number) {
+            await api.add_favorite(quiz_id);
+            await this.fetchFavorites();
+        },
+
+        async deleteFavorite(quiz_id: number) {
+            await api.dell_favorite(quiz_id);
+            await this.fetchFavorites();
+        }
     }
 
 

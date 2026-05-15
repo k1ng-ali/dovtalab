@@ -91,6 +91,7 @@ export interface QuizIn {
     time_limit: number
     contexts?: ContextIn[]
     created_at: string
+    on_fav?: boolean,
     details?: {
         type?: "single_choice" | "multiple_choice" | "matching" | "input"
         stat?: AttemptStat,
