@@ -9,13 +9,10 @@ import Ad from "@/features/quizPage/ad/Ad.vue";
 import { useNavStore }    from "@/shared/stores/useNavStore.ts"
 import { useHeaderStore } from "@/shared/stores/useHeaderStore.ts"
 import { useQuizFlow }    from "@/features/quizPage/useQuizFlow"
-import {useRouter} from "vue-router";
 
 const navStore    = useNavStore()
 const headerStore = useHeaderStore()
 const flow        = useQuizFlow()
-
-const router = useRouter()
 
 // ── Синхронизируем header и navigator при смене экрана ────────────────────────
 
