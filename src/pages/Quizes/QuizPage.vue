@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {watch} from 'vue'
+import {onUnmounted, watch} from 'vue'
 import { BsArrowLeft, MdOutlinedMenuBook } from '@kalimahapps/vue-icons'
 import Quizzes  from "@/features/quizPage/quizzes/Quizzes.vue"
 import QuizInfo from "@/features/quizPage/quizzes/QuizInfo.vue"
@@ -92,6 +92,7 @@ watch(
     },
     { immediate: true }
 )
+onUnmounted(() => headerStore.reset())
 </script>
 
 <template>
