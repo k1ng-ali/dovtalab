@@ -325,7 +325,7 @@ const finishQuiz = () => {
 
 <style scoped lang="scss">
 .quiz-runner {
-  padding: 16px 20px;
+  padding: 16px 0;
   display: flex;
   flex-direction: column;
   gap: 16px;

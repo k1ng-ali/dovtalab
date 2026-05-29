@@ -93,7 +93,11 @@ const setRef = (el: any) => {
   }
 };
 
-onUnmounted( cleanup)
+onUnmounted( () => {
+  cleanup;
+  headerStore.reset()
+  headerStore.hideActions()
+})
 </script>
 
 <template>
@@ -127,7 +131,6 @@ onUnmounted( cleanup)
 .quizzes {
   display: flex;
   flex-direction: column;
-  padding: 20px;
 
   .title {
     margin: 0 0 16px;

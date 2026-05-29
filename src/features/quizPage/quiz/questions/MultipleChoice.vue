@@ -58,17 +58,15 @@ const optionClass = (id: number) => {
   <div class="multiple-choice">
     <p class="question-text">{{ question.text }}</p>
 
-    <p class="hint" v-if="payload?.max_choices">
-      Выберите до {{ payload.max_choices }} вариантов
-    </p>
-
     <img
         v-if="question.image_url"
         :src="question.image_url"
         class="question-image"
         alt=""
     />
-
+    <p class="hint" v-if="payload?.max_choices">
+      Выберите до {{ payload.max_choices }} вариантов
+    </p>
     <div class="options">
       <div
           v-for="opt in options"
@@ -109,10 +107,11 @@ const optionClass = (id: number) => {
 }
 
 .question-image {
-  width: 100%;
+  width: 100%;           /* масштаб по ширине контейнера */
   border-radius: 16px;
-  object-fit: cover;
-  max-height: 200px;
+  object-fit: cover;     /* изображение полностью заполнит квадрат, обрезая лишнее */
+  max-height: 500px;      /* если нужно ограничить по ширине */
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
 }
 
 .options {

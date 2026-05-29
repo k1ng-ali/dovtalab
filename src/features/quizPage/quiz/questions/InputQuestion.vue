@@ -73,13 +73,15 @@ const correctValue = computed(() => {
 <style scoped lang="scss">
 .input-question { display: flex; flex-direction: column; gap: 16px; }
 .question-text { margin: 0; font-size: 17px; font-weight: 600; color: #234970; line-height: 1.5; }
+
 .question-image {
   width: 100%;           /* масштаб по ширине контейнера */
-  aspect-ratio: 1 / 1;   /* сохраняем соотношение сторон 1:1 */
   border-radius: 16px;
   object-fit: cover;     /* изображение полностью заполнит квадрат, обрезая лишнее */
-  max-width: 400px;      /* если нужно ограничить по ширине */
+  max-height: 500px;      /* если нужно ограничить по ширине */
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
 }
+
 .input-wrapper { position: relative; }
 
 .answer-input {

@@ -1,67 +1,16 @@
 <script setup lang="ts">
 import { useStats } from "@/features/mainPage/statistic/store.ts";
-import {computed, onMounted, ref, watch, onUnmounted} from "vue";
+import {computed, onMounted, ref} from "vue";
 import { useQuiz } from "@/features/quizPage/store.ts";
 import type { QuizIn } from "../types";
-import {useGsap} from "@/shared/gsap.ts";
-import gsap from "gsap";
+import 'ant-design-vue/dist/reset.css'
+import {Carousel} from "ant-design-vue";
 
 const quizStore = useQuiz();
 const statStore = useStats()
 const attempts = computed(() => statStore.attempts)
 
 const quiz = ref<QuizIn | null>(null);
-
-const adRef = ref<HTMLElement | null>(null);
-const {init, cleanup} = useGsap(adRef)
-
-watch(
-    quiz,
-    async (val) => {
-      if (!val || !adRef.value) return;
-
-
-      init(() => {
-        if (adRef.value) {
-          gsap.fromTo(adRef.value,
-              {
-                height: 0,
-                opacity: 0,
-                scale: 0.9,
-                y: -30,
-              },
-              {
-                height: adRef.value.scrollHeight - 40,
-                opacity: 1,
-                y: 0,
-                scale: 1,
-                duration: 0.7,
-                ease: "power2.out",
-                onComplete: () => {
-                  if (adRef.value) {
-                    adRef.value.style.height = "auto"
-                  }
-                }
-              });
-          gsap.fromTo(adRef.value.getElementsByClassName("btn"), {
-                y: -50,
-                x: 5,
-                opacity: 0,
-              },
-              {
-                y: 0,
-                x: 0,
-                opacity: 1,
-                duration: 0.7,
-                ease: "power2.out",
-              })
-        }
-      });
-
-
-    },
-    { flush: 'post' } // 🔥 важно
-);
 
 onMounted(async () => {
   try {
@@ -74,7 +23,9 @@ onMounted(async () => {
   }
 })
 
-onUnmounted(cleanup)
+const open = (url:string) => {
+  window.open(url, "_blank");
+}
 
 const emit = defineEmits<{
   (e: 'select', quiz: QuizIn): void
@@ -83,23 +34,65 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="ad" v-if="quiz" ref="adRef">
+  <Carousel
+      autoplay
+    dotPosition="right"
+      effect="scrollx"
+  >
+    <div class="ad tg-gr-ad-1">
+        <div class="container">
+          <h3 class="title">В Телеграмме</h3>
+          <p class="desc">Сообщество абитуриентов</p>
+          <div class="btn"
+               @click="open('https://t.me/mmt_taj')"
+          >
+            Перейти
+          </div>
+      </div>
+    </div>
+
+    <div class="ad" v-if="quiz">
+      <div class="container">
         <h3 class="title">{{quiz.title}}</h3>
-    <p class="desc">Продольжайте играть</p>
-    <div class="btn"
-    @click="emit('select', quiz)">Играть</div>
-  </div>
+        <p class="desc">Продольжайте играть</p>
+        <div class="btn"
+        @click="emit('select', quiz)">Играть</div>
+      </div>
+    </div>
+
+    <div class="ad tg-gr-ad-2">
+      <div class="container">
+        <h3 class="title">Новости</h3>
+        <p class="desc">последние анонсы проекта</p>
+        <div class="btn"
+             @click="open('https://t.me/dovtalab_io')"
+        >
+          Перейти
+        </div>
+      </div>
+    </div>
+  </Carousel>
 </template>
 
 <style scoped lang="scss">
 .ad {
   display: flex;
   flex-direction: column;
-  padding: 20px;
   background: linear-gradient(to left,#4EBEC2 0%, #234970 100%);
   color: white;
   border-radius: 20px;
-  margin: 20px;
+
+  & .tg-gr-ad-1{
+    background: linear-gradient(to left, #c2884e 0%, #702323 100%);
+  }
+
+  & .tg-gr-ad-2 {
+    background: linear-gradient(to left, #4ec296 0%, #235570 100%);
+  }
+
+  & .container {
+    margin: 20px;
+  }
 
   .title {
     margin: 0;
@@ -115,10 +108,14 @@ const emit = defineEmits<{
     border-radius: 10cqw;
     font-weight: 600;
     font-size: 1.2rem;
-    border-bottom: rgba(246, 246, 246, 0.6) 1px solid;
-    border-right: rgba(246, 246, 246, 0.6) 1px solid;
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+    border-bottom-color: rgba(246, 246, 246, 0.6);
     cursor: pointer;
     user-select: none;
   }
+}
+:deep(.slick-list) {
+  border-radius: 20px;
 }
 </style>

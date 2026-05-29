@@ -36,9 +36,10 @@ onUnmounted(() => {
     justify-items: center;
     min-height: 100vh;
     background: #F6F6F6;
-    width: calc(100% - 40px);
+    width: 100%;
     padding: 20px;
     border-radius: 30px 30px 0 0;
+    box-sizing: border-box;
 
     & > * {
       max-width: 700px;

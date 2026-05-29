@@ -3,6 +3,8 @@ import { ref, computed, onMounted } from 'vue'
 import type { QuizIn, ContextIn } from '@/features/quizPage/types.ts'
 import { useQuiz } from '@/features/quizPage/store.ts'
 import { MdRoundFavoriteBorder, MdRoundFavorite } from '@kalimahapps/vue-icons';
+import {useHeaderStore} from "@/shared/stores/useHeaderStore.ts";
+
 const props = defineProps<{
   quiz: QuizIn
   selectedContext: ContextIn | null
@@ -16,9 +18,12 @@ const quizStore = useQuiz()
 const contexts  = ref<ContextIn[]>([])
 const loading   = ref(false)
 const Stats = computed(() => quizStore.quizStat(props.quiz.id))
+const headerStore = useHeaderStore()
 
 onMounted(async () => {
   await quizStore.fetchQuizStat(props.quiz.id)
+  headerStore.reset()
+  headerStore.setTitle(props.quiz.title)
 
   if (props.quiz.contexts?.length) {
     contexts.value = props.quiz.contexts
@@ -223,7 +228,6 @@ const toggleContext = (ctx: ContextIn) => {
 
 <style scoped lang="scss">
 .quiz-info {
-  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 20px;

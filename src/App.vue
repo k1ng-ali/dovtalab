@@ -8,6 +8,7 @@ import Auth from "@/features/auth/Auth.vue";  // добавь импорт
 import { useTelegramEnv } from '@/features/auth/composables/useTelegramEnv'
 import { http } from "./shared/api/http";
 
+
 const { isTelegramEnv, getInitData } = useTelegramEnv()
 
 const authStore = useAuthStore()

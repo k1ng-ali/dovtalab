@@ -111,10 +111,10 @@ const radioClass = (id: number) => {
 
 .question-image {
   width: 100%;           /* масштаб по ширине контейнера */
-  aspect-ratio: 1 / 1;   /* сохраняем соотношение сторон 1:1 */
   border-radius: 16px;
   object-fit: cover;     /* изображение полностью заполнит квадрат, обрезая лишнее */
-  max-width: 400px;      /* если нужно ограничить по ширине */
+  max-height: 500px;      /* если нужно ограничить по ширине */
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
 }
 
 .options {

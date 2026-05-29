@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, computed, ref } from 'vue'
+import {onMounted, computed, ref} from 'vue'
 import { useUserStore } from '@/features/user/store.ts'
 import { useHeaderStore } from '@/shared/stores/useHeaderStore.ts'
 import { useNavStore } from '@/shared/stores/useNavStore.ts'
@@ -11,7 +11,10 @@ const userStore   = useUserStore()
 const headerStore = useHeaderStore()
 const navStore    = useNavStore()
 
+
+
 onMounted(async () => {
+  //headerStore.hideActions()
   headerStore.setTitle('Профиль')
   headerStore.setLeftAction(null)
   headerStore.setRightAction(null)

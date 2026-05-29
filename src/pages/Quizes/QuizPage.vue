@@ -138,6 +138,7 @@ onUnmounted(() => headerStore.reset())
 }
 
 .page-body {
+  padding: 20px;
   padding-top: 80px;   /* под фиксированным Header */
   padding-bottom: 100px; /* над фиксированным Navigator */
   max-width: 900px;

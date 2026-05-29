@@ -93,6 +93,14 @@ const rightState = (id: number) => {
 <template>
   <div class="matching">
     <p class="question-text">{{ question.text }}</p>
+
+    <img
+        v-if="question.image_url"
+        :src="question.image_url"
+        class="question-image"
+        alt=""
+    />
+
     <p class="hint">Нажмите элемент слева, затем справа — они соединятся</p>
 
     <div class="columns">
@@ -131,6 +139,16 @@ const rightState = (id: number) => {
 <style scoped lang="scss">
 .matching { display: flex; flex-direction: column; gap: 16px; }
 .question-text { margin: 0; font-size: 17px; font-weight: 600; color: #234970; line-height: 1.5; }
+
+
+.question-image {
+  width: 100%;           /* масштаб по ширине контейнера */
+  border-radius: 16px;
+  object-fit: cover;     /* изображение полностью заполнит квадрат, обрезая лишнее */
+  max-height: 500px;      /* если нужно ограничить по ширине */
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+}
+
 .hint { margin: 0; font-size: 13px; color: #9CA3AF; }
 
 .columns { display: flex; gap: 0; align-items: flex-start; }
