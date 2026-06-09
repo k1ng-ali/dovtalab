@@ -6,9 +6,11 @@ import {useHeaderStore} from '@/shared/stores/useHeaderStore.ts'
 import {onMounted, onUnmounted, ref} from 'vue'
 import {Capacitor, SystemBars, SystemBarsStyle} from "@capacitor/core";
 import {EdgeToEdge} from "@capawesome/capacitor-android-edge-to-edge-support";
+import {useNavStore} from "@/shared/stores/useNavStore.ts";
 // EdgeToEdge API нам больше не нужно вызывать в JS, убираем его импорт
 
 const headerStore = useHeaderStore()
+const navigatorStore = useNavStore()
 const contentRef = ref<HTMLElement | null>(null)
 let isStatusBarLight = false;
 
@@ -45,6 +47,7 @@ const handleScroll = async () => {
 
 onMounted(async () => {
   headerStore.setIsVisible(false)
+  navigatorStore.showTabs()
 
   if (Capacitor.isNativePlatform()) {
     try {

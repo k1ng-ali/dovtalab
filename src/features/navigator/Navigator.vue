@@ -74,6 +74,8 @@ const onTab = (index: number) => {
           rgba(255, 255, 255, 0.7) 50%,
           rgba(255, 255, 255, 0) 80%
   );
+  box-sizing: border-box;
+  min-height: 50px;
 }
 
 /* ── Общий контейнер ── */
