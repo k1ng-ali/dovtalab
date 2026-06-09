@@ -44,7 +44,12 @@ export const useAuthStore = defineStore("auth", {
 
         // --- Login Widget -----
 
-        async loginWithTelegram(payload: { code: string; nonce: string; code_verifier: string }) {
+        async loginWithTelegram(payload: {
+            code: string;
+            nonce: string;
+            code_verifier: string,
+            redirect_uri?: string
+        }) {
             this.status = 'loading'
             try {
                 const { data } = await api.telegramLogin(payload)
@@ -66,13 +71,24 @@ export const useAuthStore = defineStore("auth", {
             this.accessToken = null;
             this.status = 'idle'
             this.error = null as string | null
+            // Очищаем хранилище при выходе
+            localStorage.removeItem('access_token')
+            localStorage.removeItem('refresh_token')
         },
 
         // --- Internal Helpers ----
         applyTokens(data: AuthTokensResponse) {
             this.accessToken = data.access_token
             this.status = 'authenticated'
-            this.error = null;
+            this.error = null
+
+            // 2. Обязательно сохраняем токен при успешном входе
+            localStorage.setItem('access_token', data.access_token)
+
+            // Если бэкенд возвращает refresh_token в теле ответа, сохраняем и его
+            if (data.refresh_token) {
+                localStorage.setItem('refresh_token', data.refresh_token)
+            }
         },
 
         setError(e: unknown) {

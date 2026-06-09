@@ -12,9 +12,14 @@
     "deploy": "gh-pages -d dist --repo=https://github.com/k1ng-ali/dovtalab.git --cname=dovtalab.app"
   },
   "dependencies": {
-    "@capacitor/android": "^8.3.4",
-    "@capacitor/cli": "^8.3.4",
-    "@capacitor/core": "^8.3.4",
+    "@capacitor/android": "^8.4.0",
+    "@capacitor/app": "^8.1.0",
+    "@capacitor/browser": "^8.0.3",
+    "@capacitor/cli": "^8.4.0",
+    "@capacitor/core": "^8.4.0",
+    "@capacitor/preferences": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.2",
+    "@capawesome/capacitor-android-edge-to-edge-support": "^8.0.8",
     "@kalimahapps/vue-icons": "^1.9.5",
     "ant-design-vue": "^4.2.6",
     "axios": "^1.13.5",

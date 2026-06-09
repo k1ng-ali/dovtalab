@@ -2,78 +2,123 @@
 import Navigator from "@/features/navigator/Navigator.vue";
 import { useAuthStore } from "@/features/auth/store.ts";
 import Header from "@/features/quizPage/header/Header.vue";
-import {onMounted, ref, watch} from "vue"
+import {onMounted, onUnmounted, watch} from "vue"
 import { useRouter } from 'vue-router'
-import Auth from "@/features/auth/Auth.vue";  // добавь импорт
+import Auth from "@/features/auth/Auth.vue";
 import { useTelegramEnv } from '@/features/auth/composables/useTelegramEnv'
 import { http } from "./shared/api/http";
-
+import { Capacitor } from '@capacitor/core'
+import { App as CapApp } from '@capacitor/app'
+import { Browser } from '@capacitor/browser'
+import { consumePkceParams } from '@/features/auth/composables/useTelegramLogin'
 
 const { isTelegramEnv, getInitData } = useTelegramEnv()
 
 const authStore = useAuthStore()
 const router = useRouter()
-// 'loading' | 'ok' | 'error'
-const appState = ref<'loading' | 'ok' | 'error' | 'auth'>('loading')
 
-// ── Debug log ──────────────────────────────────────────────────
+// ── Обработка deep link от Telegram OAuth (только Capacitor) ──────────────────
 
-// ───────────────────────────────────────────────────────────────
+let urlOpenListener: (() => void) | null = null
 
-watch(() => authStore.isAuthenticated, (authenticated) => {
-  if (authenticated) {
-    appState.value = 'ok'
-  }
+function log(...args: any[]) {
+  console.log('[AUTH]', ...args)
+}
+
+watch(() => authStore.status, (v) => {
+  console.log('[AUTH STORE STATUS]', v)
 })
 
+watch(() => authStore.isAuthenticated, (v) => {
+  console.log('[AUTH AUTH]', v)
+})
+
+async function handleTelegramCallback(url: string) {
+  // Проверяем, что это наш callback (custom scheme)
+  const nativeRedirectUri = import.meta.env.VITE_TELEGRAM_REDIRECT_URI_NATIVE as string
+
+  const redirectBase = nativeRedirectUri
+      ?.split('?')[0]
+      ?.replace(/\/$/, '')
+
+  if (!redirectBase || !url.startsWith(redirectBase)) return
+
+  // Закрываем системный браузер (если ещё открыт)
+  try { await Browser.close() } catch { /* ignore */ }
+
+  const parsed = new URL(url)
+  const code   = parsed.searchParams.get('code')
+  const state  = parsed.searchParams.get('state')
+  const error  = parsed.searchParams.get('error')
+
+  log('callback url:', url)
+  log('parsed:', parsed.toString())
+  log('code:', code)
+  log('state:', state)
+  log('error:', error)
+
+  // Достаём PKCE-параметры из localStorage
+  const { nonce, state: savedState, codeVerifier } = consumePkceParams()
+
+  if (state !== savedState) {
+    console.error('[App] State mismatch — возможна CSRF атака')
+    return
+  }
+
+  if (!code || error) {
+    log('invalid callback')
+    authStore.setError(error || 'NO_CODE')
+    return
+  }
+
+  try {
+    await authStore.loginWithTelegram({
+      code,
+      nonce,
+      code_verifier: codeVerifier,
+      redirect_uri: nativeRedirectUri,
+    })
+    await router.replace('/')
+  } catch {
+    authStore.setError(error)
+  }
+}
+
+
+// ── onMounted ─────────────────────────────────────────────────────────────────
+
 onMounted(async () => {
+  // Capacitor: подписываемся на appUrlOpen ДО всей остальной логики
+  if (Capacitor.isNativePlatform()) {
+    const handle = await CapApp.addListener('appUrlOpen', async (event) => {
+      await handleTelegramCallback(event.url)
+    })
+    urlOpenListener = () => handle.remove()
+
+    // Если приложение было запущено именно этим deep link (холодный старт)
+    const launch = await CapApp.getLaunchUrl()
+    if (launch?.url) {
+      await handleTelegramCallback(launch.url)
+      return
+    }
+  }
+
   // 0. Dev bypass
   if (import.meta.env.VITE_DEV_MODE === 'true') {
     try {
       const { data } = await http.post('/auth/dev-login')
       authStore.accessToken = data.access_token
       authStore.status = 'authenticated'
-      appState.value = 'ok'
-      await router.push('/')
+      await router.replace('/')
     } catch {
-      appState.value = 'auth'
-    }
-    return
-  }
-
-  // 0. Вернулись с мобильного редиректа Telegram OAuth
-  const redirectCode = sessionStorage.getItem('tg_auth_code')
-  const redirectState = sessionStorage.getItem('tg_auth_state_returned')
-  const savedState = sessionStorage.getItem('tg_auth_state')
-
-  if (redirectCode) {
-    sessionStorage.removeItem('tg_auth_code')
-    sessionStorage.removeItem('tg_auth_state_returned')
-    sessionStorage.removeItem('tg_auth_state')
-
-    if (redirectState !== savedState) {
-      appState.value = 'auth'  // State mismatch — показать экран входа
-    } else {
-      const nonce = sessionStorage.getItem('tg_auth_nonce') ?? ''
-      const codeVerifier = sessionStorage.getItem('tg_code_verifier') ?? ''
-      sessionStorage.removeItem('tg_auth_nonce')
-      sessionStorage.removeItem('tg_code_verifier')
-
-      try {
-        await authStore.loginWithTelegram({ code: redirectCode, nonce, code_verifier: codeVerifier })
-        appState.value = 'ok'
-        await router.push('/')
-      } catch {
-        appState.value = 'auth'
-      }
+      authStore.setError("error")
     }
     return
   }
 
   // 1. Уже есть accessToken в памяти
   if (authStore.accessToken) {
-    appState.value = 'ok'
-    await router.push('/')
+    await router.replace('/')
     return
   }
 
@@ -82,10 +127,9 @@ onMounted(async () => {
     const initData = getInitData()!
     try {
       await authStore.login(initData)
-      appState.value = 'ok'
-      await router.push('/')
+      await router.replace('/')
     } catch {
-      appState.value = 'error'
+      authStore.setError("error")
     }
     return
   }
@@ -93,16 +137,15 @@ onMounted(async () => {
   // 3. Обычный браузер — пробуем тихий рефреш (есть кука)
   try {
     await authStore.refresh()
-    appState.value = 'ok'
-    await router.push('/')
+    await router.replace('/')
     return
   } catch {
-    appState.value = 'auth'  // показываем кнопку виджета
+    authStore.setError("error")
   }
+})
 
-
-  // 4. Обычный браузер → показываем Auth с кнопкой виджета
-  appState.value = 'auth'
+onUnmounted(() => {
+  urlOpenListener?.()
 })
 </script>
 
@@ -132,7 +175,7 @@ onMounted(async () => {
 
   <!-- Загрузка -->
   <Transition name="fade">
-    <div v-if="appState === 'loading'" class="splash">
+    <div v-if="authStore.status === 'loading'" class="splash">
       <div class="splash-logo">
         <div class="logo-ring" />
         <div class="logo-ring ring-2" />
@@ -144,14 +187,14 @@ onMounted(async () => {
 
   <!-- Ошибка авторизации -->
   <Transition name="fade">
-    <div v-if="appState === 'error' || appState === 'auth'" class="error-screen">
+    <div v-if="!authStore.isAuthenticated">
       <Auth/>
     </div>
   </Transition>
 
   <!-- Основной контент -->
   <Transition name="fade">
-    <div v-if="appState === 'ok'" class="layout">
+    <div v-if="authStore.isAuthenticated" class="layout">
       <Header />
       <main class="content">
         <router-view />
@@ -250,5 +293,7 @@ onMounted(async () => {
 .debug-line.err  { color: #f87171; font-weight: 600; }
 
 /* ── Layout ── */
-.layout { min-height: 100%; }
+.layout { min-height: 100%;
+  margin-top: 0 !important;
+}
 </style>

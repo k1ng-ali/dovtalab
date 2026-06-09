@@ -20,4 +20,5 @@ export const telegramLogin = (payload: {
     code: string
     nonce: string
     code_verifier: string
+    redirect_uri?: string
 }) => http.post<AuthTokensResponse>('/auth/telegram', payload)

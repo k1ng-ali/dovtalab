@@ -21,6 +21,7 @@
 </template>
 
 <script setup lang="ts">
+import { Capacitor } from '@capacitor/core'
 import { useTelegramLogin } from './composables/useTelegramLogin.ts'
 import { useAuthStore } from './store'
 import TelegramIcon from './TelegramIcon.vue'
@@ -41,14 +42,27 @@ const emit = defineEmits<{
 }>()
 
 const authStore = useAuthStore()
-const { isLoading, openLoginPopup } = useTelegramLogin()
+const { isLoading, openLoginPopup, openLoginRedirect } = useTelegramLogin()
 
 async function handleClick() {
+  // На нативной платформе — редирект (результат придёт через appUrlOpen в App.vue)
+  if (Capacitor.isNativePlatform()) {
+    try {
+      await openLoginRedirect()
+      // Здесь не emit('success') — приложение уходит в фон,
+      // success будет вызван из App.vue после возврата
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Ошибка входа'
+      emit('error', msg)
+    }
+    return
+  }
+
+  // Веб: popup-флоу (старое поведение)
   try {
     const { code, nonce, code_verifier } = await openLoginPopup()
     await authStore.loginWithTelegram({ code, nonce, code_verifier })
     emit('success')
-    console.log("sucessed")
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Ошибка входа'
     emit('error', msg)

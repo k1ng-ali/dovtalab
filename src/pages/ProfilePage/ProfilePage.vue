@@ -5,6 +5,8 @@ import { useHeaderStore } from '@/shared/stores/useHeaderStore.ts'
 import { useNavStore } from '@/shared/stores/useNavStore.ts'
 import { AkSignOut } from '@kalimahapps/vue-icons';
 import {useRouter} from "vue-router";
+import {Capacitor, SystemBars, SystemBarsStyle} from "@capacitor/core";
+import {EdgeToEdge} from "@capawesome/capacitor-android-edge-to-edge-support";
 
 const router = useRouter()
 const userStore   = useUserStore()
@@ -24,6 +26,16 @@ onMounted(async () => {
     userStore.fetchProfile()
   ])
   //console.log(userStore.user, userStore.config, userStore.roles)
+
+  if (Capacitor.isNativePlatform()) {
+    try {
+      // Исходное состояние при загрузке
+      await SystemBars.setStyle({ style: SystemBarsStyle.Light})
+      await EdgeToEdge.setBackgroundColor({ color: '#00000000' });
+    } catch (e) {
+      console.error('Ошибка настройки StatusBar:', e);
+    }
+  }
 })
 
 const user   = computed(() => userStore.user)

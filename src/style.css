@@ -12,6 +12,8 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
+  --status-bar-height: env(safe-area-inset-top);
+
   /* ── Breakpoints ── */
   --bp-md: 768px;
   --bp-lg: 1200px;
@@ -60,8 +62,8 @@ body {
   font-size: var(--font-size-base);
   margin: 0;
   -webkit-tap-highlight-color: transparent;
-
 }
+
 
 h1, h2, h3, h4, h5, h6 {
   line-height: var(--heading-line-height);

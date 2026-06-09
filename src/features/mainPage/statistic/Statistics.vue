@@ -96,6 +96,7 @@ onMounted(async () => {
   width: 100%;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 }
 
 .header {
@@ -104,16 +105,18 @@ onMounted(async () => {
   justify-content: space-between;
   align-items: center;
   margin-top: 20px;
+  box-sizing: border-box;
 }
 
 .content {
   display: flex;
   flex-direction: column;
-  width: calc(100% - 40px);
+  width: 100%;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 15px;
   box-shadow: rgba(34, 34, 34, 0.2) 0 0 20px;
   padding: 20px;
+  box-sizing: border-box;
 
   .item {
     display: flex;

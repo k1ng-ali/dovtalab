@@ -77,10 +77,11 @@ const avatarError = ref(false)
   }
   .header {
     display: flex;
-    align-items: center;
-    width: calc(100% - 40px);
+    align-items: end;
+    width: 100%;
     justify-content: space-between;
     padding: 0 20px;
+    box-sizing: border-box;
   }
   .title{
     display: flex;
@@ -104,12 +105,13 @@ const avatarError = ref(false)
   }
 
   .avatar {
-    width: clamp(40px, 1.5rem, 60px);
-    height: clamp(40px, 1.5rem, 60px);
+    width: clamp(35px, 1.5rem, 50px);
+    height: clamp(35px, 1.5rem, 50px);
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid rgba(255, 255, 255, 1);
     box-shadow: 0 6px 20px rgba(35, 73, 112, 0.18);
+
 
     &--fallback {
       display: flex;

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {onUnmounted, watch} from 'vue'
+import {onMounted, onUnmounted, watch} from 'vue'
 import { BsArrowLeft, MdOutlinedMenuBook } from '@kalimahapps/vue-icons'
 import Quizzes  from "@/features/quizPage/quizzes/Quizzes.vue"
 import QuizInfo from "@/features/quizPage/quizzes/QuizInfo.vue"
@@ -9,6 +9,8 @@ import Ad from "@/features/quizPage/ad/Ad.vue";
 import { useNavStore }    from "@/shared/stores/useNavStore.ts"
 import { useHeaderStore } from "@/shared/stores/useHeaderStore.ts"
 import { useQuizFlow }    from "@/features/quizPage/useQuizFlow"
+import {Capacitor, SystemBars, SystemBarsStyle} from "@capacitor/core";
+import {EdgeToEdge} from "@capawesome/capacitor-android-edge-to-edge-support";
 
 const navStore    = useNavStore()
 const headerStore = useHeaderStore()
@@ -92,6 +94,17 @@ watch(
     },
     { immediate: true }
 )
+onMounted(async () => {
+  if (Capacitor.isNativePlatform()) {
+    try {
+      // Исходное состояние при загрузке
+      await SystemBars.setStyle({ style: SystemBarsStyle.Light})
+      await EdgeToEdge.setBackgroundColor({ color: '#00000000' });
+    } catch (e) {
+      console.error('Ошибка настройки StatusBar:', e);
+    }
+  }
+})
 onUnmounted(() => headerStore.reset())
 </script>
 

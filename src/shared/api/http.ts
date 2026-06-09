@@ -37,6 +37,9 @@ http.interceptors.response.use(
 
                 auth.accessToken = data.access_token
 
+                // ДОБАВИТЬ ЭТУ СТРОКУ:
+                localStorage.setItem('access_token', data.access_token)
+
                 originalRequest.headers.Authorization =
                     `Bearer ${data.access_token}`
 

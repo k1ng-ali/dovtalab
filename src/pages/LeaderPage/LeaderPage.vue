@@ -5,6 +5,8 @@ import { useUserStore } from "@/features/user/store.ts"
 import { useHeaderStore } from "@/shared/stores/useHeaderStore.ts"
 import { useRouter } from "vue-router"
 import { BsArrowLeft } from "@kalimahapps/vue-icons"
+import {Capacitor, SystemBars, SystemBarsStyle} from "@capacitor/core";
+import {EdgeToEdge} from "@capawesome/capacitor-android-edge-to-edge-support";
 
 const userStore   = useUserStore()
 const headerStore = useHeaderStore()
@@ -49,13 +51,23 @@ const setupObserver = () => {
 // Пересоздаём observer когда ref появляется после загрузки данных
 watch(userRowRef, (el) => { if (el) setupObserver() })
 
-onMounted(() => {
+onMounted(async () => {
   leadersStore.fetchLeaders()
   headerStore.setTitle("Рейтинг пользователей")
   headerStore.setLeftAction({
     icon: BsArrowLeft,
     onClick: () => router.push("/"),
   })
+  if (Capacitor.isNativePlatform()) {
+    try {
+      // Исходное состояние при загрузке
+      //await StatusBar.setBackgroundColor({ color: '#F6F6F6' });
+      await SystemBars.setStyle({ style: SystemBarsStyle.Light})
+      await EdgeToEdge.setBackgroundColor({ color: '#00000000' });
+    } catch (e) {
+      console.error('Ошибка настройки StatusBar:', e);
+    }
+  }
 })
 
 onUnmounted(() => { observer?.disconnect() })
