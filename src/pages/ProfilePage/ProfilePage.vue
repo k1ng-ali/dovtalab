@@ -7,7 +7,9 @@ import { AkSignOut } from '@kalimahapps/vue-icons';
 import {useRouter} from "vue-router";
 import {Capacitor, SystemBars, SystemBarsStyle} from "@capacitor/core";
 import {EdgeToEdge} from "@capawesome/capacitor-android-edge-to-edge-support";
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const router = useRouter()
 const userStore   = useUserStore()
 const headerStore = useHeaderStore()
@@ -17,7 +19,7 @@ const navStore    = useNavStore()
 
 onMounted(async () => {
   //headerStore.hideActions()
-  headerStore.setTitle('Профиль')
+  headerStore.setTitle(t('profile.title'))
   headerStore.setLeftAction(null)
   headerStore.setRightAction(null)
   navStore.showTabs()
@@ -142,20 +144,20 @@ const avatarError = ref(false)
           <span v-if="is_creator" class="badge creator">✦ Creator</span>
         </div>
         <p class="username" v-if="user?.username">@{{ user.username }}</p>
-        <p class="joined">С нами с {{ joinedLabel }}</p>
+        <p class="joined">{{ t('profile.memberSince', { date: joinedLabel }) }}</p>
       </div>
     </div>
 
     <!-- ── Статистика ─────────────────────────────────────────────── -->
     <section class="section">
-      <h3 class="section-title">Статистика</h3>
+      <h3 class="section-title">{{ t('profile.statsSection') }}</h3>
       <div class="stats-grid">
 
         <div class="stat-card">
           <div class="stat-icon">🏆</div>
           <div class="stat-body">
             <span class="stat-value">{{ config?.quiz_count ?? 0 }}</span>
-            <span class="stat-label">Тестов пройдено</span>
+            <span class="stat-label">{{ t('profile.testsCompleted') }}</span>
           </div>
         </div>
 
@@ -163,15 +165,15 @@ const avatarError = ref(false)
           <div class="stat-icon">⏱</div>
           <div class="stat-body">
             <span class="stat-value">{{ totalTimeLabel }}</span>
-            <span class="stat-label">Время в тестах</span>
+            <span class="stat-label">{{ t('profile.timeInTests') }}</span>
           </div>
         </div>
 
         <div class="stat-card stat-card--wide" v-if="config?.is_active !== undefined">
           <div class="stat-icon">{{ config?.is_active ? '🟢' : '⚪' }}</div>
           <div class="stat-body">
-            <span class="stat-value">{{ config?.is_active ? 'Активен' : 'Неактивен' }}</span>
-            <span class="stat-label">Статус аккаунта</span>
+            <span class="stat-value">{{ config?.is_active ? t('profile.accountActive') : t('profile.accountInactive') }}</span>
+            <span class="stat-label">{{ t('profile.accountStatus') }}</span>
           </div>
         </div>
 
@@ -180,15 +182,15 @@ const avatarError = ref(false)
 
     <!-- ── Настройки ──────────────────────────────────────────────── -->
     <section class="section">
-      <h3 class="section-title">Настройки</h3>
+      <h3 class="section-title">{{ t('profile.settingsSection') }}</h3>
 
       <!-- Таймер -->
       <div class="setting-card">
         <div class="setting-left">
           <span class="setting-icon">⏱</span>
           <div class="setting-text">
-            <span class="setting-name">Таймер в тестах</span>
-            <span class="setting-desc">Показывать обратный отсчёт</span>
+            <span class="setting-name">{{ t('profile.timerName') }}</span>
+            <span class="setting-desc">{{ t('profile.timerDesc') }}</span>
           </div>
         </div>
         <button
@@ -196,7 +198,7 @@ const avatarError = ref(false)
             :class="{ on: config?.timer, loading: timerLoading }"
             :disabled="timerLoading"
             @click="toggleTimer"
-            aria-label="Переключить таймер"
+            :aria-label="t('profile.timerName')"
         >
           <div class="toggle-thumb" />
         </button>
@@ -207,8 +209,8 @@ const avatarError = ref(false)
         <div class="setting-left">
           <span class="setting-icon">🌐</span>
           <div class="setting-text">
-            <span class="setting-name">Язык интерфейса</span>
-            <span class="setting-desc">Выберите язык</span>
+            <span class="setting-name">{{ t('profile.languageName') }}</span>
+            <span class="setting-desc">{{ t('profile.languageDesc') }}</span>
           </div>
         </div>
 

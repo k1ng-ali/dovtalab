@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import * as api from './api.ts'
+import { logout as authLogout } from '@/features/auth/api.ts'
 import type { User, Config, UserProfile, UserRole } from './type.ts'
+import { setLocale, type AppLocale } from '@/shared/i18n'
 
 export const useUserStore = defineStore("user", {
     state: () => ({
@@ -27,6 +29,12 @@ export const useUserStore = defineStore("user", {
                 const { data } = await api.profile()
                 //console.log(data)
                 this.profile = data as UserProfile
+
+                // Sync i18n locale with user config from backend
+                if (this.profile.config?.language) {
+                    setLocale(this.profile.config.language as AppLocale)
+                }
+
                 return this.profile
             } catch (error) {
                 console.error(error)
@@ -43,6 +51,11 @@ export const useUserStore = defineStore("user", {
             const previous = { ...this.profile.config }
             this.profile.config = { ...this.profile.config, ...updated }
 
+            // Sync locale immediately on optimistic update
+            if (updated.language) {
+                setLocale(updated.language as AppLocale)
+            }
+
             try {
                 const { data } = await api.updateConfig(updated)
                 this.profile.config = { ...this.profile.config, ...(data as Partial<Config>) }
@@ -50,6 +63,10 @@ export const useUserStore = defineStore("user", {
             } catch (error) {
                 // Откат
                 this.profile.config = previous
+                // Revert locale on error
+                if (updated.language && previous.language) {
+                    setLocale(previous.language as AppLocale)
+                }
                 console.error(error)
                 throw error
             }
@@ -57,7 +74,7 @@ export const useUserStore = defineStore("user", {
 
         async logout() {
             if (!this.profile) return
-            await api.logout()
+            await authLogout()
             this.profile = null
         },
 

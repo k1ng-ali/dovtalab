@@ -3,7 +3,7 @@ import * as api from "@/features/quizPage/api.ts";
 import type {
     QuizIn, QuestionPublic, ContextIn, QuizStat,
     SubmitAnswer, SubmitIn
-} from "src/features/quizPage/types.ts"
+} from "@/features/quizPage/types.ts"
 
 export const useQuiz = defineStore("quiz", {
     state: ()=> ({
@@ -44,9 +44,9 @@ export const useQuiz = defineStore("quiz", {
             return data as QuizIn
         },
 
-        async startQuiz(quiz_id: number) {
-            const { data } = await api.startQuiz(quiz_id);
-            return data as QuestionPublic
+        async startQuiz(quiz_id: number, context_id?: number, mode: string = 'practice', question_limit?: number): Promise<QuestionPublic> {
+            const { data } = await api.startQuiz(quiz_id, context_id, mode, question_limit);
+            return data
         },
 
         // ─── Questions ────────────────────────────────────────────────────────

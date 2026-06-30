@@ -3,23 +3,26 @@ import { AkHome, PhSealQuestion, CgProfile } from '@kalimahapps/vue-icons';
 import { useRoute, useRouter } from 'vue-router'
 import { computed } from 'vue'
 import { useNavStore } from '@/shared/stores/useNavStore.ts'
+import { useI18n } from 'vue-i18n'
 
-const tabs = [
-  { name: "Главная", icon: AkHome,          path: "/" },
-  { name: "Тесты",   icon: PhSealQuestion,  path: "/quiz" },
-  { name: "Профиль", icon: CgProfile,       path: "/profile" },
-]
+const { t } = useI18n()
+
+const tabs = computed(() => [
+  { name: t('nav.home'), icon: AkHome,          path: "/" },
+  { name: t('nav.quizzes'),   icon: PhSealQuestion,  path: "/quiz" },
+  { name: t('nav.profile'), icon: CgProfile,       path: "/profile" },
+])
 
 const route    = useRoute()
 const router   = useRouter()
 const navStore = useNavStore()
 
 const activeIndex = computed(() =>
-    tabs.findIndex(t => t.path === route.path)
+    tabs.value.findIndex(t => t.path === route.path)
 )
 
 const onTab = (index: number) => {
-  const tab = tabs[index]
+  const tab = tabs.value[index]
   if (tab) router.push(tab.path)
 }
 </script>
@@ -66,7 +69,7 @@ const onTab = (index: number) => {
   bottom: 0;
   left: 0;
   width: 100%;
-  padding-bottom: 20px;
+  padding-bottom: calc(16px + var(--sab));
   z-index: 100;
   background: linear-gradient(
           to top,

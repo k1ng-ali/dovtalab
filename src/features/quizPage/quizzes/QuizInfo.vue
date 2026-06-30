@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import type { QuizIn, ContextIn } from '@/features/quizPage/types.ts'
+import type { QuizIn, ContextIn, QuizMode } from '@/features/quizPage/types.ts'
 import { useQuiz } from '@/features/quizPage/store.ts'
 import { MdRoundFavoriteBorder, MdRoundFavorite } from '@kalimahapps/vue-icons';
 import {useHeaderStore} from "@/shared/stores/useHeaderStore.ts";
@@ -8,10 +8,14 @@ import {useHeaderStore} from "@/shared/stores/useHeaderStore.ts";
 const props = defineProps<{
   quiz: QuizIn
   selectedContext: ContextIn | null
+  selectedMode: QuizMode
+  examQuestionLimit: number
 }>()
 
 const emit = defineEmits<{
   (e: 'select-context', ctx: ContextIn | null): void
+  (e: 'select-mode', mode: QuizMode): void
+  (e: 'set-exam-limit', limit: number): void
 }>()
 
 const quizStore = useQuiz()
@@ -119,6 +123,17 @@ const toggleContext = (ctx: ContextIn) => {
     emit('select-context', ctx)
   }
 }
+
+// Варианты количества вопросов для быстрого теста
+const quickTestOptions = computed(() => {
+  const total = Stats.value?.total_questions ?? 0
+  const options = [15, 20, 25, 30].filter(n => n <= total)
+  // Добавляем "все" если total не входит в стандартные
+  if (total > 0 && !options.includes(total) && total > 30) {
+    options.push(total)
+  }
+  return options
+})
 </script>
 
 <template>
@@ -191,6 +206,46 @@ const toggleContext = (ctx: ContextIn) => {
       </div>
     </div>
 
+
+    <!-- ── Быстрый тест ── -->
+    <div class="mode-section" v-if="Stats?.total_questions && Stats.total_questions >= 15">
+      <div
+          class="quick-test-card"
+          :class="{ active: props.selectedMode === 'exam' }"
+          @click="emit('select-mode', props.selectedMode === 'exam' ? 'practice' : 'exam')"
+      >
+        <div class="quick-test-header">
+          <div class="quick-test-left">
+            <span class="quick-test-icon">🚀</span>
+            <div class="quick-test-text">
+              <span class="quick-test-title">Быстрый тест</span>
+              <span class="quick-test-desc">Один шанс на вопрос, результат в конце</span>
+            </div>
+          </div>
+          <div class="quick-test-toggle" :class="{ on: props.selectedMode === 'exam' }">
+            <div class="toggle-thumb" />
+          </div>
+        </div>
+
+        <!-- Количество вопросов (показывается только при активном режиме) -->
+        <Transition name="slide-down">
+          <div v-if="props.selectedMode === 'exam'" class="quick-test-options" @click.stop>
+            <span class="options-label">Количество вопросов:</span>
+            <div class="options-pills">
+              <button
+                  v-for="n in quickTestOptions"
+                  :key="n"
+                  class="pill"
+                  :class="{ active: props.examQuestionLimit === n }"
+                  @click="emit('set-exam-limit', n)"
+              >
+                {{ n }}
+              </button>
+            </div>
+          </div>
+        </Transition>
+      </div>
+    </div>
 
     <!-- ── Контексты ── -->
     <div class="section" v-if="!loading && contexts.length > 0">
@@ -372,7 +427,7 @@ const toggleContext = (ctx: ContextIn) => {
 }
 
 /* ── Section ── */
-.section {
+.section, .mode-section {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -387,6 +442,150 @@ const toggleContext = (ctx: ContextIn) => {
   margin: 0;
   color: #9CA3AF;
   line-height: 1.4;
+}
+
+/* ── Quick Test Card ── */
+.quick-test-card {
+  padding: 16px 18px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(0, 0, 0, 0.06);
+  border-radius: 20px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  &:active { transform: scale(0.98); }
+
+  &.active {
+    border-color: rgba(78, 190, 194, 0.5);
+    background: rgba(78, 190, 194, 0.06);
+    box-shadow: 0 4px 16px rgba(78, 190, 194, 0.15);
+  }
+}
+
+.quick-test-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.quick-test-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.quick-test-icon {
+  font-size: 28px;
+}
+
+.quick-test-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.quick-test-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #234970;
+}
+
+.quick-test-desc {
+  font-size: 12px;
+  color: #9CA3AF;
+}
+
+.quick-test-toggle {
+  position: relative;
+  width: 44px;
+  height: 26px;
+  border-radius: 26px;
+  background: rgba(0, 0, 0, 0.1);
+  transition: background 0.25s ease;
+  flex-shrink: 0;
+
+  &.on {
+    background: #4EBEC2;
+  }
+
+  .toggle-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  &.on .toggle-thumb {
+    transform: translateX(18px);
+  }
+}
+
+.quick-test-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.options-label {
+  font-size: 13px;
+  color: #6B7280;
+  font-weight: 500;
+}
+
+.options-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pill {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1.5px solid rgba(0, 0, 0, 0.1);
+  background: transparent;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6B7280;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:active { transform: scale(0.95); }
+
+  &.active {
+    background: rgba(78, 190, 194, 0.15);
+    border-color: #4EBEC2;
+    color: #234970;
+  }
+}
+
+/* ── Slide-down transition ── */
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.25s ease;
+}
+.slide-down-enter-from,
+.slide-down-leave-to {
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(-8px);
+}
+.slide-down-enter-to,
+.slide-down-leave-from {
+  opacity: 1;
+  max-height: 100px;
 }
 
 /* ── Context cards ── */

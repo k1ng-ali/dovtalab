@@ -1,3 +1,100 @@
+<script setup lang="ts">
+import { Capacitor } from '@capacitor/core'
+import {useTelegramLogin} from './composables/useTelegramLogin.ts'
+import { useAuthStore } from './store'
+import TelegramIcon from './TelegramIcon.vue'
+import { message } from 'ant-design-vue'
+import { computed, onUnmounted, ref } from "vue";
+import router from "@/app/router.ts";
+import { TelegramAuth} from "@/shared/lib/TelegramAuth.ts";
+
+interface Props {
+  label?: string
+  loadingText?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  label: 'Войти через Telegram',
+  loadingText: 'Подключение...',
+})
+
+const emit = defineEmits<{
+  success: []
+  error: [message: string]
+}>()
+
+const authStore = useAuthStore()
+const { isLoading: apiLoading, openLoginPopup } = useTelegramLogin()
+
+// Локальный флаг для нативной платформы
+const isLocalTimeoutLoading = ref(false)
+let timeoutId: ReturnType<typeof setTimeout> | null = null
+let appStateListener: any = null
+
+// Кнопка показывает загрузку, если:
+// 1. Мы на вебе и идет процесс (apiLoading)
+// 2. ИЛИ мы на мобилке и ждем редиректа/возврата (isLocalTimeoutLoading)
+// 3. ИЛИ глобальный стор уже занят перевариванием токенов (authStore.status === 'loading')
+const isLoading = computed(() => {
+  if (authStore.status === 'loading') return true
+  return Capacitor.isNativePlatform() ? isLocalTimeoutLoading.value : apiLoading.value
+})
+
+async function handleClick() {
+  // Очищаем старые таймеры, если были
+  if (timeoutId) clearTimeout(timeoutId)
+  if (appStateListener) {
+    appStateListener.remove()
+    appStateListener = null
+  }
+
+  // На нативной платформе — редирект (результат придёт через appUrlOpen в App.vue)
+  // TelegramLoginButton.vue
+  if (Capacitor.isNativePlatform()) {
+    try {
+      isLocalTimeoutLoading.value = true;
+
+      // 1. Плагин открывает Telegram и ждет ответа пользователя
+      const res = await TelegramAuth.login();
+
+      if (res.success && res.idToken) {
+        await authStore.nativeLogin({id_token: res.idToken})
+        message.success('Вы вошли!');
+        await router.push('/');
+
+      } else {
+        message.error('Авторизация отменена');
+      }
+    } catch (error) {
+      message.error('Ошибка в авторизации');
+      console.error(error);
+    } finally {
+      isLocalTimeoutLoading.value = false;
+    }
+    return; // Обязательно делаем return, чтобы веб-код ниже не выполнился!
+  }
+
+
+  // Веб: popup-флоу
+  try {
+    const { code, nonce, code_verifier } = await openLoginPopup()
+    await authStore.loginWithTelegram({ code, nonce, code_verifier })
+    message.success('Вы вошли!')
+    emit('success')
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Ошибка входа'
+    message.error(msg)
+    emit('error', msg)
+  }
+}
+
+// Защита от утечек памяти при размонтировании компонента
+onUnmounted(() => {
+  if (timeoutId) clearTimeout(timeoutId)
+  if (appStateListener) appStateListener.remove()
+})
+</script>
+
 <template>
   <button
       class="tg-btn"
@@ -19,56 +116,6 @@
     </span>
   </button>
 </template>
-
-<script setup lang="ts">
-import { Capacitor } from '@capacitor/core'
-import { useTelegramLogin } from './composables/useTelegramLogin.ts'
-import { useAuthStore } from './store'
-import TelegramIcon from './TelegramIcon.vue'
-
-interface Props {
-  label?: string
-  loadingText?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  label: 'Войти через Telegram',
-  loadingText: 'Подключение...',
-})
-
-const emit = defineEmits<{
-  success: []
-  error: [message: string]
-}>()
-
-const authStore = useAuthStore()
-const { isLoading, openLoginPopup, openLoginRedirect } = useTelegramLogin()
-
-async function handleClick() {
-  // На нативной платформе — редирект (результат придёт через appUrlOpen в App.vue)
-  if (Capacitor.isNativePlatform()) {
-    try {
-      await openLoginRedirect()
-      // Здесь не emit('success') — приложение уходит в фон,
-      // success будет вызван из App.vue после возврата
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Ошибка входа'
-      emit('error', msg)
-    }
-    return
-  }
-
-  // Веб: popup-флоу (старое поведение)
-  try {
-    const { code, nonce, code_verifier } = await openLoginPopup()
-    await authStore.loginWithTelegram({ code, nonce, code_verifier })
-    emit('success')
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Ошибка входа'
-    emit('error', msg)
-  }
-}
-</script>
 
 <style scoped lang="scss">
 .tg-btn {

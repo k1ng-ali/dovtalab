@@ -7,7 +7,9 @@ import {computed, onMounted, onUnmounted, ref, watch} from "vue"
 import {useGsap} from "@/shared/gsap.ts";
 import gsap from "gsap";
 import {type HeaderAction, useHeaderStore} from "@/shared/stores/useHeaderStore.ts";
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const headerStore = useHeaderStore()
 
 const emit = defineEmits<{
@@ -25,12 +27,12 @@ const activeTab = ref<'all' | 'fav'>('all')
 
 const actions = computed(() => [
   {
-    label: "Все тесты",
+    label: t('quiz.allQuizzes'),
     variant: activeTab.value === 'all' ? 'active' : 'default',
     onClick: () => activeTab.value = 'all'
   },
   {
-    label: "Избранные",
+    label: t('quiz.favorites'),
     variant: activeTab.value === 'fav' ? 'active' : 'default',
     onClick: () => activeTab.value = 'fav'
   }
@@ -102,7 +104,7 @@ onUnmounted( () => {
 
 <template>
   <div class="quizzes" v-if="activeTab === 'all'">
-    <h2 class="title">Викторины</h2>
+    <h2 class="title">{{ t('quiz.quizzesTitle') }}</h2>
     <QuizCard
         v-for="quiz in quizzes"
         :key="quiz.id"
@@ -113,7 +115,7 @@ onUnmounted( () => {
     />
   </div>
   <div class="quizzes" v-if="activeTab === 'fav'">
-    <h2 class="title">Викторины</h2>
+    <h2 class="title">{{ t('quiz.quizzesTitle') }}</h2>
     <QuizCard
         v-if="favorites.length > 0"
         v-for="quiz in favorites"
@@ -123,7 +125,7 @@ onUnmounted( () => {
         @click="emit('select', quiz)"
         :ref="setRef"
     />
-    <p v-else class="empty-fav" >✨ Пока нет избранных викторин</p>
+    <p v-else class="empty-fav" >{{ t('quiz.noFavorites') }}</p>
   </div>
 </template>
 

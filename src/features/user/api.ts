@@ -13,6 +13,3 @@ export const config = () =>
 export const updateConfig = (data: Partial<Config>) =>
     http.patch('/users/config', data)
 
-export const logout = () =>
-    http.post('/auth/logout')
-

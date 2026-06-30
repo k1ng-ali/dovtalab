@@ -59,8 +59,8 @@ watch(
         })
         headerStore.hideActions()
 
-        const hasContexts = (flow.selectedQuiz.value?.contexts?.length ?? 0) > 0
-        if (hasContexts) {
+        const hasContext = flow.selectedContext.value !== null
+        if (hasContext) {
           headerStore.setRightAction({
             icon: MdOutlinedMenuBook,
             label: "Контекст",
@@ -124,7 +124,11 @@ onUnmounted(() => headerStore.reset())
           <QuizInfo
               :quiz="flow.selectedQuiz.value!"
               :selected-context="flow.selectedContext.value"
+              :selected-mode="flow.selectedMode.value"
+              :exam-question-limit="flow.examQuestionLimit.value"
               @select-context="flow.selectContext"
+              @select-mode="flow.selectMode"
+              @set-exam-limit="flow.setExamLimit"
           />
         </div>
 
@@ -133,6 +137,8 @@ onUnmounted(() => headerStore.reset())
           <QuizRunner
               :quiz="flow.selectedQuiz.value!"
               :context="flow.selectedContext.value"
+              :mode="flow.selectedMode.value"
+              :question-limit="flow.selectedMode.value === 'exam' ? flow.examQuestionLimit.value : undefined"
               @finish="flow.backToInfo"
           />
         </div>

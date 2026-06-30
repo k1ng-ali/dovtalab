@@ -80,6 +80,7 @@ const headerStore = useHeaderStore()
   width: 100%;
   padding: 20px 0;
   z-index: 99;
+  padding-top: calc(16px + var(--sat));
 
   background: linear-gradient(
           to bottom,

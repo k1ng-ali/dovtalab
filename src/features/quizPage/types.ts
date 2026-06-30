@@ -1,3 +1,13 @@
+// ─── Start Quiz response ──────────────────────────────────────────────────────
+
+export interface StartQuizResponse {
+    quiz_attempt_id: number
+}
+
+// ─── Quiz Mode ────────────────────────────────────────────────────────────────
+
+export type QuizMode = 'practice' | 'exam'
+
 // ─── Context response ─────────────────────────────────────────────────────────
 
 export interface ContextIn {

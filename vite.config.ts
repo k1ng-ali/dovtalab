@@ -15,7 +15,9 @@ export default defineConfig({
     }),
     Components({
       resolvers: [
-        AntDesignVueResolver()
+        AntDesignVueResolver({
+          importStyle: false,
+        }),
       ]
     })
   ],
