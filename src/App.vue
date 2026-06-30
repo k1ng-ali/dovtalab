@@ -127,20 +127,12 @@ async function checkNetworkAvailable(): Promise<boolean> {
   if (!navigator.onLine) return false
 
   // На Capacitor Android navigator.onLine ненадёжен.
-  // Делаем быстрый запрос к API с коротким timeout.
+  // Используем «чистый» axios без interceptors для проверки сети.
+  // CapacitorHttp перехватит это нативно — работает и на Android.
   try {
     const baseUrl = import.meta.env.VITE_API_URL ?? "https://api.dovtalab.app"
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 5000)
-
-    await fetch(`${baseUrl}/health`, {
-      method: 'HEAD',
-      mode: 'no-cors',
-      cache: 'no-store',
-      signal: controller.signal,
-    })
-
-    clearTimeout(timeoutId)
+    const { default: axios } = await import('axios')
+    await axios.get(`${baseUrl}/health`, { timeout: 5000 })
     return true
   } catch {
     return false
