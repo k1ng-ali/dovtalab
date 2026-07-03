@@ -126,6 +126,13 @@ async function checkNetworkAvailable(): Promise<boolean> {
   // Быстрая проверка: если navigator.onLine=false — точно нет сети
   if (!navigator.onLine) return false
 
+  // В Telegram Mini App и обычном браузере navigator.onLine достаточно надёжен.
+  // Дополнительный запрос к /health делаем только на нативных платформах (Capacitor Android/iOS),
+  // где navigator.onLine может возвращать true даже без реального интернета.
+  if (!Capacitor.isNativePlatform()) {
+    return true
+  }
+
   // На Capacitor Android navigator.onLine ненадёжен.
   // Используем «чистый» axios без interceptors для проверки сети.
   // CapacitorHttp перехватит это нативно — работает и на Android.
