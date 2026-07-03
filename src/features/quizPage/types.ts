@@ -93,6 +93,14 @@ export interface SubmitIn {
 
 // ─── Quiz response ────────────────────────────────────────────────────────────
 
+export interface UserProgressSummary {
+    total_questions: number
+    answered_count: number       // всего отвечено в текущей попытке
+    correct_count: number        // правильных в текущей попытке
+    completed_attempts: number   // сколько раз полностью завершён
+    best_score: number | null    // лучший score (0–100)
+}
+
 export interface QuizIn {
     id: number
     hash_code: string
@@ -105,6 +113,9 @@ export interface QuizIn {
     details?: {
         type?: "single_choice" | "multiple_choice" | "matching" | "input"
         stat?: AttemptStat,
+        total_questions?: number
+        contexts_count?: number
+        progress?: UserProgressSummary
     }
 }
 

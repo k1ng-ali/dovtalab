@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import {storeToRefs} from "pinia";
-import type { QuizIn } from "src/features/quizPage/types.ts"
+import { storeToRefs } from "pinia"
+import type { QuizIn } from "@/features/quizPage/types.ts"
 import QuizCard from "./components/QuizCard.vue"
+import QuizCardSkeleton from "./components/QuizCardSkeleton.vue"
 import { useQuiz } from "@/features/quizPage/store.ts"
-import {computed, onMounted, onUnmounted, ref, watch} from "vue"
-import {useGsap} from "@/shared/gsap.ts";
-import gsap from "gsap";
-import {type HeaderAction, useHeaderStore} from "@/shared/stores/useHeaderStore.ts";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue"
+import { useGsap } from "@/shared/gsap.ts"
+import gsap from "gsap"
+import { type HeaderAction, useHeaderStore } from "@/shared/stores/useHeaderStore.ts"
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -16,12 +17,14 @@ const emit = defineEmits<{
   (e: 'select', quiz: QuizIn): void
 }>()
 
-const quizStore = useQuiz();
+const quizStore = useQuiz()
 const { quizzes } = storeToRefs(quizStore)
 const { favorites } = storeToRefs(quizStore)
 
+const loading = ref(true)
+
 const quizRef = ref<HTMLElement[]>([])
-const {init, cleanup} = useGsap(quizRef)
+const { init, cleanup } = useGsap(quizRef)
 
 const activeTab = ref<'all' | 'fav'>('all')
 
@@ -38,94 +41,96 @@ const actions = computed(() => [
   }
 ] as HeaderAction[])
 
+watch(actions, (val) => {
+  headerStore.showActions(val)
+}, { immediate: true })
+
 watch(
-    actions,
-    (val) => {
-      headerStore.showActions(val)
-    },
-    { immediate: true }
+  quizzes,
+  () => {
+    quizRef.value = []
+    setTimeout(() => {
+      init(() => {
+        gsap.fromTo(quizRef.value, {
+          opacity: 0,
+          y: -10,
+        }, {
+          opacity: 1,
+          y: 0,
+          duration: 0.5,
+          stagger: 0.15,
+          ease: "power2.out",
+        })
+      })
+    })
+  },
+  { flush: "post" }
 )
 
-watch(
-    quizzes,
-    () => {
-      quizRef.value = [];
-
-      setTimeout(() => {
-        init(() => {
-          gsap.fromTo(quizRef.value, {
-            opacity: 0,
-            y: -10,
-          }, {
-            opacity: 1,
-            y: 0,
-            duration: 0.5,
-            stagger: 0.2,
-            ease: "power2.out",
-          });
-        });
-      });
-    },
-    { flush: "post" }
-);
-
-onMounted( async () => {
+onMounted(async () => {
   headerStore.reset()
-  headerStore.showActions(actions.value
-  )
+  headerStore.showActions(actions.value)
 
   try {
+    loading.value = true
     await quizStore.fetchQuizzes()
-    console.log("quizzes: ", quizzes.value)
     await quizStore.fetchFavorites()
-    console.log("favorites: ", favorites.value)
   } catch (e) {
     console.error(e)
+  } finally {
+    loading.value = false
   }
 })
 
 const setRef = (el: any) => {
-  if (!el) return;
-
-  // если это Vue компонент → берём реальный DOM
-  const element = el.$el ?? el;
-
+  if (!el) return
+  const element = el.$el ?? el
   if (element instanceof HTMLElement) {
-    quizRef.value.push(element);
+    quizRef.value.push(element)
   }
-};
+}
 
-onUnmounted( () => {
-  cleanup;
+onUnmounted(() => {
+  cleanup
   headerStore.reset()
   headerStore.hideActions()
 })
 </script>
 
 <template>
-  <div class="quizzes" v-if="activeTab === 'all'">
+  <!-- Skeleton при загрузке -->
+  <div v-if="loading" class="quizzes">
+    <h2 class="title">{{ t('quiz.quizzesTitle') }}</h2>
+    <QuizCardSkeleton v-for="i in 5" :key="i" class="quiz" />
+  </div>
+
+  <!-- Все квизы -->
+  <div v-else-if="activeTab === 'all'" class="quizzes">
     <h2 class="title">{{ t('quiz.quizzesTitle') }}</h2>
     <QuizCard
-        v-for="quiz in quizzes"
-        :key="quiz.id"
-        :quiz="quiz"
-        class="quiz"
-        @click="emit('select', quiz)"
-        :ref="setRef"
+      v-for="quiz in quizzes"
+      :key="quiz.id"
+      :quiz="quiz"
+      class="quiz"
+      @click="emit('select', quiz)"
+      :ref="setRef"
     />
   </div>
-  <div class="quizzes" v-if="activeTab === 'fav'">
+
+  <!-- Избранные -->
+  <div v-else class="quizzes">
     <h2 class="title">{{ t('quiz.quizzesTitle') }}</h2>
-    <QuizCard
-        v-if="favorites.length > 0"
+    <template v-if="favorites.length > 0">
+      <QuizCard
         v-for="quiz in favorites"
         :key="quiz.id"
         :quiz="quiz"
         class="quiz"
         @click="emit('select', quiz)"
         :ref="setRef"
-    />
-    <p v-else class="empty-fav" >{{ t('quiz.noFavorites') }}</p>
+      />
+    </template>
+    <p v-else class="empty-fav">{{ t('quiz.noFavorites') }}</p>
   </div>
 </template>
 
