@@ -1,15 +1,16 @@
 import { registerPlugin } from '@capacitor/core';
 
-// 1. Описываем то, что возвращает наш Kotlin-код (JSObject)
 export interface TelegramAuthResult {
+    /** true — авторизация успешна, false — ошибка или отмена */
     success: boolean;
-    idToken?: string;  // JWT от Telegram
+    /** JWT от Telegram (присутствует только при success = true) */
+    idToken?: string;
+    /** Описание ошибки (присутствует только при success = false) */
+    error?: string;
 }
 
-// 2. Описываем интерфейс самого плагина (какие методы в нем есть)
 export interface TelegramAuthPlugin {
     login(): Promise<TelegramAuthResult>;
 }
 
-// 3. Регистрируем плагин, передавая наш интерфейс в <Generic>
 export const TelegramAuth = registerPlugin<TelegramAuthPlugin>('TelegramAuth');

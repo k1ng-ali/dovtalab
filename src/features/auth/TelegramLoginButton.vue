@@ -58,16 +58,17 @@ async function handleClick() {
       const res = await TelegramAuth.login();
 
       if (res.success && res.idToken) {
-        await authStore.nativeLogin({id_token: res.idToken})
-        message.success('Вы вошли!');
-        await router.push('/');
-
+        await authStore.nativeLogin({ id_token: res.idToken })
+        message.success('Вы вошли!')
+        await router.push('/')
       } else {
-        message.error('Авторизация отменена');
+        const reason = res.error ?? 'Авторизация отменена'
+        message.error(reason)
       }
     } catch (error) {
-      message.error('Ошибка в авторизации');
-      console.error(error);
+      const msg = error instanceof Error ? error.message : 'Ошибка авторизации'
+      message.error(msg)
+      console.error(error)
     } finally {
       isLocalTimeoutLoading.value = false;
     }
