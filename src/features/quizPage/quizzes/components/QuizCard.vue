@@ -8,7 +8,7 @@ const props = defineProps<{
 }>()
 
 // ── Детерминированный градиент по quiz.id ──────────────────────────────────
-const GRADIENTS = [
+const GRADIENTS: [string, string][] = [
   ['#4EBEC2', '#234970'],  // teal → navy (фирменный)
   ['#6366F1', '#8B5CF6'],  // indigo → violet
   ['#F59E0B', '#EF4444'],  // amber → red
@@ -17,7 +17,7 @@ const GRADIENTS = [
   ['#3B82F6', '#06B6D4'],  // blue → cyan
 ]
 
-const gradient = computed(() => GRADIENTS[props.quiz.id % GRADIENTS.length])
+const gradient = computed((): [string, string] => GRADIENTS[props.quiz.id % GRADIENTS.length]!)
 const iconStyle = computed(() => ({
   background: `linear-gradient(135deg, ${gradient.value[0]}22, ${gradient.value[1]}33)`,
   color: gradient.value[0],
