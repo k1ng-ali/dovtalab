@@ -86,6 +86,12 @@ export const useQuiz = defineStore("quiz", {
             return data as QuizStat;
         },
 
+        // ─── Adaptive ─────────────────────────────────────────────────────────
+        async checkAdaptiveAvailable(quiz_id: number): Promise<{ available: boolean; clustered_questions: number }> {
+            const { data } = await api.checkAdaptiveAvailable(quiz_id);
+            return data;
+        },
+
         // ─── Favorites ────────────────────────────────────────────────────────
         async fetchFavorites() {
             const { data } = await api.favorites();

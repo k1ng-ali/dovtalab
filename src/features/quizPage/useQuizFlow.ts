@@ -50,6 +50,7 @@ export function useQuizFlow() {
     }
 
     const startLabel = computed(() => {
+        if (selectedMode.value === 'adaptive') return t("quiz.startAdaptive")
         if (selectedMode.value === 'exam') return t("quiz.startExam")
         if (selectedContext.value) return t("quiz.startWithContext")
         return t("quiz.startTest")

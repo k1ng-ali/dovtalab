@@ -99,6 +99,7 @@ export default {
     startTest: 'Оғози тест',
     startWithContext: 'Оғози тест бо контекст',
     startExam: 'Оғози тести зуд',
+    startAdaptive: 'Оғози омӯзиши адаптивӣ',
     answer: 'Ҷавоб',
     questionN: 'Савол {n}',
     questionNofM: 'Савол {n} аз {m}',

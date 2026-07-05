@@ -6,7 +6,7 @@ export interface StartQuizResponse {
 
 // ─── Quiz Mode ────────────────────────────────────────────────────────────────
 
-export type QuizMode = 'practice' | 'exam'
+export type QuizMode = 'practice' | 'exam' | 'adaptive'
 
 // ─── Context response ─────────────────────────────────────────────────────────
 

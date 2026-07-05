@@ -99,6 +99,7 @@ export default {
     startTest: 'Начать тест',
     startWithContext: 'Начать тест с контекстом',
     startExam: 'Начать быстрый тест',
+    startAdaptive: 'Начать адаптивное обучение',
     answer: 'Ответить',
     questionN: 'Вопрос {n}',
     questionNofM: 'Вопрос {n} из {m}',

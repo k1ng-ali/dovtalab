@@ -21,6 +21,7 @@ const emit = defineEmits<{
 const quizStore = useQuiz()
 const contexts  = ref<ContextIn[]>([])
 const loading   = ref(false)
+const adaptiveAvailable = ref(false)
 const Stats = computed(() => quizStore.quizStat(props.quiz.id))
 const headerStore = useHeaderStore()
 
@@ -28,6 +29,14 @@ onMounted(async () => {
   await quizStore.fetchQuizStat(props.quiz.id)
   headerStore.reset()
   headerStore.setTitle(props.quiz.title)
+
+  // Проверяем доступность адаптивного обучения
+  try {
+    const result = await quizStore.checkAdaptiveAvailable(props.quiz.id)
+    adaptiveAvailable.value = result.available
+  } catch {
+    adaptiveAvailable.value = false
+  }
 
   if (props.quiz.contexts?.length) {
     contexts.value = props.quiz.contexts
@@ -207,12 +216,34 @@ const quickTestOptions = computed(() => {
     </div>
 
 
+    <!-- ── Адаптивное обучение ── -->
+    <div class="mode-section" v-if="adaptiveAvailable">
+      <div
+          class="adaptive-card"
+          :class="{ active: props.selectedMode === 'adaptive' }"
+          @click="emit('select-mode', props.selectedMode === 'adaptive' ? 'practice' : 'adaptive')"
+      >
+        <div class="adaptive-header">
+          <div class="adaptive-left">
+            <span class="adaptive-icon">🧠</span>
+            <div class="adaptive-text">
+              <span class="adaptive-title">Адаптивное обучение</span>
+              <span class="adaptive-desc">Вопросы подбираются по вашим слабым местам</span>
+            </div>
+          </div>
+          <div class="quick-test-toggle" :class="{ on: props.selectedMode === 'adaptive' }">
+            <div class="toggle-thumb" />
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ── Быстрый тест ── -->
     <div class="mode-section" v-if="Stats?.total_questions && Stats.total_questions >= 15">
       <div
           class="quick-test-card"
-          :class="{ active: props.selectedMode === 'exam' }"
-          @click="emit('select-mode', props.selectedMode === 'exam' ? 'practice' : 'exam')"
+          :class="{ active: props.selectedMode === 'exam', disabled: props.selectedMode === 'adaptive' }"
+          @click="props.selectedMode !== 'adaptive' && emit('select-mode', props.selectedMode === 'exam' ? 'practice' : 'exam')"
       >
         <div class="quick-test-header">
           <div class="quick-test-left">
@@ -465,6 +496,64 @@ const quickTestOptions = computed(() => {
     background: rgba(78, 190, 194, 0.06);
     box-shadow: 0 4px 16px rgba(78, 190, 194, 0.15);
   }
+
+  &.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+/* ── Adaptive Card ── */
+.adaptive-card {
+  padding: 16px 18px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(0, 0, 0, 0.06);
+  border-radius: 20px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:active { transform: scale(0.98); }
+
+  &.active {
+    border-color: rgba(147, 51, 234, 0.5);
+    background: rgba(147, 51, 234, 0.06);
+    box-shadow: 0 4px 16px rgba(147, 51, 234, 0.15);
+  }
+}
+
+.adaptive-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.adaptive-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.adaptive-icon {
+  font-size: 28px;
+}
+
+.adaptive-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.adaptive-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #234970;
+}
+
+.adaptive-desc {
+  font-size: 12px;
+  color: #9CA3AF;
 }
 
 .quick-test-header {

@@ -32,6 +32,10 @@ export const submitAnswer = (submit_answer: SubmitAnswer) =>
 export const myStat = (quiz_id: number) =>
     http.get<QuizStat>(`/quizzes/${quiz_id}/my-stat`)
 
+// ADAPTIVE
+export const checkAdaptiveAvailable = (quiz_id: number) =>
+    http.get<{ available: boolean; clustered_questions: number }>(`/quizzes/${quiz_id}/adaptive-available`)
+
 // FAVORITES
 export const favorites = () => http.get<QuizIn[]>('/quizzes/favorites')
 
