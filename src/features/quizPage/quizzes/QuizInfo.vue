@@ -4,6 +4,11 @@ import type { QuizIn, ContextIn, QuizMode } from '@/features/quizPage/types.ts'
 import { useQuiz } from '@/features/quizPage/store.ts'
 import { MdRoundFavoriteBorder, MdRoundFavorite } from '@kalimahapps/vue-icons';
 import {useHeaderStore} from "@/shared/stores/useHeaderStore.ts";
+import KnowledgeMap from '@/features/quizPage/knowledgeMap/KnowledgeMap.vue'
+import ReviewBadge from '@/features/quizPage/review/ReviewBadge.vue'
+import ProBadge from '@/features/subscription/ProBadge.vue'
+import SubscriptionModal from '@/features/subscription/SubscriptionModal.vue'
+import { useUserStore } from '@/features/user/store.ts'
 
 const props = defineProps<{
   quiz: QuizIn
@@ -16,14 +21,37 @@ const emit = defineEmits<{
   (e: 'select-context', ctx: ContextIn | null): void
   (e: 'select-mode', mode: QuizMode): void
   (e: 'set-exam-limit', limit: number): void
+  (e: 'train-cluster', clusterId: number): void
+  (e: 'start-review'): void
 }>()
 
 const quizStore = useQuiz()
+const userStore = useUserStore()
 const contexts  = ref<ContextIn[]>([])
 const loading   = ref(false)
 const adaptiveAvailable = ref(false)
+const showSubModal = ref(false)
+const copied = ref(false)
 const Stats = computed(() => quizStore.quizStat(props.quiz.id))
 const headerStore = useHeaderStore()
+
+const copyHashCode = async () => {
+  try {
+    await navigator.clipboard.writeText(props.quiz.hash_code)
+    copied.value = true
+    setTimeout(() => { copied.value = false }, 2000)
+  } catch {
+    // Fallback для мобильных браузеров
+    const el = document.createElement('textarea')
+    el.value = props.quiz.hash_code
+    document.body.appendChild(el)
+    el.select()
+    document.execCommand('copy')
+    document.body.removeChild(el)
+    copied.value = true
+    setTimeout(() => { copied.value = false }, 2000)
+  }
+}
 
 onMounted(async () => {
   await quizStore.fetchQuizStat(props.quiz.id)
@@ -50,69 +78,25 @@ onMounted(async () => {
   }
 })
 
-const typeLabels: Record<string, string> = {
-  single_choice:   "Одиночный выбор",
-  multiple_choice: "Множественный выбор",
-  matching:        "Соответствие",
-  input:           "Ввод ответа",
-}
-
-const typeIcons: Record<string, string> = {
-  single_choice:   "🔘",
-  multiple_choice: "☑️",
-  matching:        "🔗",
-  input:           "✏️",
-}
-
-const minutes = computed(() =>
-    Math.floor((Stats.value?.current_attempt_stat?.duration_sec ?? 0) / 60)
-)
-
-const seconds = computed(() =>
-    (Stats.value?.current_attempt_stat.duration_sec ?? 0) % 60)
-
-const timeLabel = computed(() => {
-  if (seconds.value === 0) return `${minutes.value} мин`
-  return `${minutes.value} мин ${seconds.value} сек`
-})
-
-const accuracy = computed(() => {
-  if (Stats.value?.current_attempt_stat?.accuracy_percent) {
-    return Math.round(Stats.value.current_attempt_stat?.accuracy_percent)
+const totalTimeSpent = computed(() => {
+  if (!Stats.value) return null
+  let total = 0
+  if (Stats.value.current_attempt_stat?.duration_sec) {
+    total += Stats.value.current_attempt_stat.duration_sec
   }
-  return
-})
-
-const progress = computed(() => {
-  if (Stats.value?.total_questions && Stats.value?.current_attempt_stat?.total_count) {
-    return Math.round((Stats.value?.current_attempt_stat?.total_count / Stats.value?.total_questions ) * 100)
-  }
-})
-
-const best_duration = computed(() => {
-  if (Stats.value?.completed_attempt_stats.length??0 > 0) {
-    let duration = Stats.value?.completed_attempt_stats[0].duration_sec
-    Stats.value?.completed_attempt_stats.forEach((attemp) => {
-      if (duration && duration > attemp.duration_sec) {
-        duration = attemp.duration_sec
-      }
-    })
-    return duration
-  }
-})
-
-const bestTimeLabel = computed(() => {
-  if (best_duration.value != null) {
-    if (best_duration.value < 60) {
-      return `${best_duration.value} сек`
+  if (Stats.value.completed_attempt_stats?.length) {
+    for (const a of Stats.value.completed_attempt_stats) {
+      if (a.duration_sec) total += a.duration_sec
     }
-
-    const minutes = Math.floor(best_duration.value / 60)
-    const seconds = Math.floor(best_duration.value % 60)
-
-    return `${minutes} мин ${seconds} сек`
   }
-  return
+  if (total === 0) return null
+
+  const h = Math.floor(total / 3600)
+  const m = Math.floor((total % 3600) / 60)
+
+  if (h > 0) return `${h} ч ${m} мин`
+  if (m > 0) return `${m} мин`
+  return `${Math.floor(total)} сек`
 })
 
 const addToFavorite = async (id: number) => {
@@ -150,6 +134,13 @@ const quickTestOptions = computed(() => {
 
     <!-- ── Шапка ── -->
     <div class="hero">
+      <!-- Хеш-код для копирования -->
+      <div class="hash-code" @click="copyHashCode">
+        <span class="hash-label">📋</span>
+        <span class="hash-value">{{ quiz.hash_code }}</span>
+        <span class="hash-copied" :class="{ visible: copied }">Скопировано!</span>
+      </div>
+
       <MdRoundFavorite
           v-if="quiz.on_fav"
           class="fav-ico active"
@@ -163,55 +154,16 @@ const quickTestOptions = computed(() => {
       <div class="hero-icon">📘</div>
       <h2 class="hero-title">{{ quiz.title }}</h2>
       <p class="hero-desc">{{ quiz.description }}</p>
-    </div>
 
-    <!-- ── Мета-блок ── -->
-    <div class="meta-grid">
-      <div class="meta-item">
-        <span class="meta-icon">⏱</span>
-        <span class="meta-label">Проведенная время</span>
-        <span class="meta-value">{{ timeLabel }}</span>
-      </div>
-
-      <div class="meta-item" v-if="quiz.details?.type">
-        <span class="meta-icon">{{ typeIcons[quiz.details.type] }}</span>
-        <span class="meta-label">Тип</span>
-        <span class="meta-value">{{ typeLabels[quiz.details.type] }}</span>
-      </div>
-
-      <div class="meta-item" v-if="Stats?.total_questions">
-        <span class="meta-icon">📝</span>
-        <span class="meta-label">Вопросов</span>
-        <span class="meta-value">{{ Stats?.total_questions }}</span>
-      </div>
-
-      <div class="meta-item" v-if="Stats?.current_attempt_stat?.correct_count != null">
-        <span class="meta-icon">✅</span>
-        <span class="meta-label">Выполнено</span>
-        <span class="meta-value">{{ Stats?.current_attempt_stat?.correct_count }}</span>
-      </div>
-
-      <div class="meta-item" v-if="Stats?.completed_attempt_stats?.length?? 0 > 0">
-        <span class="meta-header">Пройдено: {{Stats?.completed_attempt_stats.length}} раза</span>
-        <span class="meta-value">Лучший результат <br>{{ bestTimeLabel }}</span>
-      </div>
-    </div>
-
-    <!-- ── Прогресс ── -->
-    <div class="progress-block" v-if="progress != null && accuracy != null">
-      <div class="progress-header">
-        <span>Прогресс</span>
-        <span class="progress-pct">{{ Math.round(progress * accuracy / 100) }}%</span>
-      </div>
-      <div class="progress-bar">
-        <div
-            class="progress-fill"
-            :style="{ width: progress + '%'}"
-        />
-        <div
-            class="accuracy-fill"
-            :style="{ width: Math.round(progress * accuracy / 100) + '%'}"
-        />
+      <!-- Мини-статистика -->
+      <div class="hero-stats" v-if="Stats?.total_questions">
+        <span class="hero-stat">📝 {{ Stats.total_questions }} вопросов</span>
+        <span class="hero-stat" v-if="Stats?.completed_attempt_stats?.length">
+          🏆 Пройдено {{ Stats.completed_attempt_stats.length }}×
+        </span>
+        <span class="hero-stat" v-if="totalTimeSpent">
+          ⏱ {{ totalTimeSpent }}
+        </span>
       </div>
     </div>
 
@@ -220,20 +172,23 @@ const quickTestOptions = computed(() => {
     <div class="mode-section" v-if="adaptiveAvailable">
       <div
           class="adaptive-card"
-          :class="{ active: props.selectedMode === 'adaptive' }"
-          @click="emit('select-mode', props.selectedMode === 'adaptive' ? 'practice' : 'adaptive')"
+          :class="{ active: props.selectedMode === 'adaptive', locked: !userStore.is_pro, 'pro-glow': userStore.is_pro }"
+          @click="userStore.is_pro ? emit('select-mode', props.selectedMode === 'adaptive' ? 'practice' : 'adaptive') : (showSubModal = true)"
       >
         <div class="adaptive-header">
           <div class="adaptive-left">
             <span class="adaptive-icon">🧠</span>
             <div class="adaptive-text">
-              <span class="adaptive-title">Адаптивное обучение</span>
+              <span class="adaptive-title">
+                Адаптивное обучение
+              </span>
               <span class="adaptive-desc">Вопросы подбираются по вашим слабым местам</span>
             </div>
           </div>
-          <div class="quick-test-toggle" :class="{ on: props.selectedMode === 'adaptive' }">
+          <div v-if="userStore.is_pro" class="quick-test-toggle" :class="{ on: props.selectedMode === 'adaptive' }">
             <div class="toggle-thumb" />
           </div>
+          <ProBadge v-else @click="showSubModal = true" />
         </div>
       </div>
     </div>
@@ -278,6 +233,12 @@ const quickTestOptions = computed(() => {
       </div>
     </div>
 
+    <!-- ── Повторение ── -->
+    <ReviewBadge :quiz-id="quiz.id" @start-review="emit('start-review')" />
+
+    <!-- ── Карта знаний ── -->
+    <KnowledgeMap :quiz-id="quiz.id" @train-topic="(id) => emit('train-cluster', id)" @open-subscription="showSubModal = true" />
+
     <!-- ── Контексты ── -->
     <div class="section" v-if="!loading && contexts.length > 0">
       <h2 class="section-title">Контексты</h2>
@@ -308,6 +269,13 @@ const quickTestOptions = computed(() => {
       <div class="skeleton-title" />
       <div class="skeleton-card" v-for="i in 2" :key="i" />
     </div>
+
+    <!-- Subscription Modal -->
+    <SubscriptionModal
+      :visible="showSubModal"
+      @close="showSubModal = false"
+      @activated="showSubModal = false"
+    />
 
   </div>
 </template>
@@ -368,93 +336,80 @@ const quickTestOptions = computed(() => {
   line-height: 1.5;
 }
 
-/* ── Meta grid ── */
-.meta-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+/* ── Hash Code ── */
+.hash-code {
+  position: absolute;
+  left: 16px;
+  top: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  background: rgba(35, 73, 112, 0.06);
+  border: 1px dashed rgba(35, 73, 112, 0.2);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  z-index: 1;
+
+  &:active {
+    transform: scale(0.95);
+    background: rgba(78, 190, 194, 0.12);
+    border-color: rgba(78, 190, 194, 0.4);
+  }
 }
 
-.meta-item {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-  padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 18px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+.hash-label {
+  font-size: 12px;
 }
 
-.meta-icon {
-  font-size: 20px;
-  margin-bottom: 4px;
-}
-
-.meta-label {
+.hash-value {
   font-size: 11px;
-  color: #9CA3AF;
-  font-weight: 500;
-}
-
-.meta-header {
-  font-size: large;
-  font-weight: 700;
-  color: #234970;
-}
-
-.meta-value {
-  font-weight: 500;
-  color: rgba(64, 64, 64);
-}
-
-/* ── Progress ── */
-.progress-block {
-  padding: 16px 18px;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 18px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
-}
-
-.progress-header {
-  display: flex;
-  justify-content: space-between;
   font-weight: 600;
   color: #234970;
-  margin-bottom: 8px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  letter-spacing: 0.3px;
 }
 
-.progress-pct {
-  color: #4EBEC2;
-}
-
-.progress-bar {
-  position: relative;
-  height: 8px;
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.06);
-  overflow: hidden;
-}
-
-.progress-fill {
+.hash-copied {
   position: absolute;
-  height: 100%;
-  background: rgba(64, 64, 64, 0.3);
-  transition: width 0.4s ease;
+  top: -28px;
+  left: 50%;
+  transform: translateX(-50%) scale(0.8);
+  background: #234970;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
   border-radius: 8px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.visible {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
 }
 
-.accuracy-fill {
-  position: absolute;
-  height: 100%;
-  background: linear-gradient(90deg, #4EBEC2, #234970);
-  transition: width 0.4s ease;
-  border-radius: 8px;
-  z-index: 2;
+.hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.hero-stat {
+  font-size: 13px;
+  font-weight: 500;
+  color: #4B5563;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 4px 10px;
+  border-radius: 12px;
 }
 
 /* ── Section ── */
@@ -520,6 +475,16 @@ const quickTestOptions = computed(() => {
     border-color: rgba(147, 51, 234, 0.5);
     background: rgba(147, 51, 234, 0.06);
     box-shadow: 0 4px 16px rgba(147, 51, 234, 0.15);
+  }
+
+  &.locked {
+    border-color: rgba(124, 58, 237, 0.2);
+    background: rgba(124, 58, 237, 0.03);
+  }
+
+  &.pro-glow {
+    box-shadow: 0 3px 16px rgba(124, 58, 237, 0.12);
+    border-color: rgba(124, 58, 237, 0.2);
   }
 }
 

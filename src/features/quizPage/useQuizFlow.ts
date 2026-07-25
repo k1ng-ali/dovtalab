@@ -9,6 +9,7 @@ const selectedQuiz   = ref<QuizIn | null>(null)
 const selectedContext = ref<ContextIn | null>(null)
 const selectedMode   = ref<QuizMode>("practice")
 const examQuestionLimit = ref<number>(15)
+const selectedClusterId = ref<number | null>(null)
 
 
 export function useQuizFlow() {
@@ -18,6 +19,7 @@ export function useQuizFlow() {
         selectedQuiz.value    = quiz
         selectedContext.value = null
         selectedMode.value    = "practice"
+        selectedClusterId.value = null
         view.value            = "info"
     }
 
@@ -31,6 +33,7 @@ export function useQuizFlow() {
         selectedQuiz.value    = null
         selectedContext.value = null
         selectedMode.value    = "practice"
+        selectedClusterId.value = null
     }
 
     const backToInfo = () => {
@@ -49,6 +52,18 @@ export function useQuizFlow() {
         examQuestionLimit.value = limit
     }
 
+    const trainCluster = (clusterId: number) => {
+        selectedClusterId.value = clusterId
+        selectedMode.value = "practice"
+        view.value = "quiz"
+    }
+
+    const startReview = () => {
+        selectedClusterId.value = null
+        selectedMode.value = "review" as QuizMode
+        view.value = "quiz"
+    }
+
     const startLabel = computed(() => {
         if (selectedMode.value === 'adaptive') return t("quiz.startAdaptive")
         if (selectedMode.value === 'exam') return t("quiz.startExam")
@@ -62,6 +77,7 @@ export function useQuizFlow() {
         selectedContext,
         selectedMode,
         examQuestionLimit,
+        selectedClusterId,
         startLabel,
         openInfo,
         openQuiz,
@@ -70,5 +86,7 @@ export function useQuizFlow() {
         selectContext,
         selectMode,
         setExamLimit,
+        trainCluster,
+        startReview,
     }
 }

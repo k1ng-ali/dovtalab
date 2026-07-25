@@ -4,7 +4,7 @@ import { BsArrowLeft, MdOutlinedMenuBook } from '@kalimahapps/vue-icons'
 import Quizzes  from "@/features/quizPage/quizzes/Quizzes.vue"
 import QuizInfo from "@/features/quizPage/quizzes/QuizInfo.vue"
 import QuizRunner from "@/features/quizPage/quiz/QuizRunner.vue"
-import Ad from "@/features/quizPage/ad/Ad.vue";
+import BannerCarousel from "@/features/quizPage/ad/BannerCarousel.vue";
 
 import { useNavStore }    from "@/shared/stores/useNavStore.ts"
 import { useHeaderStore } from "@/shared/stores/useHeaderStore.ts"
@@ -115,7 +115,7 @@ onUnmounted(() => headerStore.reset())
 
         <!-- Список квизов -->
         <div v-if="flow.view.value === 'list'" key="list">
-          <Ad class="ad" @select="flow.openInfo"/>
+          <BannerCarousel class="ad" @select-quiz="flow.openInfo"/>
           <Quizzes @select="flow.openInfo" />
         </div>
 
@@ -129,6 +129,8 @@ onUnmounted(() => headerStore.reset())
               @select-context="flow.selectContext"
               @select-mode="flow.selectMode"
               @set-exam-limit="flow.setExamLimit"
+              @train-cluster="flow.trainCluster"
+              @start-review="flow.startReview"
           />
         </div>
 
@@ -139,6 +141,7 @@ onUnmounted(() => headerStore.reset())
               :context="flow.selectedContext.value"
               :mode="flow.selectedMode.value"
               :question-limit="flow.selectedMode.value === 'exam' ? flow.examQuestionLimit.value : undefined"
+              :cluster-id="flow.selectedClusterId.value"
               @finish="flow.backToInfo"
           />
         </div>
@@ -154,6 +157,7 @@ onUnmounted(() => headerStore.reset())
   background: #F6F6F6;
   display: flex;
   justify-content: center;
+  overflow-x: hidden;
 }
 
 .page-body {

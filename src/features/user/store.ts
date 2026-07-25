@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import * as api from './api.ts'
 import { logout as authLogout } from '@/features/auth/api.ts'
+import { useAuthStore } from '@/features/auth/store.ts'
 import type { User, Config, UserProfile, UserRole } from './type.ts'
 import { setLocale, type AppLocale } from '@/shared/i18n'
 
@@ -16,8 +17,34 @@ export const useUserStore = defineStore("user", {
       roles: (state): UserRole[] => state.profile?.roles ?? [],
 
       is_creator: (state) => state.profile?.roles.includes("creator") ?? false,
-      is_pro: (state) => state.profile?.roles.includes("pro") ?? false,
+      is_pro: (): boolean => {
+        const authStore = useAuthStore()
+        const token = authStore.accessToken
+        if (!token) return false
+        try {
+          const parts = token.split('.')
+          if (parts.length < 2) return false
+          const payload = JSON.parse(atob(parts[1]!))
+          return payload.subs === 'pro' || payload.subs === 'creator'
+        } catch {
+          return false
+        }
+      },
       is_admin: (state) => state.profile?.roles.includes("admin") ?? false,
+
+      subscription: (): string | null => {
+        const authStore = useAuthStore()
+        const token = authStore.accessToken
+        if (!token) return null
+        try {
+          const parts = token.split('.')
+          if (parts.length < 2) return null
+          const payload = JSON.parse(atob(parts[1]!))
+          return payload.subs ?? null
+        } catch {
+          return null
+        }
+      },
     },
 
     actions: {

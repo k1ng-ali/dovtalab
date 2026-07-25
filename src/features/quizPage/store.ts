@@ -8,6 +8,7 @@ import type {
 export const useQuiz = defineStore("quiz", {
     state: ()=> ({
         quizzes: [] as QuizIn[],
+        topQuizzes: [] as QuizIn[],
         questions: [] as QuestionPublic[],
         contexts:  [] as ContextIn[],
         quiz_stats: [] as QuizStat[],
@@ -30,10 +31,25 @@ export const useQuiz = defineStore("quiz", {
 
     actions: {
         // ─── Quiz ────────────────────────────────────────────────────────────
-        async fetchQuizzes() {
-            const { data } = await api.quizzes();
-            console.log(data);
-            this.quizzes = data;
+        async fetchQuizzes(skip = 0, limit = 20) {
+            const { data } = await api.quizzes(skip, limit);
+            if (skip === 0) {
+                this.quizzes = data;
+            } else {
+                this.quizzes = [...this.quizzes, ...data];
+            }
+            return data;
+        },
+
+        async fetchTopQuizzes(limit = 3) {
+            const { data } = await api.topQuizzes(limit);
+            this.topQuizzes = data;
+            return data;
+        },
+
+        async searchQuizzes(q: string, skip = 0, limit = 10) {
+            const { data } = await api.searchQuizzes(q, skip, limit);
+            return data;
         },
 
         async getQuiz(quiz_id: number) {
@@ -44,8 +60,8 @@ export const useQuiz = defineStore("quiz", {
             return data as QuizIn
         },
 
-        async startQuiz(quiz_id: number, context_id?: number, mode: string = 'practice', question_limit?: number): Promise<QuestionPublic> {
-            const { data } = await api.startQuiz(quiz_id, context_id, mode, question_limit);
+        async startQuiz(quiz_id: number, context_id?: number, mode: string = 'practice', question_limit?: number, cluster_id?: number): Promise<QuestionPublic> {
+            const { data } = await api.startQuiz(quiz_id, context_id, mode, question_limit, cluster_id);
             return data
         },
 

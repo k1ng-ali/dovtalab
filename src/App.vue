@@ -350,6 +350,19 @@ onUnmounted(() => {
 .fade-enter-from,
 .fade-leave-to     { opacity: 0; }
 
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
 .splash-fade-enter-active { transition: opacity 0.3s ease; }
 .splash-fade-leave-active { transition: opacity 0.5s ease 0.1s; }
 .splash-fade-enter-from,

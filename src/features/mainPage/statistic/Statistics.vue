@@ -296,17 +296,25 @@ const goToQuiz = () => router.push('/quiz')
               <h5 class="history-title">{{ attempt.quiz_title }}</h5>
               <span
                   class="history-score"
-                  :style="{ color: scoreColor(attempt.score) }"
+                  :style="{ color: scoreColor(attempt.questions_count ? Math.round((attempt.correct_count ?? 0) / attempt.questions_count * 100) : attempt.score) }"
               >
-                {{ attempt.score ?? 0 }}%
+                {{ attempt.questions_count ? Math.round((attempt.correct_count ?? 0) / attempt.questions_count * 100) : (attempt.score ?? 0) }}%
               </span>
             </div>
             <div class="history-bar-track">
+              <!-- Серый: отвечено / всего -->
+              <div
+                  class="history-bar-answered"
+                  :style="{
+                    width: attempt.questions_count ? ((attempt.total_count ?? 0) / attempt.questions_count * 100) + '%' : '100%'
+                  }"
+              />
+              <!-- Цветной: правильно / всего -->
               <div
                   class="history-bar-fill"
                   :style="{
-                    width: (attempt.score ?? 0) + '%',
-                    background: scoreColor(attempt.score)
+                    width: attempt.questions_count ? ((attempt.correct_count ?? 0) / attempt.questions_count * 100) + '%' : (attempt.score ?? 0) + '%',
+                    background: scoreColor(attempt.questions_count ? Math.round((attempt.correct_count ?? 0) / attempt.questions_count * 100) : attempt.score)
                   }"
               />
             </div>
@@ -670,6 +678,7 @@ const goToQuiz = () => router.push('/quiz')
 }
 
 .history-bar-track {
+  position: relative;
   width: 100%;
   height: 6px;
   border-radius: 6px;
@@ -677,7 +686,16 @@ const goToQuiz = () => router.push('/quiz')
   overflow: hidden;
 }
 
+.history-bar-answered {
+  position: absolute;
+  height: 100%;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.10);
+  transition: width 0.5s ease;
+}
+
 .history-bar-fill {
+  position: absolute;
   height: 100%;
   border-radius: 6px;
   transition: width 0.5s ease;

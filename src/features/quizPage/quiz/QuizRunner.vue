@@ -26,6 +26,7 @@ const props = defineProps<{
   context: ContextIn | null
   mode?: QuizMode
   questionLimit?: number
+  clusterId?: number | null
 }>()
 
 const emit = defineEmits<{
@@ -129,7 +130,7 @@ const startAfterContext = async () => {
   loading.value = true
 
   try {
-    currentQuestion.value = await quizStore.startQuiz(props.quiz.id, props.context?.id, props.mode ?? 'practice', props.questionLimit)
+    currentQuestion.value = await quizStore.startQuiz(props.quiz.id, props.context?.id, props.mode ?? 'practice', props.questionLimit, props.clusterId ?? undefined)
     console.log("question", currentQuestion.value)
   } catch (e) {
     console.error('Не удалось начать квиз', e)
@@ -153,7 +154,7 @@ onMounted(async () => {
 
   // Без контекста — сразу стартуем
   try {
-    currentQuestion.value = await quizStore.startQuiz(props.quiz.id, undefined, props.mode ?? 'practice', props.questionLimit)
+    currentQuestion.value = await quizStore.startQuiz(props.quiz.id, undefined, props.mode ?? 'practice', props.questionLimit, props.clusterId ?? undefined)
     console.log("question", currentQuestion.value)
   } catch (e) {
     console.error('Не удалось начать квиз', e)

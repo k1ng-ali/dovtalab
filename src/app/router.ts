@@ -3,6 +3,7 @@ const MainPage = () => import("@/pages/MainPage/MainPage.vue");
 const QuizPage = () => import("@/pages/Quizes/QuizPage.vue")
 const ProfilePage = () =>  import("@/pages/ProfilePage/ProfilePage.vue")
 const LeaderPage = () => import("@/pages/LeaderPage/LeaderPage.vue");
+const DailyChallengePage = () => import("@/pages/DailyChallenge/DailyChallengePage.vue");
 
 const router = createRouter({
     history: createWebHistory(),
@@ -11,6 +12,7 @@ const router = createRouter({
         {path: '/quiz', component: QuizPage},
         {path: '/profile', component: ProfilePage },
         {path: '/leaders', component: LeaderPage},
+        {path: '/daily', component: DailyChallengePage},
     ]
 })
 

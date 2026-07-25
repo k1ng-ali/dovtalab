@@ -78,7 +78,7 @@ const onTab = (index: number) => {
           rgba(255, 255, 255, 0) 80%
   );
   box-sizing: border-box;
-  min-height: 50px;
+  min-height: 80px;
 }
 
 /* ── Общий контейнер ── */
@@ -94,6 +94,8 @@ const onTab = (index: number) => {
   border-radius: 50px;
   box-shadow: rgba(34, 34, 34, 0.3) 0 0 20px;
   user-select: none;
+  transition: all 0.25s ease;
+  min-height: 48px;
 }
 
 /* ── Вкладки ── */
