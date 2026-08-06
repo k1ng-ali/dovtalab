@@ -11,8 +11,7 @@ import { Capacitor } from '@capacitor/core'
 import { App as CapApp } from '@capacitor/app'
 import { Browser } from '@capacitor/browser'
 import { consumePkceParams } from '@/features/auth/composables/useTelegramLogin'
-import {useNetwork} from "@/hooks/useNetwork.ts";
-import { StatusBar, Style } from '@capacitor/status-bar';
+import {useNetwork} from "@/hooks/useNetwork.ts"
 import logoSvg from '@/assets/logo.svg'
 import { useI18n } from 'vue-i18n'
 
@@ -228,11 +227,10 @@ async function initializeApp() {
 // ── onMounted ─────────────────────────────────────────────────────────────────
 
 onMounted(async () => {
-  // В App.vue или main.ts
   if (Capacitor.isNativePlatform()) {
-    await StatusBar.setOverlaysWebView({ overlay: true });
-    await StatusBar.setStyle({ style: Style.Dark });
-    await StatusBar.setBackgroundColor({ color: '#00000000' });
+    // EdgeToEdge уже настроен через capacitor.config.ts (плагин @capawesome).
+    // StatusBar здесь не трогаем — управление статус-баром на каждой странице
+    // через SystemBars из @capawesome отдельно.
   }
 
   // Capacitor: подписываемся на appUrlOpen ДО всей остальной логики

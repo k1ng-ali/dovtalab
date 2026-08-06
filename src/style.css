@@ -88,7 +88,11 @@ html::-webkit-scrollbar-thumb:hover {
 body {
   font-size: var(--font-size-base);
   margin: 0;
+  padding: 0;
   -webkit-tap-highlight-color: transparent;
+  /* Критично для edge-to-edge на Android:
+     WebView должен растягиваться на весь экран включая область статус-бара */
+  overscroll-behavior: none;
 }
 
 

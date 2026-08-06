@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch, nextTick, onMounted, computed } from 'vue'
+import { message } from 'ant-design-vue'
 import PassportCard from './PassportCard.vue'
 import { usePassport } from './usePassport'
 import { usePassportExport } from './usePassportExport'
@@ -10,15 +11,53 @@ const emit   = defineEmits<{ (e: 'close'): void }>()
 const { passport, loading, fetch } = usePassport()
 const { exporting, share, download } = usePassportExport()
 
-// ref на обёртку div, а не на компонент — так $el гарантированно HTMLElement
 const cardWrapRef = ref<HTMLElement | null>(null)
+const previewRef  = ref<HTMLElement | null>(null)
+const scale       = ref(1)
+// Реальная высота карточки после рендера — пересчитываем динамически
+const cardRealHeight = ref(0)
+
+const CARD_WIDTH = 680
+
+function updateScale() {
+  if (!previewRef.value) return
+  const available = previewRef.value.clientWidth
+  scale.value = available < CARD_WIDTH ? available / CARD_WIDTH : 1
+  // Пересчитываем высоту после смены scale
+  updateHeight()
+}
+
+function updateHeight() {
+  if (!cardWrapRef.value) return
+  // Берём реальную высоту DOM-элемента карточки
+  const h = cardWrapRef.value.scrollHeight || cardWrapRef.value.offsetHeight
+  if (h > 0) cardRealHeight.value = h
+}
+
+// Высота контейнера = реальная высота карточки * scale
+const scaledHeight = computed(() =>
+  cardRealHeight.value > 0
+    ? `${Math.round(cardRealHeight.value * scale.value)}px`
+    : 'auto'
+)
 
 watch(() => props.open, async (val) => {
-  if (val) await fetch()
+  if (val) {
+    await fetch()
+    await nextTick()
+    updateScale()
+    // Ещё один тик — дожидаемся полного рендера карточки с бейджами
+    await nextTick()
+    updateHeight()
+  }
+})
+
+onMounted(() => {
+  window.addEventListener('resize', updateScale)
 })
 
 const onShare = async () => {
-  await nextTick()                     // дожидаемся рендера карточки
+  await nextTick()
   const el = cardWrapRef.value
   if (!el) return
   await share(el)
@@ -28,7 +67,13 @@ const onDownload = async () => {
   await nextTick()
   const el = cardWrapRef.value
   if (!el) return
-  await download(el)
+  try {
+    await download(el)
+    emit('close')
+    message.success('Паспорт сохранён 🎉')
+  } catch {
+    message.error('Не удалось сохранить паспорт')
+  }
 }
 </script>
 
@@ -43,11 +88,17 @@ const onDownload = async () => {
           <button class="pm-close" @click="emit('close')" aria-label="Закрыть">✕</button>
         </div>
 
-        <!-- Card preview (scroll on mobile) -->
-        <div class="pm-preview">
+        <!-- Card preview — масштабируется через transform, высота вычисляется динамически -->
+        <div class="pm-preview" ref="previewRef" :style="{ height: scaledHeight }">
           <div v-if="loading" class="pm-skeleton" />
-          <div v-else-if="passport" ref="cardWrapRef" class="pm-card-wrap">
-            <PassportCard :passport="passport" />
+          <div
+            v-else-if="passport"
+            class="pm-card-scaler"
+            :style="{ transform: `scale(${scale})`, transformOrigin: 'top left', width: '680px' }"
+          >
+            <div ref="cardWrapRef">
+              <PassportCard :passport="passport" />
+            </div>
           </div>
           <div v-else class="pm-error">Не удалось загрузить данные</div>
         </div>
@@ -129,15 +180,18 @@ const onDownload = async () => {
   &:active { transform: scale(0.93); }
 }
 
-/* Preview — карточка шире экрана, скроллим горизонтально */
+/* Preview — точная высота вычисляется динамически по реальному контенту */
 .pm-preview {
-  overflow-x: auto;
+  width: 100%;
   border-radius: 12px;
+  /* НЕ overflow:hidden — иначе обрежет карточку */
+  overflow: visible;
+  position: relative;
 }
 
-.pm-card-wrap {
-  /* Карточка фиксированной ширины 680px — на мобиле скроллится */
-  display: inline-block;
+.pm-card-scaler {
+  display: block;
+  /* width задаётся инлайн (680px) */
 }
 
 .pm-skeleton {

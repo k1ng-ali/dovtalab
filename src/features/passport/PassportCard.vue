@@ -1,8 +1,22 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import QRCode from 'qrcode'
-import type { UserPassport } from './types'
+import type { UserPassport, BadgeType } from './types'
+import { BADGES } from './types'
 import logoSvg from '@/assets/logo.svg'
+import patternSvg from '@/assets/Pattern.svg'
+
+// Инлайн-стили для каждого типа бейджа — работают и в html2canvas экспорте
+const BADGE_STYLES: Record<BadgeType, { bg: string; border: string; icon: string }> = {
+  excellent: { bg: '#1A1A2E', border: '#C8A84B', icon: '#E8C96A' },
+  expert:    { bg: '#4A2080', border: '#be8ffd', icon: '#C090FF' },
+  marathon:  { bg: '#8A1A10', border: '#C8A84B', icon: '#FF8060' },
+  speedster: { bg: '#1A5A80', border: '#C8A84B', icon: '#80CFFF' },
+  beginner:  { bg: '#1A6050', border: '#5fdeaf', icon: '#60E0B0' },
+  top10:     { bg: '#7A4A00', border: '#E8C96A', icon: '#E8C96A' },
+  top100:    { bg: '#404060', border: 'rgb(159,159,186)', icon: '#C0C0E0' },
+  pro:       { bg: '#3A1A60', border: '#B090E0', icon: '#D0A0FF' },
+}
 
 // Встроенная SVG-иконка пользователя (не зависит от внешних библиотек при экспорте)
 const USER_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
@@ -44,6 +58,9 @@ const percentileLabel = computed(() => {
 
 <template>
   <div class="passport">
+
+    <!-- Золотистый узор фона — инлайн img для корректного экспорта в html2canvas -->
+    <img :src="patternSvg" class="passport__pattern" alt="" aria-hidden="true" />
 
     <!-- ═══ HEADER ═══ -->
     <div class="passport__header">
@@ -137,15 +154,28 @@ const percentileLabel = computed(() => {
           v-for="badge in passport.badges"
           :key="badge.type"
           class="passport__badge"
-          :class="`passport__badge--${badge.type}`"
         >
           <div class="passport__badge-hex">
-            <svg viewBox="0 0 52 60" xmlns="http://www.w3.org/2000/svg" class="passport__badge-svg">
-              <polygon points="26,2 50,15 50,45 26,58 2,45 2,15" />
+            <svg viewBox="0 0 60 69" xmlns="http://www.w3.org/2000/svg" class="passport__badge-svg">
+              <!-- Внешняя золотая рамка -->
+              <polygon
+                :style="{ fill: BADGE_STYLES[badge.type].border }"
+                points="30,2 57,17 57,52 30,67 3,52 3,17"
+              />
+              <!-- Внутренний залитый шестиугольник -->
+              <polygon
+                :style="{ fill: BADGE_STYLES[badge.type].bg }"
+                points="30,7 52,19.5 52,49.5 30,62 8,49.5 8,19.5"
+              />
             </svg>
-            <span class="passport__badge-emoji">{{ badge.emoji }}</span>
+            <!-- v-html вставляет чистый SVG в DOM — html2canvas его рендерит корректно -->
+            <span
+              class="passport__badge-icon"
+              :style="{ color: BADGE_STYLES[badge.type].icon }"
+              v-html="BADGES[badge.type].svg"
+            />
           </div>
-          <span class="passport__badge-label">{{ badge.label }}</span>
+          <span class="passport__badge-label">{{ BADGES[badge.type].label }}</span>
         </div>
       </div>
     </div>
@@ -174,26 +204,29 @@ $text-muted: #7A6A50;
   min-height: 360px;
   background: $cream;
   border-radius: 18px;
-  border: 2px solid $gold;
+  border: 3px solid $gold;
   box-shadow:
-    0 0 0 6px rgba($gold, 0.15),
-    0 12px 48px rgba($navy, 0.25);
+    0 0 0 6px rgba($gold, 0.15);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   font-family: 'Inter', sans-serif;
   position: relative;
+}
 
-  /* Тиснёный узор фона */
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image:
-      radial-gradient(circle, rgba($gold, 0.07) 1px, transparent 1px);
-    background-size: 18px 18px;
-    pointer-events: none;
-  }
+/* Золотистый узор поверх кремового фона */
+.passport__pattern {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0.1;
+  pointer-events: none;
+  /* Тонируем SVG в золотистый через CSS filter */
+  filter: sepia(1) saturate(3) hue-rotate(5deg) brightness(0.7);
+  z-index: 0;
 }
 
 /* ── Header ── */
@@ -202,6 +235,8 @@ $text-muted: #7A6A50;
   justify-content: space-between;
   align-items: flex-start;
   padding: 16px 20px 12px;
+  position: relative;
+  z-index: 1;
 }
 
 .passport__brand {
@@ -266,6 +301,8 @@ $text-muted: #7A6A50;
   background: linear-gradient(90deg, transparent, $gold, transparent);
   margin: 0 20px;
   opacity: 0.6;
+  position: relative;
+  z-index: 1;
 }
 
 /* ── Body ── */
@@ -274,6 +311,8 @@ $text-muted: #7A6A50;
   gap: 16px;
   padding: 16px 20px;
   flex: 1;
+  position: relative;
+  z-index: 1;
 }
 
 /* Avatar */
@@ -368,6 +407,7 @@ $text-muted: #7A6A50;
   border: 1px solid rgba($gold, 0.3);
   border-radius: 10px;
   padding: 8px 4px;
+  backdrop-filter: blur(2px);
 }
 
 .passport__stat {
@@ -462,10 +502,12 @@ $text-muted: #7A6A50;
 
 /* ── Badges ── */
 .passport__badges-section {
-  padding: 0 20px 12px;
+  padding: 0 20px 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
 }
 
 .passport__badges-title {
@@ -477,7 +519,7 @@ $text-muted: #7A6A50;
 
 .passport__badges {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
@@ -485,44 +527,44 @@ $text-muted: #7A6A50;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  width: 64px;
+  gap: 6px;
+  width: 68px;
 }
 
-/* Шестиугольная форма через SVG — clip-path не поддерживается html2canvas */
+/* Шестиугольник через SVG с двойной рамкой */
 .passport__badge-hex {
   position: relative;
-  width: 52px;
-  height: 60px;
+  width: 60px;
+  height: 69px;
   display: flex;
   align-items: center;
   justify-content: center;
-}
+  filter: drop-shadow(0 4px 8px rgba($gold, 0.5));}
 
 .passport__badge-svg {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  filter: drop-shadow(0 3px 6px rgba($navy, 0.4));
-
-  polygon { fill: #2A4060; }
-
-  .passport__badge--excellent & polygon { fill: #3B5270; }
-  .passport__badge--expert &    polygon { fill: #5B3FA0; }
-  .passport__badge--marathon &  polygon { fill: #C8502A; }
-  .passport__badge--speedster & polygon { fill: #2A6090; }
-  .passport__badge--top10 &     polygon { fill: $gold; }
-  .passport__badge--top100 &    polygon { fill: #909090; }
-  .passport__badge--pro &       polygon { fill: $gold; }
-  .passport__badge--beginner &  polygon { fill: #2A8060; }
 }
 
-.passport__badge-emoji {
+/* Иконка внутри шестиугольника */
+.passport__badge-icon {
   position: relative;
   z-index: 1;
-  font-size: 22px;
-  line-height: 1;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+
+  /* SVG внутри span наследует color и заполняет контейнер */
+  :deep(svg) {
+    width: 28px;
+    height: 28px;
+    fill: currentColor;
+  }
 }
 
 .passport__badge-label {
@@ -540,6 +582,8 @@ $text-muted: #7A6A50;
   justify-content: space-between;
   align-items: center;
   padding: 8px 20px;
+  position: relative;
+  z-index: 1;
 }
 
 .passport__footer-left,

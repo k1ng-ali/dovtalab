@@ -1,6 +1,9 @@
 import { ref } from 'vue'
 import html2canvas from 'html2canvas'
 import { http } from '@/shared/api/http'
+import { Capacitor } from '@capacitor/core'
+import { Filesystem, Directory } from '@capacitor/filesystem'
+import { Share } from '@capacitor/share'
 
 // Fallback-аватар — та же иконка что в PassportCard, как data URL
 const FALLBACK_AVATAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 130" width="110" height="130">
@@ -113,14 +116,26 @@ export function usePassportExport() {
         exporting.value = true
         try {
             const blob = await toBlob(el)
-            const url  = URL.createObjectURL(blob)
-            const a    = document.createElement('a')
-            a.href     = url
-            a.download = filename
-            document.body.appendChild(a)
-            a.click()
-            document.body.removeChild(a)
-            URL.revokeObjectURL(url)
+
+            if (Capacitor.isNativePlatform()) {
+                // На Android сохраняем в папку Downloads через Filesystem
+                const base64 = await blobToBase64(blob)
+                await Filesystem.writeFile({
+                    path: filename,
+                    data: base64,
+                    directory: Directory.Documents,
+                })
+            } else {
+                // Браузер — стандартное скачивание через <a>
+                const url = URL.createObjectURL(blob)
+                const a   = document.createElement('a')
+                a.href     = url
+                a.download = filename
+                document.body.appendChild(a)
+                a.click()
+                document.body.removeChild(a)
+                URL.revokeObjectURL(url)
+            }
         } finally {
             exporting.value = false
         }
@@ -130,16 +145,36 @@ export function usePassportExport() {
         exporting.value = true
         try {
             const blob = await toBlob(el)
-            const file = new File([blob], 'dovtalab-passport.png', { type: 'image/png' })
 
-            if (navigator.canShare?.({ files: [file] })) {
-                await navigator.share({
+            if (Capacitor.isNativePlatform()) {
+                // Capacitor Android/iOS — сохраняем во временный файл, шарим через нативный Share
+                const base64 = await blobToBase64(blob)
+                const fileName = `dovtalab-passport-${Date.now()}.png`
+
+                const saved = await Filesystem.writeFile({
+                    path: fileName,
+                    data: base64,
+                    directory: Directory.Cache,
+                })
+
+                await Share.share({
                     title: 'Мой паспорт Dovtalab',
-                    text: 'Посмотри мой прогресс на Dovtalab! 🚀',
-                    files: [file],
+                    text: 'Посмотри мой прогресс на Dovtalab! 🚀\nhttps://dovtalab.app',
+                    url: saved.uri,
+                    dialogTitle: 'Поделиться паспортом',
                 })
             } else {
-                await download(el)
+                // Браузер — Web Share API с файлом или fallback на скачивание
+                const file = new File([blob], 'dovtalab-passport.png', { type: 'image/png' })
+                if (navigator.canShare?.({ files: [file] })) {
+                    await navigator.share({
+                        title: 'Мой паспорт Dovtalab',
+                        text: 'Посмотри мой прогресс на Dovtalab! 🚀\nhttps://dovtalab.app',
+                        files: [file],
+                    })
+                } else {
+                    await download(el)
+                }
             }
         } finally {
             exporting.value = false
@@ -147,4 +182,18 @@ export function usePassportExport() {
     }
 
     return { exporting, share, download }
+}
+
+/** Blob → base64 строка (без data:... префикса) */
+function blobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload  = () => {
+            const result = reader.result as string
+            // Filesystem.writeFile ожидает чистый base64 без префикса
+            resolve(result.split(',')[1] ?? result)
+        }
+        reader.onerror = reject
+        reader.readAsDataURL(blob)
+    })
 }

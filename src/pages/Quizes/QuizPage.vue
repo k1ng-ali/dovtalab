@@ -110,7 +110,7 @@ onMounted(async () => {
     try {
       // Исходное состояние при загрузке
       await SystemBars.setStyle({ style: SystemBarsStyle.Light})
-      await EdgeToEdge.setBackgroundColor({ color: '#00000000' });
+      await EdgeToEdge.setBackgroundColor({ color: '#F6F6F6' });
     } catch (e) {
       console.error('Ошибка настройки StatusBar:', e);
     }
