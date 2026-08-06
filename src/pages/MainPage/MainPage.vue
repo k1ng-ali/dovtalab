@@ -9,7 +9,6 @@ import {onMounted, onUnmounted, ref} from 'vue'
 import {Capacitor, SystemBars, SystemBarsStyle} from "@capacitor/core";
 import {EdgeToEdge} from "@capawesome/capacitor-android-edge-to-edge-support";
 import {useNavStore} from "@/shared/stores/useNavStore.ts";
-// EdgeToEdge API нам больше не нужно вызывать в JS, убираем его импорт
 
 const headerStore = useHeaderStore()
 const navigatorStore = useNavStore()
