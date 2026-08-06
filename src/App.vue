@@ -22,6 +22,11 @@ const { isTelegramEnv, getInitData } = useTelegramEnv()
 const authStore = useAuthStore()
 const router = useRouter()
 
+// Сохраняем путь СИНХРОННО при создании компонента — до любых await и до того,
+// как initializeApp() может вызвать router.replace('/').
+// window.location уже содержит правильный путь благодаря history.replaceState в index.html.
+const intendedPath = window.location.pathname + window.location.search + window.location.hash
+
 // Просто вызываем. Хук сам зарегистрирует onMounted/onUnmounted внутри App.vue
 const { isOnline } = useNetwork()
 
@@ -167,7 +172,7 @@ async function initializeApp() {
       authStore.accessToken = data.access_token
       localStorage.setItem('access_token', data.access_token)
       authStore.status = 'authenticated'
-      await router.replace('/')
+      await router.replace(intendedPath)
     } catch (e: any) {
       if (!e.response || e.code === 'ERR_NETWORK' || e.code === 'ECONNABORTED') {
         connectionError.value = true
@@ -182,7 +187,6 @@ async function initializeApp() {
 
   // 1. Уже есть accessToken в памяти
   if (authStore.accessToken) {
-    await router.replace('/')
     isInitializing.value = false
     return
   }
@@ -193,7 +197,7 @@ async function initializeApp() {
 
     try {
       await authStore.login(initData)
-      await router.replace('/')
+      await router.replace(intendedPath)
     } catch (e: any) {
       if (!e.response || e.code === 'ERR_NETWORK' || e.code === 'ECONNABORTED') {
         connectionError.value = true
@@ -209,7 +213,7 @@ async function initializeApp() {
   // 3. Обычный браузер — пробуем тихий рефреш (есть кука)
   try {
     await authStore.refresh()
-    await router.replace('/')
+    await router.replace(intendedPath)
   } catch (e: any) {
     if (!e.response || e.code === 'ERR_NETWORK' || e.code === 'ECONNABORTED') {
       connectionError.value = true

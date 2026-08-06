@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {onMounted, onUnmounted, watch} from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { BsArrowLeft, MdOutlinedMenuBook } from '@kalimahapps/vue-icons'
 import Quizzes  from "@/features/quizPage/quizzes/Quizzes.vue"
 import QuizInfo from "@/features/quizPage/quizzes/QuizInfo.vue"
@@ -12,6 +13,8 @@ import { useQuizFlow }    from "@/features/quizPage/useQuizFlow"
 import {Capacitor, SystemBars, SystemBarsStyle} from "@capacitor/core";
 import {EdgeToEdge} from "@capawesome/capacitor-android-edge-to-edge-support";
 
+const route       = useRoute()
+const router      = useRouter()
 const navStore    = useNavStore()
 const headerStore = useHeaderStore()
 const flow        = useQuizFlow()
@@ -95,6 +98,14 @@ watch(
     { immediate: true }
 )
 onMounted(async () => {
+  // Deep-link: /quiz/:hashCode — открываем QuizInfo сразу
+  const hashCode = route.params.hashCode as string | undefined
+  if (hashCode) {
+    await flow.openInfoByHash(hashCode)
+    // Убираем hash из URL, чтобы кнопка "назад" не перечитывала его
+    router.replace({ path: '/quiz' })
+  }
+
   if (Capacitor.isNativePlatform()) {
     try {
       // Исходное состояние при загрузке

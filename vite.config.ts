@@ -26,7 +26,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
     }
   },
-  base: './', // <--- обязательно с /
+  base: '/',
   build: {
     outDir: 'dist',
   },
@@ -34,7 +34,8 @@ export default defineConfig({
     host: true,
     allowedHosts: [
         "http://127.0.0.1:8000/",
-        "https://api.dovtalab.app/"
+        "https://api.dovtalab.app/",
+        "https://t.me/"
     ]
   }
 })

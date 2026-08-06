@@ -6,6 +6,8 @@ import type {
 
 export const quizzes = (skip = 0, limit = 20) => http.get<QuizIn[]>('/quizzes/', { params: { skip, limit } })
 export const getQuiz = (quiz_id: number) => http.get<QuizIn>(`/quizzes/${quiz_id}`)
+export const getQuizByHash = (hashCode: string) =>
+    http.get<QuizIn[]>('/quizzes/search', { params: { q: hashCode, limit: 1 } })
 export const topQuizzes = (limit = 3) => http.get<QuizIn[]>('/quizzes/top', { params: { limit } })
 export const searchQuizzes = (q: string, skip = 0, limit = 10) =>
     http.get<QuizIn[]>('/quizzes/search', { params: { q, skip, limit } })

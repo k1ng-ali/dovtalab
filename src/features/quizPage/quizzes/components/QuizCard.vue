@@ -79,6 +79,9 @@ const timeLabel = computed(() => {
       <!-- Описание -->
       <p class="description">{{ quiz.description }}</p>
 
+      <!-- Автор -->
+      <span v-if="quiz.creator_name" class="author">{{ quiz.creator_name }}</span>
+
       <!-- Бейджи -->
       <div class="badges">
         <span v-if="timeLabel" class="badge badge--time">⏱ {{ timeLabel }}</span>
@@ -216,6 +219,12 @@ const timeLabel = computed(() => {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.author {
+  font-size: 12px;
+  color: #9CA3AF;
+  font-weight: 500;
 }
 
 /* ── Badges ───────────────────────────────────────────────────────────────── */

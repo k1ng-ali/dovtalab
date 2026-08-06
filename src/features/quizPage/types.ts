@@ -107,6 +107,7 @@ export interface QuizIn {
     title: string
     description: string
     time_limit: number
+    creator_name?: string
     contexts?: ContextIn[]
     created_at: string
     on_fav?: boolean,
