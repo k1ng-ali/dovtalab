@@ -5,7 +5,7 @@ const headerStore = useHeaderStore()
 </script>
 
 <template>
-  <div class="header" v-if="headerStore.is_visible">
+  <div class="header" :class="{ hidden: !headerStore.is_visible }">
     <div class="container">
 
       <!-- Левая кнопка (опционально) -->
@@ -80,6 +80,8 @@ const headerStore = useHeaderStore()
   width: 100%;
   padding: 20px 0;
   z-index: 99;
+  padding-top: calc(16px + var(--sat));
+  transition: opacity 0.25s ease, transform 0.25s ease;
 
   background: linear-gradient(
           to bottom,
@@ -87,6 +89,12 @@ const headerStore = useHeaderStore()
           rgba(255, 255, 255, 0.3) 50%,
           rgba(255, 255, 255, 0) 80%
   );
+
+  &.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-10px);
+  }
 }
 
 .container {

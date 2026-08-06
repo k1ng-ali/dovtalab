@@ -1,3 +1,13 @@
+// ─── Start Quiz response ──────────────────────────────────────────────────────
+
+export interface StartQuizResponse {
+    quiz_attempt_id: number
+}
+
+// ─── Quiz Mode ────────────────────────────────────────────────────────────────
+
+export type QuizMode = 'practice' | 'exam' | 'adaptive' | 'review'
+
 // ─── Context response ─────────────────────────────────────────────────────────
 
 export interface ContextIn {
@@ -83,18 +93,30 @@ export interface SubmitIn {
 
 // ─── Quiz response ────────────────────────────────────────────────────────────
 
+export interface UserProgressSummary {
+    total_questions: number
+    answered_count: number       // всего отвечено в текущей попытке
+    correct_count: number        // правильных в текущей попытке
+    completed_attempts: number   // сколько раз полностью завершён
+    best_score: number | null    // лучший score (0–100)
+}
+
 export interface QuizIn {
     id: number
     hash_code: string
     title: string
     description: string
     time_limit: number
+    creator_name?: string
     contexts?: ContextIn[]
     created_at: string
     on_fav?: boolean,
     details?: {
         type?: "single_choice" | "multiple_choice" | "matching" | "input"
         stat?: AttemptStat,
+        total_questions?: number
+        contexts_count?: number
+        progress?: UserProgressSummary
     }
 }
 

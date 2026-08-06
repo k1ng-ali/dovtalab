@@ -12,7 +12,10 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --status-bar-height: env(safe-area-inset-top);
+  --sat: env(safe-area-inset-top);
+  --sab: env(safe-area-inset-bottom);
+  --sal: env(safe-area-inset-left);
+  --sar: env(safe-area-inset-right);
 
   /* ── Breakpoints ── */
   --bp-md: 768px;
@@ -55,13 +58,41 @@
 
 html {
   font-size: 16px;
+  overflow-y: scroll;
+}
+
+/* Overlay scrollbar — не сдвигает контент */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+
+html::-webkit-scrollbar {
+  width: 6px;
+}
+
+html::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+
+html::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
 }
 
 /* body больше не ограничиваем — layout управляется внутри App.vue */
 body {
   font-size: var(--font-size-base);
   margin: 0;
+  padding: 0;
   -webkit-tap-highlight-color: transparent;
+  /* Критично для edge-to-edge на Android:
+     WebView должен растягиваться на весь экран включая область статус-бара */
+  overscroll-behavior: none;
 }
 
 

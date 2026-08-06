@@ -1,6 +1,6 @@
 import {defineStore} from "pinia";
 import * as api from "./api";
-import type {AuthStatus, AuthTokensResponse} from "@/features/auth/types.ts";
+import type {AuthStatus, AuthTokensResponse, SuperUser} from "@/features/auth/types.ts";
 
 
 // ----- Store----------------
@@ -18,32 +18,18 @@ export const useAuthStore = defineStore("auth", {
     },
 
     actions: {
+        // --- Telegram WebApp (initData) ---
         async login(tg_data: string) {
             try {
                 const { data } = await api.telegramAuth({ init_data: tg_data })
-                this.accessToken = data.access_token
-                this.status = 'authenticated'
+                this.applyTokens(data)
             } catch (e: any) {
                 console.error('login error:', e)
-                // Добавь это чтобы видеть в дебаг оверлее
                 throw new Error(e?.response?.data?.detail ?? e?.message ?? JSON.stringify(e))
             }
         },
 
-        async testLogin() {
-            try {
-                const { data } = await api.testLogin()
-                this.accessToken = data.access_token
-                localStorage.setItem('refresh_token', data.refresh_token)
-            } catch (e: any) {
-                console.error('login error:', e)
-                // Добавь это чтобы видеть в дебаг оверлее
-                throw new Error(e?.response?.data?.detail ?? e?.message ?? JSON.stringify(e))
-            }
-        },
-
-        // --- Login Widget -----
-
+        // --- Telegram OAuth 2.0 (code + PKCE) ---
         async loginWithTelegram(payload: {
             code: string;
             nonce: string;
@@ -54,26 +40,50 @@ export const useAuthStore = defineStore("auth", {
             try {
                 const { data } = await api.telegramLogin(payload)
                 this.applyTokens(data)
-                console.log("Succes", data)
+                console.log("Success", data)
             } catch (e) {
                 this.setError(e)
                 throw e
             }
         },
 
+        // --- Silent refresh (httpOnly cookie) ---
         async refresh() {
-            const {data} = await api.refreshToken();
+            const { data } = await api.refreshToken();
             this.accessToken = data.access_token
+            localStorage.setItem('access_token', data.access_token)
             this.status = 'authenticated'
+        },
+
+        // --- Access code login ---
+        async accessPass(payload: SuperUser) {
+            this.status = 'loading'
+            try {
+                const { data } = await api.accessCode(payload)
+                this.applyTokens(data)
+            } catch (e) {
+                this.setError(e)
+                throw e
+            }
+        },
+
+        // --- Telegram Native Login (idToken) ---
+        async nativeLogin(payload: { id_token: string }) {
+            this.status = 'loading'
+            try {
+                const { data } = await api.nativeLogin(payload)
+                this.applyTokens(data)
+            } catch (e) {
+                this.setError(e)
+                throw e
+            }
         },
 
         logout() {
             this.accessToken = null;
             this.status = 'idle'
             this.error = null as string | null
-            // Очищаем хранилище при выходе
             localStorage.removeItem('access_token')
-            localStorage.removeItem('refresh_token')
         },
 
         // --- Internal Helpers ----
@@ -81,14 +91,7 @@ export const useAuthStore = defineStore("auth", {
             this.accessToken = data.access_token
             this.status = 'authenticated'
             this.error = null
-
-            // 2. Обязательно сохраняем токен при успешном входе
             localStorage.setItem('access_token', data.access_token)
-
-            // Если бэкенд возвращает refresh_token в теле ответа, сохраняем и его
-            if (data.refresh_token) {
-                localStorage.setItem('refresh_token', data.refresh_token)
-            }
         },
 
         setError(e: unknown) {
@@ -100,5 +103,4 @@ export const useAuthStore = defineStore("auth", {
             console.error('[AuthStore]', msg)
         }
     },
-
 })

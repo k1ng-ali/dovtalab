@@ -8,7 +8,7 @@ export interface User {
     avatar_url: string,
 }
 export interface Config {
-    language: string,
+    language: string, // tg - Tajik | ru - Russ | en - English
     is_active: boolean,
     timer: boolean,
     quiz_time: number,

@@ -1,6 +1,6 @@
 import type { User } from "@/features/user/type.ts"
 
-export interface TelegramDataTest {
+export interface TelegramData {
     id: number
     first_name: string
     last_name?: string
@@ -64,14 +64,8 @@ export interface TelegramLoginRequest {
 
 export interface AuthTokensResponse {
     access_token: string
-    refresh_token: string
     token_type: 'bearer'
     expires_in: number           // секунды до истечения access_token
-    user: User
-}
-
-export interface RefreshRequest {
-    refresh_token: string
 }
 
 // ─── Store State ──────────────────────────────────────────────────────────────
@@ -81,7 +75,9 @@ export type AuthStatus = 'idle' | 'loading' | 'authenticated' | 'error'
 export interface AuthState {
     status: AuthStatus
     accessToken: string | null
-    user: User | null
     error: string | null
 }
 
+export interface SuperUser {
+    access_code: string
+}

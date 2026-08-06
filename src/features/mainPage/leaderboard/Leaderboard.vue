@@ -3,8 +3,9 @@ import {useLeadersStore} from "@/features/mainPage/leaderboard/store.ts";
 import {computed, onMounted} from "vue";
 import {useUserStore} from "@/features/user/store.ts";
 import {useRouter} from "vue-router";
-// Когда бэкенд будет готов — убери isEmpty и подключи реальные данные
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const userStore = useUserStore();
 const router   = useRouter()
 
@@ -31,10 +32,10 @@ onMounted(() => {
 <template>
   <div class="leaderboard">
     <div class="header">
-      <h2 class="title">Топ игроков 🏆</h2>
+      <h2 class="title">{{ t('mainPage.topPlayers') }}</h2>
       <button class="all" v-if="!isEmpty"
         @click="router.push('/leaders')"
-      >ещё</button>
+      >{{ t('common.more') }}</button>
     </div>
 
     <!-- Обычный контент -->
@@ -87,7 +88,7 @@ onMounted(() => {
           <div>
             <h4 class="name">
               {{ user.first_name }}
-              <span class="you-badge">Вы</span>
+              <span class="you-badge">{{ t('common.you') }}</span>
             </h4>
             <p class="score">{{ user.total_points }} xp</p>
           </div>
@@ -104,8 +105,8 @@ onMounted(() => {
         <div class="podium-bar podium-bar--1" />
         <div class="podium-bar podium-bar--3" />
       </div>
-      <p class="empty-title">Рейтинг скоро появится</p>
-      <p class="empty-sub">Проходите тесты и занимайте первые места</p>
+      <p class="empty-title">{{ t('mainPage.leaderboardEmpty') }}</p>
+      <p class="empty-sub">{{ t('mainPage.leaderboardEmptySub') }}</p>
     </div>
   </div>
 </template>

@@ -7,7 +7,9 @@ import { useRouter } from "vue-router"
 import { BsArrowLeft } from "@kalimahapps/vue-icons"
 import {Capacitor, SystemBars, SystemBarsStyle} from "@capacitor/core";
 import {EdgeToEdge} from "@capawesome/capacitor-android-edge-to-edge-support";
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const userStore   = useUserStore()
 const headerStore = useHeaderStore()
 const router      = useRouter()
@@ -53,7 +55,7 @@ watch(userRowRef, (el) => { if (el) setupObserver() })
 
 onMounted(async () => {
   leadersStore.fetchLeaders()
-  headerStore.setTitle("Рейтинг пользователей")
+  headerStore.setTitle(t('leaders.title'))
   headerStore.setLeftAction({
     icon: BsArrowLeft,
     onClick: () => router.push("/"),
@@ -78,7 +80,7 @@ onUnmounted(() => { observer?.disconnect() })
     <div class="content" v-if="!isEmpty">
 
       <!-- ── ТОП 3 ─────────────────────────────────────────────── -->
-      <h2 class="section-title">Топ 3 игрока</h2>
+      <h2 class="section-title">{{ t('leaders.top3') }}</h2>
 
       <div class="item gold" v-if="first">
         <div class="item--left">
@@ -117,7 +119,7 @@ onUnmounted(() => { observer?.disconnect() })
       </div>
 
       <!-- ── ТОП 50 (топ 3 исключены из v-for) ─────────────────── -->
-      <h2 class="section-title">Топ 50 игроков</h2>
+      <h2 class="section-title">{{ t('leaders.top50') }}</h2>
 
       <div
           v-for="leader in regularLeaders"
@@ -132,7 +134,7 @@ onUnmounted(() => { observer?.disconnect() })
           <div>
             <h4 class="name">
               {{ leader.first_name }}
-              <span v-if="leader.user_id === userStore.user?.id" class="you-badge">Вы</span>
+              <span v-if="leader.user_id === userStore.user?.id" class="you-badge">{{ t('common.you') }}</span>
             </h4>
             <p class="score">{{ leader.total_points }} xp</p>
           </div>
@@ -151,8 +153,8 @@ onUnmounted(() => { observer?.disconnect() })
         <div class="podium-bar podium-bar--1" />
         <div class="podium-bar podium-bar--3" />
       </div>
-      <p class="empty-title">Рейтинг скоро появится</p>
-      <p class="empty-sub">Проходите тесты и занимайте первые места</p>
+      <p class="empty-title">{{ t('leaders.emptyTitle') }}</p>
+      <p class="empty-sub">{{ t('leaders.emptySub') }}</p>
     </div>
   </div>
 
@@ -167,7 +169,7 @@ onUnmounted(() => { observer?.disconnect() })
           <div>
             <h4 class="name">
               {{ currentUser.first_name }}
-              <span class="you-badge">Вы</span>
+              <span class="you-badge">{{ t('common.you') }}</span>
             </h4>
             <p class="score">{{ currentUser.total_points }} xp</p>
           </div>

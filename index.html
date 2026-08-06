@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/Dovtalab-logo.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
       <!-----   Google search console  ----->
       <meta name="google-site-verification" content="y7H-Ro0Cf-F4vQ6E4-VgZqXJdblNIo9zSnqDK0ZNsRE" />
@@ -30,6 +30,17 @@
 
 
       <script src="https://telegram.org/js/telegram-web-app.js?59"></script>
+
+      <!-- GitHub Pages SPA redirect: восстанавливаем путь после 404.html редиректа -->
+      <script>
+        (function () {
+          var redirect = sessionStorage.getItem('spa_redirect');
+          if (redirect) {
+            sessionStorage.removeItem('spa_redirect');
+            window.history.replaceState(null, '', redirect);
+          }
+        })();
+      </script>
   </head>
   <body>
     <div id="app"></div>

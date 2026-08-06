@@ -2,6 +2,8 @@
 import Background from "@/pages/MainPage/Background.vue";
 import Leaderboard from "@/features/mainPage/leaderboard/Leaderboard.vue";
 import Statistics from "@/features/mainPage/statistic/Statistics.vue";
+import DailyChallenge from "@/features/mainPage/dailyChallenge/DailyChallenge.vue";
+import ProBanner from "@/features/subscription/ProBanner.vue";
 import {useHeaderStore} from '@/shared/stores/useHeaderStore.ts'
 import {onMounted, onUnmounted, ref} from 'vue'
 import {Capacitor, SystemBars, SystemBarsStyle} from "@capacitor/core";
@@ -71,32 +73,69 @@ onUnmounted(() => {
 <template>
   <Background />
   <div class="content" ref="contentRef">
+    <DailyChallenge/>
+    <ProBanner/>
     <Leaderboard/>
     <Statistics/>
   </div>
 </template>
 
 <style scoped lang="scss">
-/* Твои стили остаются без изменений */
 .content {
   margin-top: clamp(250px, 30vw, 300px);
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  grid-auto-rows: max-content;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 20px;
-  justify-content: center;
-  justify-items: center;
   min-height: 100vh;
   background: #F6F6F6;
   width: 100%;
   padding: 20px;
   padding-top: calc(env(safe-area-inset-top) + 20px);
+  padding-bottom: 100px;
   border-radius: 30px 30px 0 0;
   box-sizing: border-box;
 
   & > * {
     max-width: 700px;
     width: 100%;
+  }
+
+  @media (min-width: 900px) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+    padding: 40px;
+    padding-bottom: 100px;
+    align-items: start;
+    justify-items: center;
+
+    & > * {
+      max-width: none;
+      width: 100%;
+    }
+
+    // Daily Challenge — full width
+    & > :nth-child(1) {
+      grid-column: 1 / -1;
+      max-width: 700px;
+    }
+
+    // Pro Banner — full width
+    & > :nth-child(2) {
+      grid-column: 1 / -1;
+      max-width: 700px;
+    }
+
+    // Leaderboard — left
+    & > :nth-child(3) {
+      grid-column: 1;
+    }
+
+    // Statistics — right
+    & > :nth-child(4) {
+      grid-column: 2;
+    }
   }
 }
 </style>

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import {onMounted, onUnmounted, watch} from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { BsArrowLeft, MdOutlinedMenuBook } from '@kalimahapps/vue-icons'
 import Quizzes  from "@/features/quizPage/quizzes/Quizzes.vue"
 import QuizInfo from "@/features/quizPage/quizzes/QuizInfo.vue"
 import QuizRunner from "@/features/quizPage/quiz/QuizRunner.vue"
-import Ad from "@/features/quizPage/ad/Ad.vue";
+import BannerCarousel from "@/features/quizPage/ad/BannerCarousel.vue";
 
 import { useNavStore }    from "@/shared/stores/useNavStore.ts"
 import { useHeaderStore } from "@/shared/stores/useHeaderStore.ts"
@@ -12,6 +13,8 @@ import { useQuizFlow }    from "@/features/quizPage/useQuizFlow"
 import {Capacitor, SystemBars, SystemBarsStyle} from "@capacitor/core";
 import {EdgeToEdge} from "@capawesome/capacitor-android-edge-to-edge-support";
 
+const route       = useRoute()
+const router      = useRouter()
 const navStore    = useNavStore()
 const headerStore = useHeaderStore()
 const flow        = useQuizFlow()
@@ -59,8 +62,8 @@ watch(
         })
         headerStore.hideActions()
 
-        const hasContexts = (flow.selectedQuiz.value?.contexts?.length ?? 0) > 0
-        if (hasContexts) {
+        const hasContext = flow.selectedContext.value !== null
+        if (hasContext) {
           headerStore.setRightAction({
             icon: MdOutlinedMenuBook,
             label: "Контекст",
@@ -95,11 +98,19 @@ watch(
     { immediate: true }
 )
 onMounted(async () => {
+  // Deep-link: /quiz/:hashCode — открываем QuizInfo сразу
+  const hashCode = route.params.hashCode as string | undefined
+  if (hashCode) {
+    await flow.openInfoByHash(hashCode)
+    // Убираем hash из URL, чтобы кнопка "назад" не перечитывала его
+    router.replace({ path: '/quiz' })
+  }
+
   if (Capacitor.isNativePlatform()) {
     try {
       // Исходное состояние при загрузке
       await SystemBars.setStyle({ style: SystemBarsStyle.Light})
-      await EdgeToEdge.setBackgroundColor({ color: '#00000000' });
+      await EdgeToEdge.setBackgroundColor({ color: '#F6F6F6' });
     } catch (e) {
       console.error('Ошибка настройки StatusBar:', e);
     }
@@ -115,7 +126,7 @@ onUnmounted(() => headerStore.reset())
 
         <!-- Список квизов -->
         <div v-if="flow.view.value === 'list'" key="list">
-          <Ad class="ad" @select="flow.openInfo"/>
+          <BannerCarousel class="ad" @select-quiz="flow.openInfo"/>
           <Quizzes @select="flow.openInfo" />
         </div>
 
@@ -124,7 +135,13 @@ onUnmounted(() => headerStore.reset())
           <QuizInfo
               :quiz="flow.selectedQuiz.value!"
               :selected-context="flow.selectedContext.value"
+              :selected-mode="flow.selectedMode.value"
+              :exam-question-limit="flow.examQuestionLimit.value"
               @select-context="flow.selectContext"
+              @select-mode="flow.selectMode"
+              @set-exam-limit="flow.setExamLimit"
+              @train-cluster="flow.trainCluster"
+              @start-review="flow.startReview"
           />
         </div>
 
@@ -133,6 +150,9 @@ onUnmounted(() => headerStore.reset())
           <QuizRunner
               :quiz="flow.selectedQuiz.value!"
               :context="flow.selectedContext.value"
+              :mode="flow.selectedMode.value"
+              :question-limit="flow.selectedMode.value === 'exam' ? flow.examQuestionLimit.value : undefined"
+              :cluster-id="flow.selectedClusterId.value"
               @finish="flow.backToInfo"
           />
         </div>
@@ -148,6 +168,7 @@ onUnmounted(() => headerStore.reset())
   background: #F6F6F6;
   display: flex;
   justify-content: center;
+  overflow-x: hidden;
 }
 
 .page-body {
