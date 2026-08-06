@@ -228,9 +228,6 @@ async function initializeApp() {
 
 onMounted(async () => {
   if (Capacitor.isNativePlatform()) {
-    // EdgeToEdge уже настроен через capacitor.config.ts (плагин @capawesome).
-    // StatusBar здесь не трогаем — управление статус-баром на каждой странице
-    // через SystemBars из @capawesome отдельно.
   }
 
   // Capacitor: подписываемся на appUrlOpen ДО всей остальной логики
