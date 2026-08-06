@@ -3,12 +3,12 @@ import {onMounted, computed, ref} from 'vue'
 import { useUserStore } from '@/features/user/store.ts'
 import { useHeaderStore } from '@/shared/stores/useHeaderStore.ts'
 import { useNavStore } from '@/shared/stores/useNavStore.ts'
-import { AkSignOut } from '@kalimahapps/vue-icons';
 import {useRouter} from "vue-router";
 import {Capacitor, SystemBars, SystemBarsStyle} from "@capacitor/core";
 import {EdgeToEdge} from "@capawesome/capacitor-android-edge-to-edge-support";
 import { useI18n } from 'vue-i18n'
 import PassportModal from '@/features/passport/PassportModal.vue'
+import ExitBoldDuotoneIcon from '@iconify-vue/solar/exit-bold-duotone';
 
 const { t } = useI18n()
 const router = useRouter()
@@ -116,12 +116,14 @@ const avatarError = ref(false)
   <div class="profile-page">
 
     <!-- ── Hero ──────────────────────────────────────────────────── -->
-    <div class="hero">
-      <div class="hero-bg" />
-
-      <AkSignOut class="sign-out-btn"
-        @click="logOut()"
+    <div class="hero"
+         :class="userStore.is_pro ? 'hero__pro' : ''"
+    >
+      <div class="hero-bg"
+        :class="userStore.is_pro ? 'hero-bg__pro' : ''"
       />
+
+      <ExitBoldDuotoneIcon height="24" class="sign-out-btn" @click="logOut"/>
 
       <div class="avatar-wrap">
         <img
@@ -286,23 +288,27 @@ const avatarError = ref(false)
   align-items: center;
   gap: 16px;
   overflow: hidden;
+
+  &__pro {
+    border: 1px solid rgba(124, 58, 237, 0.2);
+  }
 }
 
 .sign-out-btn {
   position: absolute;
   right: 20px;
   top: 20px;
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
   background: #f4f4f4;
   border-radius: 7px;
   border: 1px solid rgba(107, 114, 128, 0.1);
   border-block-start-color: white;
   border-block-end-color: white;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+  box-shadow: 0 0 10px rgb(73, 112, 85, 0.3);
   padding: 5px;
   padding-left: 7px;
-  color: #4F4F4F;
+  color: rgba(35, 73, 112, 1);
   cursor: pointer;
 }
 
@@ -315,6 +321,14 @@ const avatarError = ref(false)
           transparent 70%
   );
   pointer-events: none;
+
+  &__pro {
+    background: radial-gradient(
+            ellipse 80% 60% at 50% -10%,
+            rgba(124, 58, 237, 0.2) 0%,
+            transparent 70%
+    );
+  }
 }
 
 .avatar-wrap {
