@@ -167,7 +167,11 @@ async function initializeApp() {
   // 0. Dev bypass
   if (import.meta.env.VITE_DEV_MODE === 'true') {
     try {
-      const { data } = await http.post('/auth/dev-login', {user_id: 1})
+      const requestedUserId = Number(new URLSearchParams(window.location.search).get('dev_user_id'))
+      const devUserId = Number.isInteger(requestedUserId) && requestedUserId > 0
+        ? requestedUserId
+        : 1
+      const { data } = await http.post('/auth/dev-login', { user_id: devUserId })
       authStore.accessToken = data.access_token
       localStorage.setItem('access_token', data.access_token)
       authStore.status = 'authenticated'
@@ -311,9 +315,9 @@ onUnmounted(() => {
     </div>
   </Transition>
 
-  <!-- ═══ Ошибка авторизации (показываем Auth экран) ═══ -->
+  <!-- ═══ Экран авторизации для неавторизованного пользователя ═══ -->
   <Transition name="fade">
-    <div v-if="!isInitializing && !connectionError && authStore.status === 'error'">
+    <div v-if="!isInitializing && !connectionError && !authStore.isAuthenticated">
       <Auth/>
     </div>
   </Transition>

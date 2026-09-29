@@ -106,7 +106,7 @@ const setLanguage = async (code: string) => {
 
 const logOut = async() =>{
   await userStore.logout()
-  router.push('/')
+  await router.replace('/')
 }
 
 const avatarError = ref(false)

@@ -79,11 +79,18 @@ export const useAuthStore = defineStore("auth", {
             }
         },
 
-        logout() {
-            this.accessToken = null;
-            this.status = 'idle'
-            this.error = null as string | null
-            localStorage.removeItem('access_token')
+        async logout() {
+            try {
+                await api.logout()
+            } catch (error) {
+                // Локальную сессию всё равно нужно закрыть, даже если сервер недоступен.
+                console.warn('[AuthStore] Server logout failed:', error)
+            } finally {
+                this.accessToken = null
+                this.status = 'idle'
+                this.error = null
+                localStorage.removeItem('access_token')
+            }
         },
 
         // --- Internal Helpers ----
