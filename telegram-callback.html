@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head><title>Авторизация...</title></head>
+<body>
+<script>
+    const params = new URLSearchParams(window.location.search)
+    const code = params.get('code')
+    const state = params.get('state')
+    const error = params.get('error')
+
+    if (window.opener) {
+        window.opener.postMessage({
+            type: 'telegram-auth-callback',
+            code,
+            state,
+            error,
+        }, window.location.origin)
+        window.close()
+    } else {
+        // Если не popup а редирект — сохраняем и идём на главную
+        if (code) sessionStorage.setItem('tg_auth_code', code)
+        if (state) sessionStorage.setItem('tg_auth_state_returned', state)
+        window.location.href = '/'
+    }
+</script>
+</body>
+</html>

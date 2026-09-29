@@ -1,0 +1,2 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/web-Buxk5JVI.js","assets/dist-ClEjeWFI.js"])))=>i.map(i=>d[i]);
+import{i as e}from"./axios-CthSOK3k.js";import{o as t}from"./dist-ClEjeWFI.js";import{t as n}from"./preload-helper-e2Df4sQx.js";var r=e({Browser:()=>i}),i=t(`Browser`,{web:()=>n(()=>import(`./web-Buxk5JVI.js`).then(e=>new e.BrowserWeb),__vite__mapDeps([0,1]))});export{r as n,i as t};
