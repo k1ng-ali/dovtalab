@@ -1,0 +1,1 @@
+import{r as e}from"./useHeaderStore-C5IiXyjj.js";const t=()=>e.get(`/daily-challenge/`),n=()=>e.get(`/daily-challenge/start`),r=(t,n)=>e.post(`/daily-challenge/submit`,null,{params:{question_id:t,is_correct:n}});export{n,r,t};
