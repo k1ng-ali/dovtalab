@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AkHome, PhSealQuestion, CgProfile } from '@kalimahapps/vue-icons';
+import { AkHome, PhSealQuestion, PhSword, CgProfile } from '@kalimahapps/vue-icons';
 import { useRoute, useRouter } from 'vue-router'
 import { computed } from 'vue'
 import { useNavStore } from '@/shared/stores/useNavStore.ts'
@@ -10,6 +10,7 @@ const { t } = useI18n()
 const tabs = computed(() => [
   { name: t('nav.home'), icon: AkHome,          path: "/" },
   { name: t('nav.quizzes'),   icon: PhSealQuestion,  path: "/quiz" },
+  { name: "Дуэли", icon: PhSword, path: "/duels" },
   { name: t('nav.profile'), icon: CgProfile,       path: "/profile" },
 ])
 

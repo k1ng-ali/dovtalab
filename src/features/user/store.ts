@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import * as api from './api.ts'
-import { logout as authLogout } from '@/features/auth/api.ts'
 import { useAuthStore } from '@/features/auth/store.ts'
 import type { User, Config, UserProfile, UserRole } from './type.ts'
 import { setLocale, type AppLocale } from '@/shared/i18n'
@@ -100,8 +99,8 @@ export const useUserStore = defineStore("user", {
         },
 
         async logout() {
-            if (!this.profile) return
-            await authLogout()
+            const authStore = useAuthStore()
+            await authStore.logout()
             this.profile = null
         },
 
