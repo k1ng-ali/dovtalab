@@ -2,14 +2,15 @@ import {defineStore} from "pinia";
 import * as api from "./api";
 import type {AuthStatus, AuthTokensResponse, SuperUser} from "@/features/auth/types.ts";
 
+const savedToken = localStorage.getItem('access_token')
 
 // ----- Store----------------
 export const useAuthStore = defineStore("auth", {
     // ------ State -------------
     state: () => ({
-        status: 'idle' as AuthStatus | 'idle',
-        accessToken: null as string | null,
-        error: null as string | null,
+    status: (savedToken ? 'authenticated' : 'idle') as AuthStatus | 'idle',
+    accessToken: savedToken as string | null,
+    error: null as string | null,
     }),
 
     getters: {

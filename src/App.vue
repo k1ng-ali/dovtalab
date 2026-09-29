@@ -188,30 +188,29 @@ async function initializeApp() {
     return
   }
 
-  // 1. Уже есть accessToken в памяти
-  if (authStore.accessToken) {
+  // 1. Если пользователь УЖЕ авторизован — ничего не делаем, отключаем сплэш
+  if (authStore.isAuthenticated && authStore.accessToken) {
     isInitializing.value = false
     return
   }
 
   // 2. Telegram Mini App — initData есть, сразу логиним
   if (isTelegramEnv) {
-    const initData = getInitData()!
-
-    try {
-      await authStore.login(initData)
-      await router.replace(intendedPath)
-    } catch (e: any) {
-      if (!e.response || e.code === 'ERR_NETWORK' || e.code === 'ECONNABORTED') {
-        connectionError.value = true
-        connectionErrorMessage.value = t('splash.serverUnavailable')
-      } else {
-        authStore.setError("error")
+      const initData = getInitData()
+      if (initData) {
+        try {
+          await authStore.login(initData)
+          // Делаем replace только если текущий роут отличается от intendedPath
+          if (router.currentRoute.value.fullPath !== intendedPath) {
+            await router.replace(intendedPath)
+          }
+        } catch (e: any) {
+          // обработка ошибки...
+        }
+        isInitializing.value = false
+        return
       }
     }
-    isInitializing.value = false
-    return
-  }
 
   // 3. Обычный браузер — пробуем тихий рефреш (есть кука)
   try {
