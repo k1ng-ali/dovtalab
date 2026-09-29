@@ -26,7 +26,7 @@ const select = (id: number) => {
   emit('answer', id)
 }
 
-const options = props.question.payload.single_choice?.options ?? []
+const options = computed(() => props.question.payload.single_choice?.options ?? [])
 
 // Правильный id из ответа сервера
 const correctId = computed(() =>{

@@ -65,6 +65,10 @@ export function useDuelFlow() {
         store.finalResult = event.result as unknown as DuelResult
         store.gameState = null
         }
+        else if (event.type === 'answer_received' && event.duel) {
+            store.activeRoom = event.duel as unknown as DuelRoom
+            // Можно также отобразить в UI индикатор "Соперник уже ответил!"
+        }
     }
 
     const socket = useDuelSocket(onSocketEvent)

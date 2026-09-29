@@ -102,24 +102,28 @@ onUnmounted(() => {
     <div class="question-card">
       <SingleChoice
         v-if="questionPublic.type === 'single_choice'"
+        :key="questionPublic.id"
         :question="questionPublic"
         :disabled="hasSubmitted || isSubmitting"
         @answer="currentAnswer = $event"
       />
       <MultipleChoice
         v-else-if="questionPublic.type === 'multiple_choice'"
+        :key="questionPublic.id + '-multiple'"
         :question="questionPublic"
         :disabled="hasSubmitted || isSubmitting"
         @answer="currentAnswer = $event"
       />
       <Matching
         v-else-if="questionPublic.type === 'matching'"
+        :key="questionPublic.id + '-matching'"
         :question="questionPublic"
         :disabled="hasSubmitted || isSubmitting"
         @answer="currentAnswer = $event"
       />
       <InputQuestion
         v-else-if="questionPublic.type === 'input'"
+        :key="questionPublic.id + '-input'"
         :question="questionPublic"
         :disabled="hasSubmitted || isSubmitting"
         @answer="currentAnswer = $event"

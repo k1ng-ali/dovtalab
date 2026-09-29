@@ -14,6 +14,7 @@ export function useDuelSocket(onEvent: (event: DuelSocketEvent) => void) {
   let socket: WebSocket | null = null
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null
   let stopped = false
+  let pingInterval: ReturnType<typeof setInterval> | null = null
 
   function connect(duelId: number, token: string | null) {
     disconnect()
@@ -27,9 +28,14 @@ export function useDuelSocket(onEvent: (event: DuelSocketEvent) => void) {
     url.searchParams.set('token', token)
 
     socket = new WebSocket(url.toString())
+    
     socket.onopen = () => {
       isConnected.value = true
-      socket?.send(JSON.stringify({ type: 'ping' }))
+      pingInterval = setInterval(() => {
+        if (socket?.readyState === WebSocket.OPEN) {
+          socket.send(JSON.stringify({ type: 'ping' }))
+        }
+      }, 15000)
     }
     socket.onmessage = (message) => {
       try {
@@ -39,6 +45,10 @@ export function useDuelSocket(onEvent: (event: DuelSocketEvent) => void) {
       }
     }
     socket.onclose = () => {
+      if (pingInterval !== null) {
+        clearInterval(pingInterval)
+        pingInterval = null
+      }
       isConnected.value = false
       socket = null
       if (!stopped) {
@@ -50,10 +60,17 @@ export function useDuelSocket(onEvent: (event: DuelSocketEvent) => void) {
 
   function disconnect() {
     stopped = true
+
+    if (pingInterval !== null) {
+      clearInterval(pingInterval)
+      pingInterval = null
+    }
+
     if (reconnectTimer !== null) {
       clearTimeout(reconnectTimer)
       reconnectTimer = null
     }
+
     socket?.close()
     socket = null
     isConnected.value = false

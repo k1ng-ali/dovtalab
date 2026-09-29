@@ -63,25 +63,19 @@ async function handleJoin(room: DuelRoom) {
   }
 }
 
+// DuelsPage.vue
 async function handleAnswer(answer: UserAnswerPayload) {
   if (!flow.roomId.value) return
   
   try {
     const res = await store.submitAnswer(flow.roomId.value, answer)
 
-    // Показываем плашку в хидере в зависимости от правильности ответа
     if (res.is_correct) {
       headerStore.showNotification('Правильно! 🎉', 'success', 2000)
     } else {
       headerStore.showNotification('Неверно 😕', 'error', 2000)
     }
-
-    if (res.final_result) {
-      store.finalResult = res.final_result
-      store.gameState = null
-    } else if (res.question) {
-      store.gameState = { duel: res.duel, question: res.question }
-    }
+    // НЕ перезаписываем store.gameState вручную! Ждем сокетного round_changed
   } catch (error) {
     headerStore.showNotification('Ошибка отправки ответа', 'error', 2500)
   }
