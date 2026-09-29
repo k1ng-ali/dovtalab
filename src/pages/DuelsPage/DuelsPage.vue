@@ -34,7 +34,7 @@ watch(
 
 onBeforeUnmount(() => {
   flow.stopPolling()
-  flow.exitDuel()
+  flow.socket.disconnect()
 })
 
 // Сбрасываем хидер и восстанавливаем нижние табы при уходе с вкладки

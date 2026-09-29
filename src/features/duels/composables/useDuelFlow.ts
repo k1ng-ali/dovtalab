@@ -164,58 +164,24 @@ export function useDuelFlow() {
 
     // ── Синхронизация Header и Bottom Navigator ────────────────────────────
     watch(
-        view,
-        (currentView) => {
-        if (currentView === 'lobby') {
-            headerStore.setTitle('Дуэли')
-            headerStore.setLeftAction(null)
-            headerStore.setRightAction(null)
-            headerStore.hideActions()
-            navStore.showTabs()
-        } else {
-            headerStore.setTitle(store.activeRoom?.quiz_title ?? 'Дуэль')
-            headerStore.setLeftAction({
-            icon: BsArrowLeft,
-            onClick: () => exitDuel(),
-            })
-            headerStore.hideActions()
-
-            if (currentView === 'waiting') {
-            navStore.showActions([
-                {
-                label: 'Выйти',
-                variant: 'default',
-                icon: BsArrowLeft,
-                onClick: () => exitDuel(),
-                },
-            ])
-            } else if (currentView === 'arena') {
-            navStore.showActions([
-                {
-                label: 'Сдаться',
-                variant: 'default',
-                onClick: () => exitDuel(),
-                },
-                {
-                label: 'Ответить',
-                variant: 'primary',
-                disabled: true,
-                onClick: () => window.dispatchEvent(new Event('duel-submit-answer')),
-                },
-            ])
-            } else if (currentView === 'result') {
-            navStore.showActions([
-                {
-                label: 'К дуэлям',
-                variant: 'primary',
-                onClick: () => exitDuel(),
-                },
-            ])
-            }
-        }
-        },
-        { immediate: true }
-    )
+            view,
+            (currentView) => {
+                if (currentView === 'lobby') {
+                    headerStore.setTitle('Дуэли')
+                    headerStore.setLeftAction(null)
+                    headerStore.setRightAction(null)
+                    headerStore.hideActions()
+                } else {
+                    headerStore.setTitle(store.activeRoom?.quiz_title ?? 'Дуэль')
+                    headerStore.setLeftAction({
+                        icon: BsArrowLeft,
+                        onClick: () => (currentView === 'arena' ? surrenderDuel() : exitDuel()),
+                    })
+                    headerStore.hideActions()
+                }
+            },
+            { immediate: true }
+        )
 
     // ── Роутинг & Инициализация ───────────────────────────────────────────
     async function initView() {
@@ -278,5 +244,6 @@ export function useDuelFlow() {
         initView,
         stopPolling,
         exitDuel,
+        socket,
     }
 }
