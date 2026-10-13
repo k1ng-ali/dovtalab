@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, onUnmounted, watch } from 'vue'
+import { onBeforeUnmount, onMounted, onUnmounted, ref, watch } from 'vue'
+import { isAxiosError } from 'axios'
 import { useRoute, useRouter } from 'vue-router'
 import { useDuelFlow } from '@/features/duels/composables/useDuelFlow.ts'
 import type { DuelCreatePayload, DuelRoom} from '@/features/duels/types.ts'
@@ -18,6 +19,7 @@ const flow = useDuelFlow()
 const { store } = flow
 const headerStore = useHeaderStore()
 const navStore = useNavStore()
+const arenaRef = ref<InstanceType<typeof DuelArena> | null>(null)
 
 onMounted(() => {
   flow.initView()
@@ -68,6 +70,7 @@ async function handleAnswer(answer: UserAnswerPayload) {
   if (!flow.roomId.value) return
   
   try {
+    // Стор сам применяет следующий вопрос / итог из ответа, сокет лишь дублирует
     const res = await store.submitAnswer(flow.roomId.value, answer)
 
     if (res.is_correct) {
@@ -75,9 +78,15 @@ async function handleAnswer(answer: UserAnswerPayload) {
     } else {
       headerStore.showNotification('Неверно 😕', 'error', 2000)
     }
-    // НЕ перезаписываем store.gameState вручную! Ждем сокетного round_changed
   } catch (error) {
-    headerStore.showNotification('Ошибка отправки ответа', 'error', 2500)
+    // 409 — ответ уже есть / раунд закрыт: состояние подтянется с сервера.
+    // Остальное (сеть, 422) — ответ не принят, разрешаем отправить снова
+    if (isAxiosError(error) && error.response?.status === 409) {
+      await store.fetchRoom(flow.roomId.value)
+    } else {
+      arenaRef.value?.resetSubmit()
+      headerStore.showNotification('Ошибка отправки ответа', 'error', 2500)
+    }
   }
 }
 </script>
@@ -106,7 +115,7 @@ async function handleAnswer(answer: UserAnswerPayload) {
             :is-creator="store.isCreator"
             :opponent-found="store.opponentFound"
             :is-submitting="store.isSubmitting"
-            @start="store.startRoom(store.activeRoom.id)"
+            @start="flow.startDuel"
             @leave="flow.exitDuel"
           />
         </div>
@@ -114,6 +123,7 @@ async function handleAnswer(answer: UserAnswerPayload) {
         <!-- 3. Сам раунд дуэли (Арена) -->
         <div v-else-if="flow.view.value === 'arena' && store.gameState" key="arena">
           <DuelArena
+            ref="arenaRef"
             :game-state="store.gameState"
             :is-submitting="store.isSubmitting"
             @answer="handleAnswer"

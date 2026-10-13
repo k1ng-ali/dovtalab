@@ -15,6 +15,8 @@ export interface DuelRoom {
   participants: DuelParticipant[]
   created_at: string
   expires_at: string | null
+  current_round: number
+  started_at: string | null
 }
 
 export interface DuelCreatePayload {
@@ -30,6 +32,7 @@ export interface DuelQuestion {
   order: number | null
   round_number: number
   total_questions: number
+  round_time_left_ms: number | null
 }
 
 export interface DuelGameState {

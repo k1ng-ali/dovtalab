@@ -11,6 +11,7 @@ import type { DuelGameState, DuelResult, DuelRoom } from '../types.ts'
 import { Capacitor } from '@capacitor/core'
 import { App as CapApp } from '@capacitor/app'
 import type { PluginListenerHandle } from '@capacitor/core'
+import { Modal } from 'ant-design-vue'
 
 export type DuelView = 'lobby' | 'waiting' | 'arena' | 'result'
 
@@ -38,36 +39,64 @@ export function useDuelFlow() {
         return 'waiting'
     })
 
-    async function surrenderDuel() {
-    if (!roomId.value) return
-    try {
-        await store.surrender(roomId.value)
-    } catch (e) {
-        console.error('Ошибка сдачи:', e)
+    function surrenderDuel() {
+        const id = roomId.value
+        if (!id) return
+        Modal.confirm({
+            title: 'Сдаться?',
+            content: 'Победа будет засчитана сопернику.',
+            okText: 'Сдаться',
+            cancelText: 'Продолжить',
+            okButtonProps: { danger: true },
+            async onOk() {
+                try {
+                    await store.surrender(id)
+                } catch (e) {
+                    console.error('Ошибка сдачи:', e)
+                    // Скорее всего дуэль уже завершилась — синхронизируемся с сервером
+                    await store.fetchRoom(id)
+                }
+            },
+        })
     }
+
+    async function startDuel() {
+        if (!roomId.value || !store.opponentFound || store.isSubmitting) return
+        try {
+            await store.startRoom(roomId.value)
+        } catch (e) {
+            console.error('Ошибка старта дуэли:', e)
+            headerStore.showNotification('Не удалось начать дуэль', 'error', 2500)
+            await store.fetchRoom(roomId.value)
+        }
     }
 
     // ── WebSocket обработчик ───────────────────────────────────────────────
     function onSocketEvent(event: DuelSocketEvent) {
         if (event.type === 'room_state' && event.room) {
-        store.activeRoom = event.room as unknown as DuelRoom
+            const room = event.room as unknown as DuelRoom
+            store.applyRoom(room)
+            // Финиш без итогов (например, переподключение) — догружаем результат,
+            // иначе view = 'result', а показать нечего
+            if (room.status === 'finished' && !store.finalResult) {
+                store.fetchResult(room.id).catch(() => {})
+            }
         } else if (event.type === 'game_state' && event.state) {
-        store.gameState = event.state as unknown as DuelGameState
-        store.activeRoom = store.gameState.duel
+            const state = event.state as unknown as DuelGameState
+            store.applyRoundUpdate(state.duel, state.question)
         } else if (event.type === 'round_changed' && event.duel && event.question) {
-        store.activeRoom = event.duel as unknown as DuelRoom
-        store.gameState = {
-            duel: store.activeRoom,
-            question: event.question as unknown as DuelGameState['question'],
-        }
+            store.applyRoundUpdate(
+                event.duel as unknown as DuelRoom,
+                event.question as unknown as DuelGameState['question'],
+            )
         } else if (event.type === 'duel_finished' && event.duel && event.result) {
-        store.activeRoom = event.duel as unknown as DuelRoom
-        store.finalResult = event.result as unknown as DuelResult
-        store.gameState = null
-        }
-        else if (event.type === 'answer_received' && event.duel) {
-            store.activeRoom = event.duel as unknown as DuelRoom
-            // Можно также отобразить в UI индикатор "Соперник уже ответил!"
+            store.applyRoundUpdate(
+                event.duel as unknown as DuelRoom,
+                null,
+                event.result as unknown as DuelResult,
+            )
+        } else if (event.type === 'answer_received' && event.duel) {
+            store.applyRoundUpdate(event.duel as unknown as DuelRoom)
         }
     }
 
@@ -75,8 +104,12 @@ export function useDuelFlow() {
 
     onMounted(async () => {
     if (Capacitor.isNativePlatform()) {
+        // Так же, как кнопка «назад» в шапке: из арены — сдаться, а не молча уйти
+        // (иначе дуэль остаётся active и соперник ждёт таймаутов)
         backButtonListener = await CapApp.addListener('backButton', () => {
-        if (roomId.value !== null) {
+        if (view.value === 'arena') {
+            surrenderDuel()
+        } else if (roomId.value !== null) {
             exitDuel()
         } else {
             router.back()
@@ -114,15 +147,7 @@ export function useDuelFlow() {
             variant: 'primary',
             // Кнопка неактивна, пока соперник не найден или идет отправка
             disabled: !store.opponentFound || store.isSubmitting,
-            onClick: async () => {
-            if (roomId.value && store.opponentFound && !store.isSubmitting) {
-                try {
-                await store.startRoom(roomId.value)
-                } catch (e) {
-                console.error('Ошибка старта дуэли:', e)
-                }
-            }
-            },
+            onClick: () => startDuel(),
         })
         }
 
@@ -199,7 +224,7 @@ export function useDuelFlow() {
         }
 
         await store.fetchRoom(roomId.value)
-        socket.connect(roomId.value, authStore.accessToken)
+        socket.connect(roomId.value, () => authStore.accessToken)
 
         pollingTimer = setInterval(() => {
         if (!socket.isConnected.value && roomId.value) {
@@ -220,9 +245,11 @@ export function useDuelFlow() {
         socket.disconnect()
 
         const currentId = roomId.value
+        // Покинуть можно только комнату в лобби; из finished/cancelled просто уходим
+        const canLeave = ['waiting', 'ready'].includes(store.activeRoom?.status ?? '')
         store.resetRoomState()
 
-        if (currentId) {
+        if (currentId && canLeave) {
             try {
             await store.leaveRoom(currentId)
             } catch (e) {
@@ -248,6 +275,7 @@ export function useDuelFlow() {
         initView,
         stopPolling,
         exitDuel,
+        startDuel,
         socket,
     }
 }

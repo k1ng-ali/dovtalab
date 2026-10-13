@@ -46,13 +46,36 @@ const hasAnswer = computed(() => {
   return true
 })
 
+// ── Таймер раунда ─────────────────────────────────────────────────────
+// Сервер отдаёт остаток в мс, дедлайн считаем по локальным часам от момента получения
+const roundDeadline = ref<number | null>(null)
+const now = ref(Date.now())
+let tickTimer: ReturnType<typeof setInterval> | null = null
+
+function resetDeadline() {
+  const left = props.gameState.question.round_time_left_ms
+  roundDeadline.value = left === null || left === undefined ? null : Date.now() + left
+}
+
+const secondsLeft = computed(() =>
+  roundDeadline.value === null ? null : Math.max(0, Math.ceil((roundDeadline.value - now.value) / 1000))
+)
+const isTimeUp = computed(() => secondsLeft.value === 0)
+
 // Синхронизация кнопки в нижнем баре через NavStore
-watch([hasAnswer, hasSubmitted], () => {
+watch([hasAnswer, hasSubmitted, isTimeUp, () => props.isSubmitting], () => {
   navStore.updateAction(1, {
-    label: hasSubmitted.value ? 'Ожидание оппонента...' : 'Ответить',
-    disabled: !hasAnswer.value || hasSubmitted.value || props.isSubmitting,
+    label: hasSubmitted.value ? 'Ожидание оппонента...' : isTimeUp.value ? 'Время вышло' : 'Ответить',
+    disabled: !hasAnswer.value || hasSubmitted.value || isTimeUp.value || props.isSubmitting,
   })
 })
+
+// Ответ не принят (сеть, 422) — даём отправить снова
+function resetSubmit() {
+  hasSubmitted.value = false
+}
+
+defineExpose({ resetSubmit })
 
 function buildAnswerPayload(): UserAnswerPayload | null {
   const a = currentAnswer.value
@@ -66,7 +89,7 @@ function buildAnswerPayload(): UserAnswerPayload | null {
 }
 
 function submit() {
-  if (hasSubmitted.value || !hasAnswer.value) return
+  if (hasSubmitted.value || !hasAnswer.value || isTimeUp.value) return
   const payload = buildAnswerPayload()
   if (!payload) return
 
@@ -81,14 +104,18 @@ watch(
     currentAnswer.value = null
     hasSubmitted.value = false
     answerResult.value = null
+    resetDeadline()
   }
 )
 
 onMounted(() => {
+  resetDeadline()
+  tickTimer = setInterval(() => (now.value = Date.now()), 250)
   window.addEventListener('duel-submit-answer', submit)
 })
 
 onUnmounted(() => {
+  if (tickTimer) clearInterval(tickTimer)
   window.removeEventListener('duel-submit-answer', submit)
 })
 </script>
@@ -97,6 +124,9 @@ onUnmounted(() => {
   <div class="duel-arena">
     <div class="round-tracker">
       <span>Раунд {{ gameState.question.round_number }} из {{ gameState.question.total_questions }}</span>
+      <span v-if="secondsLeft !== null" class="round-timer" :class="{ urgent: secondsLeft <= 5 }">
+        ⏱ {{ secondsLeft }} сек
+      </span>
     </div>
 
     <div class="question-card">
@@ -104,28 +134,28 @@ onUnmounted(() => {
         v-if="questionPublic.type === 'single_choice'"
         :key="questionPublic.id"
         :question="questionPublic"
-        :disabled="hasSubmitted || isSubmitting"
+        :disabled="hasSubmitted || isSubmitting || isTimeUp"
         @answer="currentAnswer = $event"
       />
       <MultipleChoice
         v-else-if="questionPublic.type === 'multiple_choice'"
         :key="questionPublic.id + '-multiple'"
         :question="questionPublic"
-        :disabled="hasSubmitted || isSubmitting"
+        :disabled="hasSubmitted || isSubmitting || isTimeUp"
         @answer="currentAnswer = $event"
       />
       <Matching
         v-else-if="questionPublic.type === 'matching'"
         :key="questionPublic.id + '-matching'"
         :question="questionPublic"
-        :disabled="hasSubmitted || isSubmitting"
+        :disabled="hasSubmitted || isSubmitting || isTimeUp"
         @answer="currentAnswer = $event"
       />
       <InputQuestion
         v-else-if="questionPublic.type === 'input'"
         :key="questionPublic.id + '-input'"
         :question="questionPublic"
-        :disabled="hasSubmitted || isSubmitting"
+        :disabled="hasSubmitted || isSubmitting || isTimeUp"
         @answer="currentAnswer = $event"
       />
     </div>
@@ -133,6 +163,10 @@ onUnmounted(() => {
     <div v-if="hasSubmitted" class="waiting-indicator">
       <div class="loader-dot" />
       <span>Ответ отправлен. Ожидаем завершения раунда соперником...</span>
+    </div>
+    <div v-else-if="isTimeUp" class="waiting-indicator">
+      <div class="loader-dot" />
+      <span>Время вышло — ответ не засчитан. Переходим к следующему раунду...</span>
     </div>
   </div>
 </template>
@@ -145,6 +179,9 @@ onUnmounted(() => {
 }
 
 .round-tracker {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
   text-align: center;
   span {
     font-size: 12px;
@@ -152,6 +189,13 @@ onUnmounted(() => {
     letter-spacing: 0.08em;
     color: #4ebec2;
     text-transform: uppercase;
+  }
+  .round-timer {
+    color: #234970;
+    font-variant-numeric: tabular-nums;
+    &.urgent {
+      color: #e5484d;
+    }
   }
 }
 

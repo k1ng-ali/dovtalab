@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { useAuthStore } from '@/features/auth/store.ts'
 import * as api from './api.ts'
-import type { DuelGameState, DuelResult, DuelRoom, DuelCreatePayload } from './types.ts'
+import type { DuelGameState, DuelQuestion, DuelResult, DuelRoom, DuelCreatePayload } from './types.ts'
 import type { UserAnswerPayload } from '@/features/quizPage/types.ts'
 
 export const useDuelsStore = defineStore('duels', () => {
@@ -39,6 +39,34 @@ export const useDuelsStore = defineStore('duels', () => {
   const hasRooms = computed(() => rooms.value.length > 0)
   const opponentFound = computed(() => (activeRoom.value?.participant_count ?? 0) >= 2)
 
+  // ── State updates ─────────────────────────────────────────────────────
+  // Одно и то же обновление приходит дважды (HTTP-ответ + сокет) и может опоздать —
+  // устаревшее (другая комната, прошлый раунд, после финиша) отбрасываем
+  function isStale(duel: DuelRoom) {
+    const current = activeRoom.value
+    if (!current || current.id !== duel.id) return current !== null
+    if (current.status === 'finished' && duel.status !== 'finished') return true
+    return (duel.current_round ?? 0) < (current.current_round ?? 0)
+  }
+
+  function applyRoom(duel: DuelRoom) {
+    if (isStale(duel)) return
+    activeRoom.value = duel
+  }
+
+  function applyRoundUpdate(duel: DuelRoom, question?: DuelQuestion | null, result?: DuelResult | null) {
+    if (isStale(duel)) return
+    activeRoom.value = duel
+    if (result) {
+      finalResult.value = result
+      gameState.value = null
+    } else if (question) {
+      gameState.value = { duel, question }
+    } else if (gameState.value) {
+      gameState.value = { ...gameState.value, duel }
+    }
+  }
+
   // ── Actions ───────────────────────────────────────────────────────────
   async function fetchRooms() {
     isLoading.value = true
@@ -63,8 +91,7 @@ export const useDuelsStore = defineStore('duels', () => {
       if (response.data.status === 'active') {
         await fetchGameState(id)
       } else if (response.data.status === 'finished') {
-        const res = await api.getDuelResult(id)
-        finalResult.value = res.data
+        await fetchResult(id)
       } else {
         finalResult.value = null
       }
@@ -79,6 +106,12 @@ export const useDuelsStore = defineStore('duels', () => {
     const response = await api.currentDuel(id)
     gameState.value = response.data
     activeRoom.value = response.data.duel
+  }
+
+  async function fetchResult(id: number) {
+    const res = await api.getDuelResult(id)
+    finalResult.value = res.data
+    gameState.value = null
   }
 
   async function createRoom(payload: DuelCreatePayload) {
@@ -119,7 +152,8 @@ export const useDuelsStore = defineStore('duels', () => {
     isSubmitting.value = true
     try {
       const res = await api.submitDuelAnswer(roomId, answer)
-      activeRoom.value = res.data.duel
+      // Не ждём сокет: ответ уже содержит следующий вопрос или итог
+      applyRoundUpdate(res.data.duel, res.data.question, res.data.final_result)
       return res.data
     } finally {
       isSubmitting.value = false
@@ -140,6 +174,9 @@ export const useDuelsStore = defineStore('duels', () => {
     isSubmitting.value = true
     try {
         const res = await api.surrenderDuel(id)
+        if (activeRoom.value?.id === id) {
+          applyRoundUpdate({ ...activeRoom.value, status: 'finished' }, null, res.data)
+        }
         return res.data
     } finally {
         isSubmitting.value = false
@@ -174,5 +211,8 @@ export const useDuelsStore = defineStore('duels', () => {
     leaveRoom,
     surrender,
     resetRoomState,
+    applyRoom,
+    applyRoundUpdate,
+    fetchResult,
   }
 })
