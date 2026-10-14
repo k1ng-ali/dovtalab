@@ -12,6 +12,7 @@ import { Capacitor } from '@capacitor/core'
 import { App as CapApp } from '@capacitor/app'
 import type { PluginListenerHandle } from '@capacitor/core'
 import { Modal } from 'ant-design-vue'
+import { useI18n } from 'vue-i18n'
 
 export type DuelView = 'lobby' | 'waiting' | 'arena' | 'result'
 
@@ -22,6 +23,7 @@ export function useDuelFlow() {
     const authStore = useAuthStore()
     const headerStore = useHeaderStore()
     const navStore = useNavStore()
+    const { t } = useI18n()
     let backButtonListener: PluginListenerHandle | null = null
 
     const isCreateOpen = ref(false)
@@ -43,10 +45,10 @@ export function useDuelFlow() {
         const id = roomId.value
         if (!id) return
         Modal.confirm({
-            title: 'Сдаться?',
-            content: 'Победа будет засчитана сопернику.',
-            okText: 'Сдаться',
-            cancelText: 'Продолжить',
+            title: t('duels.surrenderTitle'),
+            content: t('duels.surrenderContent'),
+            okText: t('duels.surrender'),
+            cancelText: t('common.continue'),
             okButtonProps: { danger: true },
             async onOk() {
                 try {
@@ -66,7 +68,7 @@ export function useDuelFlow() {
             await store.startRoom(roomId.value)
         } catch (e) {
             console.error('Ошибка старта дуэли:', e)
-            headerStore.showNotification('Не удалось начать дуэль', 'error', 2500)
+            headerStore.showNotification(t('duels.startFailed'), 'error', 2500)
             await store.fetchRoom(roomId.value)
         }
     }
@@ -133,7 +135,7 @@ export function useDuelFlow() {
     if (currentView === 'waiting') {
         const actions: any[] = [
         {
-            label: 'Выйти',
+            label: t('duels.leave'),
             variant: 'default',
             icon: BsArrowLeft,
             onClick: () => exitDuel(),
@@ -143,7 +145,7 @@ export function useDuelFlow() {
         // Если текущий пользователь — создатель комнаты:
         if (store.isCreator) {
         actions.push({
-            label: store.isSubmitting ? 'Запуск...' : 'Начать дуэль',
+            label: store.isSubmitting ? t('duels.starting') : t('duels.start'),
             variant: 'primary',
             // Кнопка неактивна, пока соперник не найден или идет отправка
             disabled: !store.opponentFound || store.isSubmitting,
@@ -155,12 +157,12 @@ export function useDuelFlow() {
     } else if (currentView === 'arena') {
         navStore.showActions([
         {
-            label: 'Сдаться',
+            label: t('duels.surrender'),
             variant: 'default',
             onClick: () => surrenderDuel(),
         },
         {
-            label: 'Ответить',
+            label: t('quiz.answer'),
             variant: 'primary',
             disabled: true,
             onClick: () => window.dispatchEvent(new Event('duel-submit-answer')),
@@ -169,7 +171,7 @@ export function useDuelFlow() {
     } else if (currentView === 'result') {
         navStore.showActions([
         {
-            label: 'К дуэлям',
+            label: t('duels.toDuels'),
             variant: 'primary',
             onClick: () => exitDuel(),
         },
@@ -196,12 +198,12 @@ export function useDuelFlow() {
             view,
             (currentView) => {
                 if (currentView === 'lobby') {
-                    headerStore.setTitle('Дуэли')
+                    headerStore.setTitle(t('duels.title'))
                     headerStore.setLeftAction(null)
                     headerStore.setRightAction(null)
                     headerStore.hideActions()
                 } else {
-                    headerStore.setTitle(store.activeRoom?.quiz_title ?? 'Дуэль')
+                    headerStore.setTitle(store.activeRoom?.quiz_title ?? t('duels.duel'))
                     headerStore.setLeftAction({
                         icon: BsArrowLeft,
                         onClick: () => (currentView === 'arena' ? surrenderDuel() : exitDuel()),

@@ -4,9 +4,11 @@ import { message } from 'ant-design-vue'
 import PassportCard from './PassportCard.vue'
 import { usePassport } from './usePassport'
 import { usePassportExport } from './usePassportExport'
+import { useI18n } from 'vue-i18n'
 
 const props  = defineProps<{ open: boolean }>()
 const emit   = defineEmits<{ (e: 'close'): void }>()
+const { t } = useI18n()
 
 const { passport, loading, fetch } = usePassport()
 const { exporting, share, download } = usePassportExport()
@@ -70,9 +72,9 @@ const onDownload = async () => {
   try {
     await download(el)
     emit('close')
-    message.success('Паспорт сохранён 🎉')
+    message.success(t('passport.saved'))
   } catch {
-    message.error('Не удалось сохранить паспорт')
+    message.error(t('passport.saveFailed'))
   }
 }
 </script>
@@ -84,8 +86,8 @@ const onDownload = async () => {
 
         <!-- Header -->
         <div class="pm-header">
-          <span class="pm-title">Мой паспорт</span>
-          <button class="pm-close" @click="emit('close')" aria-label="Закрыть">✕</button>
+          <span class="pm-title">{{ $t('passport.my') }}</span>
+          <button class="pm-close" @click="emit('close')" :aria-label="$t('common.close')">✕</button>
         </div>
 
         <!-- Card preview — масштабируется через transform, высота вычисляется динамически -->
@@ -100,7 +102,7 @@ const onDownload = async () => {
               <PassportCard :passport="passport" />
             </div>
           </div>
-          <div v-else class="pm-error">Не удалось загрузить данные</div>
+          <div v-else class="pm-error">{{ $t('passport.loadFailed') }}</div>
         </div>
 
         <!-- Actions -->
@@ -110,15 +112,15 @@ const onDownload = async () => {
             :disabled="!passport || exporting"
             @click="onShare"
           >
-            <span v-if="exporting">⏳ Генерация...</span>
-            <span v-else>📤 Поделиться</span>
+            <span v-if="exporting">⏳ {{ $t('passport.generating') }}</span>
+            <span v-else>📤 {{ $t('passport.share') }}</span>
           </button>
           <button
             class="pm-btn pm-btn--secondary"
             :disabled="!passport || exporting"
             @click="onDownload"
           >
-            ⬇ Скачать PNG
+            ⬇ {{ $t('passport.download') }}
           </button>
         </div>
 
@@ -137,7 +139,7 @@ const onDownload = async () => {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: var(--sab);
 }
 
 .pm-sheet {

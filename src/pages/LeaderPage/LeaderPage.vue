@@ -6,7 +6,6 @@ import { useHeaderStore } from "@/shared/stores/useHeaderStore.ts"
 import { useRouter } from "vue-router"
 import { BsArrowLeft } from "@kalimahapps/vue-icons"
 import {Capacitor, SystemBars, SystemBarsStyle} from "@capacitor/core";
-import {EdgeToEdge} from "@capawesome/capacitor-android-edge-to-edge-support";
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -65,7 +64,6 @@ onMounted(async () => {
       // Исходное состояние при загрузке
       //await StatusBar.setBackgroundColor({ color: '#F6F6F6' });
       await SystemBars.setStyle({ style: SystemBarsStyle.Light})
-      await EdgeToEdge.setBackgroundColor({ color: '#00000000' });
     } catch (e) {
       console.error('Ошибка настройки StatusBar:', e);
     }
@@ -185,7 +183,7 @@ onUnmounted(() => { observer?.disconnect() })
   display: flex;
   justify-content: center;
   width: 100%;
-  padding-bottom: 100px;
+  padding-bottom: calc(100px + var(--sab));
 }
 
 .content {
@@ -193,7 +191,7 @@ onUnmounted(() => { observer?.disconnect() })
   flex-direction: column;
   gap: 10px;
   padding: 20px;
-  margin-top: 70px;
+  margin-top: calc(70px + var(--sat));
   width: 100%;
   max-width: 800px;
 }
@@ -338,7 +336,7 @@ onUnmounted(() => { observer?.disconnect() })
 .sticky-user {
   position: fixed;
   // Подбери bottom под высоту своего Navigator'а
-  bottom: 100px;
+  bottom: calc(100px + var(--sab));
   left: 0;
   right: 0;
   z-index: 50;

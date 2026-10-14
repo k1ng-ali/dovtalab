@@ -7,6 +7,7 @@ import type { QuestionPublic, AttemptResult, UserAnswerPayload } from '@/feature
 import { useHeaderStore } from '@/shared/stores/useHeaderStore.ts'
 import { useNavStore } from '@/shared/stores/useNavStore.ts'
 import { BsArrowLeft } from '@kalimahapps/vue-icons'
+import { useI18n } from 'vue-i18n'
 import { http } from '@/shared/api/http.ts'
 
 import SingleChoice from '@/features/quizPage/quiz/questions/SingleChoice.vue'
@@ -17,6 +18,7 @@ import InputQuestion from '@/features/quizPage/quiz/questions/InputQuestion.vue'
 const router = useRouter()
 const headerStore = useHeaderStore()
 const navStore = useNavStore()
+const { t } = useI18n()
 
 const challenge = ref<DailyChallengeData | null>(null)
 const currentQuestion = ref<QuestionPublic | null>(null)
@@ -41,7 +43,7 @@ const hasAnswer = computed(() => {
 watch([hasAnswer, phase], () => syncNav())
 
 onMounted(async () => {
-  headerStore.setTitle('Ежедневный вызов')
+  headerStore.setTitle(t('daily.title'))
   headerStore.setLeftAction({ icon: BsArrowLeft, onClick: goBack })
   syncNav()
 
@@ -86,9 +88,9 @@ async function loadNextQuestion() {
 
 function syncNav() {
   navStore.showActions([
-    { label: 'Назад', icon: BsArrowLeft, variant: 'default', onClick: goBack },
+    { label: t('common.back'), icon: BsArrowLeft, variant: 'default', onClick: goBack },
     {
-      label: phase.value === 'submitted' ? 'Далее' : 'Ответить',
+      label: phase.value === 'submitted' ? t('common.next') : t('quiz.answer'),
       variant: 'primary',
       disabled: phase.value === 'answering' ? !hasAnswer.value : false,
       onClick: phase.value === 'submitted' ? nextQuestion : submitAnswer,
@@ -154,18 +156,18 @@ function goBack() {
     <!-- Finished -->
     <div v-else-if="finished" class="dc-finished">
       <div class="finish-icon">🎉</div>
-      <h2 class="finish-title">Челлендж завершён!</h2>
+      <h2 class="finish-title">{{ $t('daily.finished') }}</h2>
       <div class="finish-stats" v-if="challenge">
-        <span class="finish-stat">✅ {{ correctCount }} / {{ challenge.total_questions }} правильно</span>
-        <span class="finish-stat" v-if="challenge.streak">🔥 Streak: {{ challenge.streak + 1 }} дней</span>
+        <span class="finish-stat">✅ {{ $t('daily.correctOf', { n: correctCount, m: challenge.total_questions }) }}</span>
+        <span class="finish-stat" v-if="challenge.streak">🔥 {{ $t('daily.streak') }}: {{ $t('plural.days', challenge.streak + 1) }}</span>
       </div>
-      <button class="finish-btn" @click="goBack">На главную</button>
+      <button class="finish-btn" @click="goBack">{{ $t('daily.toHome') }}</button>
     </div>
 
     <!-- Question -->
     <div v-else-if="currentQuestion" class="dc-question">
       <div class="dc-progress-header">
-        <span>Вопрос {{ currentIndex + 1 }} / {{ challenge?.total_questions }}</span>
+        <span>{{ $t('daily.questionOf', { n: currentIndex + 1, m: challenge?.total_questions }) }}</span>
         <span class="dc-correct">✅ {{ correctCount }}</span>
       </div>
 
@@ -214,7 +216,7 @@ function goBack() {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 80px 20px 120px;
+  padding: calc(80px + var(--sat)) 20px calc(120px + var(--sab));
 }
 
 .dc-loading {

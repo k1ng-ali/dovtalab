@@ -101,7 +101,7 @@ const rightState = (id: number) => {
         alt=""
     />
 
-    <p class="hint">Нажмите элемент слева, затем справа — они соединятся</p>
+    <p class="hint">{{ $t('questions.matchingHint') }}</p>
 
     <div class="columns">
       <div class="column">
@@ -125,7 +125,7 @@ const rightState = (id: number) => {
     </div>
 
     <div class="pairs-summary" v-if="Object.keys(matched).length">
-      <p class="pairs-title">Составленные пары:</p>
+      <p class="pairs-title">{{ $t('questions.pairs') }}</p>
       <div v-for="(rightId, leftId) in matched" :key="leftId" class="pair-row" :class="result ? pairResultClass(Number(leftId)) : ''">
         <span>{{ leftItems.find(l => l.id === Number(leftId))?.text }}</span>
         <span class="arrow">→</span>

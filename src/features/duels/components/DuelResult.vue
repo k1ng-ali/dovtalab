@@ -13,8 +13,8 @@ const isWinner = computed(() => props.result.winner_user_id === props.currentUse
 <template>
   <div class="result-card">
     <div class="trophy-badge">{{ isWinner ? '🏆' : '⚔️' }}</div>
-    <h2 class="title">{{ isWinner ? 'Победа!' : 'Дуэль завершена' }}</h2>
-    <p class="subtitle">{{ isWinner ? 'Вы оказались быстрее и точнее' : 'Хорошая игра!' }}</p>
+    <h2 class="title">{{ isWinner ? $t('duels.victory') : $t('duels.finished') }}</h2>
+    <p class="subtitle">{{ isWinner ? $t('duels.victorySub') : $t('duels.goodGame') }}</p>
 
     <div class="scores-table">
       <div
@@ -24,10 +24,10 @@ const isWinner = computed(() => props.result.winner_user_id === props.currentUse
         :class="{ highlight: score.user_id === currentUserId }"
       >
         <span class="rank">#{{ score.rank }}</span>
-        <span class="player-name">{{ score.user_id === currentUserId ? 'Вы' : 'Соперник' }}</span>
+        <span class="player-name">{{ score.user_id === currentUserId ? $t('common.you') : $t('duels.opponent') }}</span>
         <div class="stats">
           <span class="correct">✅ {{ score.correct_count }}</span>
-          <span class="time">⏱ {{ (score.total_response_time_ms / 1000).toFixed(1) }} сек</span>
+          <span class="time">⏱ {{ $t('units.sec', { n: (score.total_response_time_ms / 1000).toFixed(1) }) }}</span>
         </div>
       </div>
     </div>

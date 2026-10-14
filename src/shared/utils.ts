@@ -1,3 +1,7 @@
+import i18n from '@/shared/i18n'
+
+const { t } = i18n.global
+
 export const timeFormat = (totalSeconds: number): string => {
     if (totalSeconds == null || totalSeconds < 0) return "";
 
@@ -6,10 +10,10 @@ export const timeFormat = (totalSeconds: number): string => {
     const seconds = Math.floor(totalSeconds % 60);
 
     if (hours > 0) {
-        return `${hours} ч ${minutes} мин ${seconds} сек`;
+        return t('units.hMinSec', { h: hours, m: minutes, s: seconds });
     } else if (minutes > 0) {
-        return `${minutes} мин ${seconds} сек`;
+        return t('units.minSec', { m: minutes, s: seconds });
     } else {
-        return `${seconds} сек`;
+        return t('units.sec', { n: seconds });
     }
 };

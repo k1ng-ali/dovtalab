@@ -1,6 +1,9 @@
 import {defineStore} from "pinia";
 import * as api from "./api";
 import type {AuthStatus, AuthTokensResponse, SuperUser} from "@/features/auth/types.ts";
+import i18n from '@/shared/i18n'
+
+const { t } = i18n.global
 
 const savedToken = localStorage.getItem('access_token')
 
@@ -105,7 +108,7 @@ export const useAuthStore = defineStore("auth", {
         setError(e: unknown) {
             const msg = e instanceof Error
                 ? e.message
-                : (e as any)?.response?.data?.detail ?? 'Неизвестная ошибка'
+                : (e as any)?.response?.data?.detail ?? t('common.unknownError')
             this.error = msg
             this.status = 'error'
             console.error('[AuthStore]', msg)

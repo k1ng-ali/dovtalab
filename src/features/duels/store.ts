@@ -5,6 +5,9 @@ import { useAuthStore } from '@/features/auth/store.ts'
 import * as api from './api.ts'
 import type { DuelGameState, DuelQuestion, DuelResult, DuelRoom, DuelCreatePayload } from './types.ts'
 import type { UserAnswerPayload } from '@/features/quizPage/types.ts'
+import i18n from '@/shared/i18n'
+
+const { t } = i18n.global
 
 export const useDuelsStore = defineStore('duels', () => {
   const authStore = useAuthStore()
@@ -75,7 +78,7 @@ export const useDuelsStore = defineStore('duels', () => {
       const response = await api.listDuels()
       rooms.value = response.data
     } catch {
-      errorMessage.value = 'Не удалось загрузить дуэли'
+      errorMessage.value = t('duels.loadFailed')
     } finally {
       isLoading.value = false
     }
@@ -96,7 +99,7 @@ export const useDuelsStore = defineStore('duels', () => {
         finalResult.value = null
       }
     } catch {
-      errorMessage.value = 'Не удалось загрузить комнату'
+      errorMessage.value = t('duels.roomLoadFailed')
     } finally {
       isLoading.value = false
     }

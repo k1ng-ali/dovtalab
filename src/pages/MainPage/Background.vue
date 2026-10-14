@@ -38,7 +38,7 @@ const avatarError = ref(false)
       </div>
     </div>
     <h1 class="welcome">
-      С возращением,<br>
+      {{ $t('mainPage.welcomeBack') }}<br>
       {{userStore.user?.first_name}} 👋
     </h1>
   </div>
@@ -81,6 +81,7 @@ const avatarError = ref(false)
     width: 100%;
     justify-content: space-between;
     padding: 0 20px;
+    padding-top: var(--sat);  /* фон edge-to-edge, а логотип и аватар — ниже статус-бара */
     box-sizing: border-box;
   }
   .title{

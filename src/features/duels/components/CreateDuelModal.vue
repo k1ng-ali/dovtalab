@@ -96,8 +96,8 @@ function handleSubmit() {
       <!-- Шапка -->
       <div class="modal-header">
         <div>
-          <span class="modal-badge">НОВАЯ КОМНАТА</span>
-          <h2>Создать дуэль</h2>
+          <span class="modal-badge">{{ $t('duels.newRoom') }}</span>
+          <h2>{{ $t('duels.create') }}</h2>
         </div>
         <button class="close-btn" type="button" @click="emit('close')">✕</button>
       </div>
@@ -109,7 +109,7 @@ function handleSubmit() {
           v-model="searchQuery"
           type="text"
           class="search-input"
-          placeholder="Поиск по названию..."
+          :placeholder="$t('duels.searchPlaceholder')"
         />
         <button
           v-if="searchQuery"
@@ -128,7 +128,7 @@ function handleSubmit() {
         </div>
 
         <div v-else-if="displayQuizzes.length === 0" class="empty-state">
-          Ничего не найдено
+          {{ $t('duels.nothingFound') }}
         </div>
 
         <div
@@ -143,7 +143,7 @@ function handleSubmit() {
             <span class="card-icon">📘</span>
             <div class="card-text">
               <h4 class="card-title">{{ quiz.title }}</h4>
-              <p class="card-desc">{{ quiz.description || 'Без описания' }}</p>
+              <p class="card-desc">{{ quiz.description || $t('duels.noDescription') }}</p>
             </div>
           </div>
           <div class="radio-indicator">
@@ -154,7 +154,7 @@ function handleSubmit() {
 
       <!-- Выбор количества вопросов (pills) -->
       <div class="count-selector">
-        <span class="count-label">Количество вопросов:</span>
+        <span class="count-label">{{ $t('duels.questionCount') }}</span>
         <div class="pills-row">
           <button
             v-for="count in countPresets"
@@ -171,14 +171,14 @@ function handleSubmit() {
 
       <!-- Кнопки действий -->
       <div class="modal-actions">
-        <button class="cancel-btn" type="button" @click="emit('close')">Отмена</button>
+        <button class="cancel-btn" type="button" @click="emit('close')">{{ $t('common.cancel') }}</button>
         <button
           class="submit-btn"
           type="button"
           :disabled="isSubmitting || !selectedQuiz"
           @click="handleSubmit"
         >
-          {{ isSubmitting ? 'Создание...' : 'Создать комнату' }}
+          {{ isSubmitting ? $t('duels.creating') : $t('duels.createRoom') }}
         </button>
       </div>
 
@@ -196,7 +196,7 @@ function handleSubmit() {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: calc(16px + var(--sat)) 16px calc(16px + var(--sab));
 }
 
 .modal-card {

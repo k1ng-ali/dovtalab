@@ -52,11 +52,11 @@ const startChallenge = () => {
             <span class="dc-icon">{{ data!.completed ? '✅' : '🎯' }}</span>
           </div>
           <div class="dc-title-block">
-            <span class="dc-title">Ежедневный вызов</span>
+            <span class="dc-title">{{ $t('daily.title') }}</span>
             <span class="dc-subtitle" v-if="!data!.completed">
-              {{ data!.answered_count }} из {{ data!.total_questions }} вопросов
+              {{ $t('daily.progress', { n: data!.answered_count, m: data!.total_questions }) }}
             </span>
-            <span class="dc-subtitle done" v-else>Завершён на сегодня</span>
+            <span class="dc-subtitle done" v-else>{{ $t('daily.doneToday') }}</span>
           </div>
         </div>
 
@@ -64,7 +64,7 @@ const startChallenge = () => {
         <div class="dc-streak" v-if="data!.streak > 0">
           <span class="streak-fire">🔥</span>
           <span class="streak-count">{{ data!.streak }}</span>
-          <span class="streak-label">дн.</span>
+          <span class="streak-label">{{ $t('daily.daysShort') }}</span>
         </div>
       </div>
 
@@ -85,11 +85,11 @@ const startChallenge = () => {
           </span>
         </div>
         <span class="dc-action" v-if="!data!.completed">
-          {{ data!.answered_count === 0 ? 'Начать' : 'Продолжить' }}
+          {{ data!.answered_count === 0 ? $t('daily.start') : $t('common.continue') }}
           <span class="dc-arrow">→</span>
         </span>
         <span class="dc-action done" v-else>
-          +{{ data!.correct_count * 3 }} очков
+          {{ $t('quiz.notificationPoints', { n: data!.correct_count * 3 }) }}
         </span>
       </div>
     </div>

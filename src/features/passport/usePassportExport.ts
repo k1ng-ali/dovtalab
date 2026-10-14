@@ -4,6 +4,9 @@ import { http } from '@/shared/api/http'
 import { Capacitor } from '@capacitor/core'
 import { Filesystem, Directory } from '@capacitor/filesystem'
 import { Share } from '@capacitor/share'
+import i18n from '@/shared/i18n'
+
+const { t } = i18n.global
 
 // Fallback-аватар — та же иконка что в PassportCard, как data URL
 const FALLBACK_AVATAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 130" width="110" height="130">
@@ -158,18 +161,18 @@ export function usePassportExport() {
                 })
 
                 await Share.share({
-                    title: 'Мой паспорт Dovtalab',
-                    text: 'Посмотри мой прогресс на Dovtalab! 🚀\nhttps://dovtalab.app',
+                    title: t('passport.shareTitle'),
+                    text: t('passport.shareText') + '\nhttps://dovtalab.app',
                     url: saved.uri,
-                    dialogTitle: 'Поделиться паспортом',
+                    dialogTitle: t('passport.shareDialog'),
                 })
             } else {
                 // Браузер — Web Share API с файлом или fallback на скачивание
                 const file = new File([blob], 'dovtalab-passport.png', { type: 'image/png' })
                 if (navigator.canShare?.({ files: [file] })) {
                     await navigator.share({
-                        title: 'Мой паспорт Dovtalab',
-                        text: 'Посмотри мой прогресс на Dovtalab! 🚀\nhttps://dovtalab.app',
+                        title: t('passport.shareTitle'),
+                        text: t('passport.shareText') + '\nhttps://dovtalab.app',
                         files: [file],
                     })
                 } else {

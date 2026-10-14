@@ -7,16 +7,15 @@ import { message } from 'ant-design-vue'
 import { computed, onUnmounted, ref } from "vue";
 import router from "@/app/router.ts";
 import { TelegramAuth} from "@/shared/lib/TelegramAuth.ts";
+import { useI18n } from 'vue-i18n'
 
 interface Props {
   label?: string
   loadingText?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  label: 'Войти через Telegram',
-  loadingText: 'Подключение...',
-})
+defineProps<Props>()
+const { t } = useI18n()
 
 const emit = defineEmits<{
   success: []
@@ -59,14 +58,14 @@ async function handleClick() {
 
       if (res.success && res.idToken) {
         await authStore.nativeLogin({ id_token: res.idToken })
-        message.success('Вы вошли!')
+        message.success(t('auth.signedIn'))
         await router.push('/')
       } else {
-        const reason = res.error ?? 'Авторизация отменена'
+        const reason = res.error ?? t('auth.cancelled')
         message.error(reason)
       }
     } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Ошибка авторизации'
+      const msg = error instanceof Error ? error.message : t('auth.authError')
       message.error(msg)
       console.error(error)
     } finally {
@@ -80,10 +79,10 @@ async function handleClick() {
   try {
     const { code, nonce, code_verifier } = await openLoginPopup()
     await authStore.loginWithTelegram({ code, nonce, code_verifier })
-    message.success('Вы вошли!')
+    message.success(t('auth.signedIn'))
     emit('success')
   } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Ошибка входа'
+    const msg = e instanceof Error ? e.message : t('auth.loginError')
     message.error(msg)
     emit('error', msg)
   }
@@ -107,11 +106,11 @@ onUnmounted(() => {
       <transition name="tg-fade" mode="out-in">
         <span v-if="isLoading" key="loading" class="tg-btn__content">
           <span class="tg-btn__spinner" />
-          <span>{{ loadingText }}</span>
+          <span>{{ loadingText ?? $t('auth.connecting') }}</span>
         </span>
         <span v-else key="idle" class="tg-btn__content">
           <TelegramIcon class="tg-btn__icon" />
-          <span>{{ label }}</span>
+          <span>{{ label ?? $t('auth.telegramLogin') }}</span>
         </span>
       </transition>
     </span>

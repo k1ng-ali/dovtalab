@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
+    "build:android": "vue-tsc -b && vite build --mode android && cap sync android",
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist -r https://github.com/k1ng-ali/dovtalab.git --cname=dovtalab.app"
@@ -21,7 +22,6 @@
     "@capacitor/preferences": "^8.0.1",
     "@capacitor/share": "^8.0.1",
     "@capacitor/status-bar": "^8.0.2",
-    "@capawesome/capacitor-android-edge-to-edge-support": "^8.0.8",
     "@iconify-vue/fluent": "^1.0.5",
     "@iconify-vue/hugeicons": "^1.0.18",
     "@iconify-vue/line-md": "^1.0.7",

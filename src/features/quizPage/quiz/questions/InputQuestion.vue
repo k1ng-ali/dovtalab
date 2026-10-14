@@ -50,7 +50,7 @@ const correctValue = computed(() => {
           class="answer-input"
           :class="inputClass"
           :type="payload?.numeric ? 'number' : 'text'"
-          placeholder="Введите ответ..."
+          :placeholder="$t('questions.inputPlaceholder')"
           :value="value"
           :disabled="disabled"
           @input="onInput"
@@ -63,10 +63,10 @@ const correctValue = computed(() => {
     </div>
 
     <div v-if="correctValue" class="correct-answer-hint">
-      Правильный ответ: <strong>{{ correctValue }}</strong>
+      {{ $t('questions.correctAnswer') }} <strong>{{ correctValue }}</strong>
     </div>
 
-    <p class="case-hint" v-if="payload && !payload.numeric && !result">Регистр не важен</p>
+    <p class="case-hint" v-if="payload && !payload.numeric && !result">{{ $t('questions.caseInsensitive') }}</p>
   </div>
 </template>
 

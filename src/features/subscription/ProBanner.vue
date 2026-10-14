@@ -13,8 +13,8 @@ const showModal = ref(false)
     <div class="active-left">
       <span class="active-icon">⚡</span>
       <div class="active-text">
-        <span class="active-title">Pro активен</span>
-        <span class="active-desc">Адаптивное обучение и тренировки доступны</span>
+        <span class="active-title">{{ $t('subscription.proActive') }}</span>
+        <span class="active-desc">{{ $t('subscription.proActiveDesc') }}</span>
       </div>
     </div>
     <span class="active-badge">PRO</span>
@@ -26,10 +26,10 @@ const showModal = ref(false)
       <span class="banner-icon">⚡</span>
       <div class="banner-text">
         <span class="banner-title">Dovtalab Pro</span>
-        <span class="banner-desc">Адаптивное обучение, тренировка по темам</span>
+        <span class="banner-desc">{{ $t('subscription.bannerDesc') }}</span>
       </div>
     </div>
-    <span class="banner-action">Бесплатно →</span>
+    <span class="banner-action">{{ $t('subscription.free') }} →</span>
   </div>
 
   <SubscriptionModal

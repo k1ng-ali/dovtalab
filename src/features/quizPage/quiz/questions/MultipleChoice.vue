@@ -65,7 +65,7 @@ const optionClass = (id: number) => {
         alt=""
     />
     <p class="hint" v-if="payload?.max_choices">
-      Выберите до {{ payload.max_choices }} вариантов
+      {{ $t('questions.maxChoices', { n: payload.max_choices }) }}
     </p>
     <div class="options">
       <div

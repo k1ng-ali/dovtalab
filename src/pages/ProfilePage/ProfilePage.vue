@@ -5,7 +5,6 @@ import { useHeaderStore } from '@/shared/stores/useHeaderStore.ts'
 import { useNavStore } from '@/shared/stores/useNavStore.ts'
 import {useRouter} from "vue-router";
 import {Capacitor, SystemBars, SystemBarsStyle} from "@capacitor/core";
-import {EdgeToEdge} from "@capawesome/capacitor-android-edge-to-edge-support";
 import { useI18n } from 'vue-i18n'
 import PassportModal from '@/features/passport/PassportModal.vue'
 import ExitBoldDuotoneIcon from '@iconify-vue/solar/exit-bold-duotone';
@@ -36,7 +35,6 @@ onMounted(async () => {
     try {
       // Исходное состояние при загрузке
       await SystemBars.setStyle({ style: SystemBarsStyle.Light})
-      await EdgeToEdge.setBackgroundColor({ color: '#F6F6F6' });
     } catch (e) {
       console.error('Ошибка настройки StatusBar:', e);
     }
@@ -58,11 +56,11 @@ const initials = computed(() => {
 
 // Форматирование суммарного времени в тестах
 const totalTimeLabel = computed(() => {
-  const t = config.value?.quiz_time ?? 0
-  const h = Math.floor(t / 3600)
-  const m = Math.floor((t % 3600) / 60)
-  if (h > 0) return `${h}ч ${m}м`
-  return `${m} мин`
+  const total = config.value?.quiz_time ?? 0
+  const h = Math.floor(total / 3600)
+  const m = Math.floor((total % 3600) / 60)
+  if (h > 0) return t('units.hMin', { h, m })
+  return t('units.min', { n: m })
 })
 
 // Дата регистрации
@@ -158,8 +156,8 @@ const avatarError = ref(false)
       <button class="passport-btn" @click="passportOpen = true">
         <span class="passport-btn__icon">🪪</span>
         <div class="passport-btn__text">
-          <span class="passport-btn__title">Мой паспорт</span>
-          <span class="passport-btn__sub">Поделиться карточкой профиля</span>
+          <span class="passport-btn__title">{{ $t('passport.my') }}</span>
+          <span class="passport-btn__sub">{{ $t('passport.shareProfile') }}</span>
         </div>
         <span class="passport-btn__arrow">›</span>
       </button>
@@ -261,8 +259,8 @@ const avatarError = ref(false)
 
 <style scoped lang="scss">
 .profile-page {
-  padding-top: 80px;
-  padding-bottom: 110px;
+  padding-top: calc(80px + var(--sat));
+  padding-bottom: calc(110px + var(--sab));
   display: flex;
   flex-direction: column;
   gap: 24px;

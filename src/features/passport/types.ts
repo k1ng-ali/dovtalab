@@ -9,6 +9,7 @@ export type BadgeType =
     | 'pro'
 
 export interface BadgeInfo {
+    /** Ключ i18n */
     label: string
     /** Инлайн SVG-строка — рендерится через v-html, работает в html2canvas */
     svg: string
@@ -18,7 +19,7 @@ export interface BadgeInfo {
 // currentColor подхватит :style="{ color: ... }" от родителя
 export const BADGES: Record<BadgeType, BadgeInfo> = {
     excellent: {
-        label: 'Отличник',
+        label: 'passport.badges.excellent',
         svg: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
 \t<path d="M0 0h24v24H0z" fill="none" />
 \t<path fill="none" stroke="currentColor" stroke-dasharray="34" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3l-2.35 5.76l-6.21 0.46l4.76 4.02l-1.49 6.04l5.29 -3.28M12 3l2.35 5.76l6.21 0.46l-4.76 4.02l1.49 6.04l-5.29 -3.28">
@@ -28,7 +29,7 @@ export const BADGES: Record<BadgeType, BadgeInfo> = {
 `,
     },
     expert: {
-        label: 'Знаток',
+        label: 'passport.badges.expert',
         svg: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
 \t<path d="M0 0h24v24H0z" fill="none" />
 \t<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
@@ -41,7 +42,7 @@ export const BADGES: Record<BadgeType, BadgeInfo> = {
 `,
     },
     marathon: {
-        label: 'Марафонец',
+        label: 'passport.badges.marathon',
         svg: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
 \t<path d="M0 0h24v24H0z" fill="none" />
 \t<path fill="currentColor" d="M12.832 21.801c3.126-.626 7.168-2.875 7.168-8.69c0-5.291-3.873-8.815-6.658-10.434c-.619-.36-1.342.113-1.342.828v1.828c0 1.442-.606 4.074-2.29 5.169c-.86.559-1.79-.278-1.894-1.298l-.086-.838c-.1-.974-1.092-1.565-1.87-.971C4.461 8.46 3 10.33 3 13.11C3 20.221 8.289 22 10.933 22q.232 0 .484-.015c.446-.056 0 .099 1.415-.185" opacity=".5" />
@@ -50,7 +51,7 @@ export const BADGES: Record<BadgeType, BadgeInfo> = {
 `,
     },
     speedster: {
-        label: 'Скоростной',
+        label: 'passport.badges.speedster',
         svg: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
 \t<path d="M0 0h24v24H0z" fill="none" />
 \t<path fill="currentColor" d="M14.5 4h.005M14.5 4L12 10l5 2.898L9.5 20l2.5-6l-5-2.9zm0-2a2.02 2.02 0 0 0-1.379.551L5.624 9.646a2 2 0 0 0-.61 1.686c.072.626.437 1.182.982 1.498l3.482 2.021l-1.826 4.381a2.003 2.003 0 0 0 1.847 2.77c.498 0 .993-.186 1.375-.548l7.5-7.103a2 2 0 0 0 .61-1.685a2 2 0 0 0-.982-1.498L14.52 9.15l1.789-4.293A2 2 0 0 0 14.5 2" />
@@ -58,7 +59,7 @@ export const BADGES: Record<BadgeType, BadgeInfo> = {
 `,
     },
     beginner: {
-        label: 'Целеустремлённый',
+        label: 'passport.badges.beginner',
         svg: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
 \t<path d="M0 0h24v24H0z" fill="none" />
 \t<path fill="currentColor" d="M12 2a1 1 0 1 1 0 2a8 8 0 1 0 8 8a1 1 0 1 1 2 0c0 5.523-4.477 10-10 10S2 17.523 2 12S6.477 2 12 2m0 4a1 1 0 1 1 0 2a4 4 0 1 0 4 4a1 1 0 1 1 2 0a6 6 0 1 1-6-6m6.571-3.9a.5.5 0 0 1 .5.5v1.83a.5.5 0 0 0 .5.499H21.4a.5.5 0 0 1 .5.5v.915l-1.888 1.888a2 2 0 0 1-1.414.586h-2l-3.89 3.889a1 1 0 0 1-1.414-1.414l3.89-3.889v-2a2 2 0 0 1 .585-1.414l1.89-1.89z" />
@@ -66,7 +67,7 @@ export const BADGES: Record<BadgeType, BadgeInfo> = {
 `,
     },
     top10: {
-        label: 'Топ-10',
+        label: 'passport.badges.top10',
         svg: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
 \t<path d="M0 0h24v24H0z" fill="none" />
 \t<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
@@ -77,7 +78,7 @@ export const BADGES: Record<BadgeType, BadgeInfo> = {
 `,
     },
     top100: {
-        label: 'Топ-100',
+        label: 'passport.badges.top100',
         svg: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
 \t<path d="M0 0h24v24H0z" fill="none" />
 \t<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2" d="m15.8 10.356l3.773-6.608A.5.5 0 0 0 19.139 3H14.58a1 1 0 0 0-.868.504L12 6.5m-3.798 3.855L4.427 3.748A.5.5 0 0 1 4.862 3H9.42a1 1 0 0 1 .868.504L12 6.5m0 0l1.543 2.7m0 0a6 6 0 1 0-3.086 11.6a6 6 0 0 0 3.086-11.6ZM13 15a1 1 0 1 1-2 0a1 1 0 0 1 2 0Z" />
@@ -85,7 +86,7 @@ export const BADGES: Record<BadgeType, BadgeInfo> = {
 `,
     },
     pro: {
-        label: 'Pro',
+        label: 'passport.badges.pro',
         svg: `<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
 \t<path d="M0 0h24v24H0z" fill="none" />
 \t<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">

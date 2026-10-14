@@ -16,25 +16,25 @@ const emit = defineEmits<{
 
 <template>
   <div class="waiting-card">
-    <span class="room-badge">КОМНАТА #{{ room.id }}</span>
+    <span class="room-badge">{{ $t('duels.room', { id: room.id }) }}</span>
     <h1 class="room-title">{{ room.quiz_title }}</h1>
-    <p class="room-meta">{{ room.question_count }} вопросов · {{ room.participant_count }}/2 участников</p>
+    <p class="room-meta">{{ $t('plural.questions', room.question_count) }} · {{ $t('duels.participants', { n: room.participant_count }) }}</p>
 
     <!-- VS Illustration -->
     <div class="versus-wrapper" :class="{ ready: opponentFound }">
       <div class="avatar you">
-        <span>Вы</span>
+        <span>{{ $t('common.you') }}</span>
       </div>
       <div class="versus-text">VS</div>
       <div class="avatar opponent">
-        <span>{{ opponentFound ? 'Соперник' : '?' }}</span>
+        <span>{{ opponentFound ? $t('duels.opponent') : '?' }}</span>
       </div>
     </div>
 
     <div class="status-box">
       <span class="status-indicator" :class="{ ready: opponentFound }" />
       <span class="status-text">
-        {{ opponentFound ? 'Соперник подключился!' : 'Ожидаем второго игрока...' }}
+        {{ opponentFound ? $t('duels.opponentJoined') : $t('duels.waitingSecond') }}
       </span>
     </div>
 
@@ -42,9 +42,9 @@ const emit = defineEmits<{
       {{
         opponentFound
           ? isCreator
-            ? 'Соперник в комнате. Нажмите «Начать дуэль» внизу экрана.'
-            : 'Комната готова. Ожидайте, пока создатель запустит дуэль.'
-          : 'Комната открыта для подключения. Слот обновится автоматически.'
+            ? $t('duels.statusCreator')
+            : $t('duels.statusGuest')
+          : $t('duels.statusOpen')
       }}
     </p>
   </div>

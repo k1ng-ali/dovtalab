@@ -269,7 +269,7 @@ onUnmounted(() => {
 /* ── Search Section ──────────────────────────────────────────────────── */
 .search-section {
   position: sticky;
-  top: 70px;
+  top: calc(70px + var(--sat));  /* прилипает под фиксированный Header */
   z-index: 10;
 }
 

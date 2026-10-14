@@ -1,6 +1,9 @@
 import { useAuthStore } from "@/features/auth/store.ts"
 import axios from "axios"
 import { message } from 'ant-design-vue'
+import i18n from '@/shared/i18n'
+
+const { t } = i18n.global
 
 const BASE_URL = `${import.meta.env.VITE_API_URL ?? "https://api.dovtalab.app"}/api/v1`
 
@@ -53,9 +56,9 @@ http.interceptors.response.use(
         if (!error.response || error.code === 'ERR_NETWORK') {
             message.destroy()
             if (error.code === 'ECONNABORTED') {
-                message.error('Время ожидания запроса истекло. Проверьте интернет.')
+                message.error(t('network.timeout'))
             } else {
-                message.error('Ошибка сети. Проверьте подключение к интернету.')
+                message.error(t('network.error'))
             }
             return Promise.reject(error)
         }

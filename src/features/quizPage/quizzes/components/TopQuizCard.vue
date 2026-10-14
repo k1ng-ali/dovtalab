@@ -34,7 +34,7 @@ const medal = computed(() => medals[props.index] ?? '')
     <h4 class="title">{{ quiz.title }}</h4>
     <p class="desc">{{ quiz.description }}</p>
     <div class="meta">
-      <span v-if="totalQuestions" class="meta-item">📝 {{ totalQuestions }} вопр.</span>
+      <span v-if="totalQuestions" class="meta-item">📝 {{ $t('units.questionsShort', { n: totalQuestions }) }}</span>
     </div>
   </div>
 </template>

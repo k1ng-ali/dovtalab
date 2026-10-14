@@ -2,8 +2,8 @@
 import Navigator from "@/features/navigator/Navigator.vue";
 import { useAuthStore } from "@/features/auth/store.ts";
 import Header from "@/features/quizPage/header/Header.vue";
-import {onMounted, onUnmounted, ref, watch} from "vue"
-import { useRouter } from 'vue-router'
+import {computed, onMounted, onUnmounted, ref, watch} from "vue"
+import { useRoute, useRouter } from 'vue-router'
 import Auth from "@/features/auth/Auth.vue";
 import { useTelegramEnv } from '@/features/auth/composables/useTelegramEnv'
 import { http } from "./shared/api/http";
@@ -20,6 +20,16 @@ const { isTelegramEnv, getInitData } = useTelegramEnv()
 
 const authStore = useAuthStore()
 const router = useRouter()
+const route = useRoute()
+
+// Публичные страницы (meta.public, напр. /privacy) показываются без авторизации и без сплэша.
+// До первой навигации route.matched пуст — тогда смотрим на путь из адресной строки.
+const PUBLIC_PATHS = ['/privacy']
+const isPublicRoute = computed(() =>
+  route.matched.length
+    ? route.meta.public === true
+    : PUBLIC_PATHS.includes(window.location.pathname.replace(/\/$/, ''))
+)
 
 // Сохраняем путь СИНХРОННО при создании компонента — до любых await и до того,
 // как initializeApp() может вызвать router.replace('/').
@@ -260,7 +270,7 @@ onUnmounted(() => {
 <template>
   <!-- ═══ Splash Screen (начальная загрузка) ═══ -->
   <Transition name="splash-fade">
-    <div v-if="isInitializing" class="splash">
+    <div v-if="isInitializing && !isPublicRoute" class="splash">
       <div class="splash-content">
         <div class="splash-logo-wrapper">
           <img :src="logoSvg" alt="Dovtalab" class="splash-logo-img" />
@@ -277,7 +287,7 @@ onUnmounted(() => {
 
   <!-- ═══ Экран ошибки подключения ═══ -->
   <Transition name="splash-fade">
-    <div v-if="!isInitializing && connectionError" class="splash splash--error">
+    <div v-if="!isInitializing && connectionError && !isPublicRoute" class="splash splash--error">
       <div class="splash-content">
         <div class="splash-logo-wrapper">
           <img :src="logoSvg" alt="Dovtalab" class="splash-logo-img splash-logo-img--dim" />
@@ -316,14 +326,14 @@ onUnmounted(() => {
 
   <!-- ═══ Экран авторизации для неавторизованного пользователя ═══ -->
   <Transition name="fade">
-    <div v-if="!isInitializing && !connectionError && !authStore.isAuthenticated">
+    <div v-if="!isInitializing && !connectionError && !authStore.isAuthenticated && !isPublicRoute">
       <Auth/>
     </div>
   </Transition>
 
   <!-- ═══ Основной контент ═══ -->
   <Transition name="fade">
-    <div v-if="!isInitializing && !connectionError && authStore.isAuthenticated" class="layout">
+    <div v-if="!isInitializing && !connectionError && authStore.isAuthenticated && !isPublicRoute" class="layout">
       <Header />
       <main class="content">
         <router-view />
@@ -331,6 +341,9 @@ onUnmounted(() => {
       <Navigator />
     </div>
   </Transition>
+
+  <!-- ═══ Публичные страницы (без авторизации и layout) ═══ -->
+  <router-view v-if="isPublicRoute" />
 
   <!-- ═══ Offline badge (при потере сети во время работы) ═══ -->
   <Transition name="slide-down">

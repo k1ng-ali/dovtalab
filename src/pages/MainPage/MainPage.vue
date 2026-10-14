@@ -7,7 +7,6 @@ import ProBanner from "@/features/subscription/ProBanner.vue";
 import {useHeaderStore} from '@/shared/stores/useHeaderStore.ts'
 import {onMounted, onUnmounted, ref} from 'vue'
 import {Capacitor, SystemBars, SystemBarsStyle} from "@capacitor/core";
-import {EdgeToEdge} from "@capawesome/capacitor-android-edge-to-edge-support";
 import {useNavStore} from "@/shared/stores/useNavStore.ts";
 
 const headerStore = useHeaderStore()
@@ -26,8 +25,6 @@ const handleScroll = async () => {
     try {
       // Только меняем иконки на тёмные (для белого фона #F6F6F6)
       await SystemBars.setStyle({ style: SystemBarsStyle.Light })
-
-      await EdgeToEdge.setBackgroundColor({ color: '#F6F6F6' });
     } catch (e) {
       console.error('Ошибка смены StatusBar (Light):', e);
     }
@@ -38,8 +35,6 @@ const handleScroll = async () => {
     try {
       // Возвращаем светлые иконки (для тёмного фона #112437)
       await SystemBars.setStyle({ style: SystemBarsStyle.Dark })
-
-      await EdgeToEdge.setBackgroundColor({ color: '#112437' });
     } catch (e) {
       console.error('Ошибка смены StatusBar (Dark):', e);
     }
@@ -54,7 +49,6 @@ onMounted(async () => {
     try {
       // При старте ставим белые иконки
       await SystemBars.setStyle({ style: SystemBarsStyle.Dark })
-      await EdgeToEdge.setBackgroundColor({ color: '#112437' });
     } catch (e) {
       console.error('Ошибка настройки StatusBar:', e);
     }
@@ -90,7 +84,7 @@ onUnmounted(() => {
   background: #F6F6F6;
   width: 100%;
   padding: 20px;
-  padding-top: calc(env(safe-area-inset-top) + 20px);
+  padding-top: calc(var(--sat) + 20px);
   padding-bottom: 100px;
   border-radius: 30px 30px 0 0;
   box-sizing: border-box;

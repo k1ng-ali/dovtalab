@@ -10,7 +10,7 @@ const { t } = useI18n()
 const tabs = computed(() => [
   { name: t('nav.home'), icon: AkHome,          path: "/" },
   { name: t('nav.quizzes'),   icon: PhSealQuestion,  path: "/quiz" },
-  { name: "Дуэли", icon: PhSword, path: "/duels" },
+  { name: t('nav.duels'), icon: PhSword, path: "/duels" },
   { name: t('nav.profile'), icon: CgProfile,       path: "/profile" },
 ])
 

@@ -7,6 +7,9 @@ import {
     generateCodeVerifier,
     generateCodeChallenge,
 } from '@/shared/lib/pkce.ts'
+import i18n from '@/shared/i18n'
+
+const { t } = i18n.global
 
 // localStorage-ключи — переживают переход браузер → приложение
 const LS_NONCE         = 'tg_auth_nonce'
@@ -82,7 +85,7 @@ export function useTelegramLogin() {
                 const popup = window.open(url, 'telegram-auth', 'width=550,height=650')
 
                 if (!popup) {
-                    reject(new Error('Popup заблокирован браузером'))
+                    reject(new Error(t('auth.popupBlocked')))
                     return
                 }
 
@@ -103,7 +106,7 @@ export function useTelegramLogin() {
                     sessionStorage.removeItem(LS_CODE_VERIFIER)
 
                     if (returnedState !== savedState) {
-                        reject(new Error('State mismatch — возможна CSRF атака'))
+                        reject(new Error(t('auth.stateMismatch')))
                         return
                     }
 
@@ -116,7 +119,7 @@ export function useTelegramLogin() {
                     if (popup.closed) {
                         clearInterval(timer)
                         window.removeEventListener('message', handler)
-                        reject(new Error('Окно авторизации закрыто'))
+                        reject(new Error(t('auth.popupClosed')))
                     }
                 }, 500)
             })

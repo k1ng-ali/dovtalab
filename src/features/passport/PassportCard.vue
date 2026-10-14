@@ -5,6 +5,9 @@ import type { UserPassport, BadgeType } from './types'
 import { BADGES } from './types'
 import logoSvg from '@/assets/logo.svg'
 import patternSvg from '@/assets/Pattern.svg'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 // Инлайн-стили для каждого типа бейджа — работают и в html2canvas экспорте
 const BADGE_STYLES: Record<BadgeType, { bg: string; border: string; icon: string }> = {
@@ -52,7 +55,7 @@ const pointsLabel = computed(() =>
 
 const percentileLabel = computed(() => {
   if (!props.passport.percentile) return null
-  return `Топ ${props.passport.percentile}% пользователей`
+  return t('passport.topPercent', { n: props.passport.percentile })
 })
 </script>
 
@@ -68,11 +71,11 @@ const percentileLabel = computed(() => {
         <img :src="logoSvg" class="passport__logo" alt="Dovtalab" />
         <div class="passport__brand-text">
           <span class="passport__brand-name">Dovtalab</span>
-          <span class="passport__brand-sub">Платформа для подготовки<br>к ММТ и саморазвития</span>
+          <span class="passport__brand-sub">{{ $t('passport.brandLine1') }}<br>{{ $t('passport.brandLine2') }}</span>
         </div>
       </div>
       <div class="passport__title-block">
-        <span class="passport__title">ПАСПОРТ ПОЛЬЗОВАТЕЛЯ</span>
+        <span class="passport__title">{{ $t('passport.title') }}</span>
         <span class="passport__display-id">ID: {{ passport.display_id }}</span>
       </div>
     </div>
@@ -99,7 +102,7 @@ const percentileLabel = computed(() => {
 
       <!-- CENTER: info -->
       <div class="passport__info">
-        <span class="passport__info-label">ИМЯ В ПЛАТФОРМЕ</span>
+        <span class="passport__info-label">{{ $t('passport.nameLabel') }}</span>
         <div class="passport__name-row">
           <span class="passport__name">{{ fullName }}</span>
           <span v-if="passport.is_pro" class="passport__verified">✦</span>
@@ -111,7 +114,7 @@ const percentileLabel = computed(() => {
           <div class="passport__stat">
             <span class="passport__stat-icon">⭐</span>
             <div class="passport__stat-body">
-              <span class="passport__stat-label">БАЛЛЫ</span>
+              <span class="passport__stat-label">{{ $t('passport.points') }}</span>
               <span class="passport__stat-value">{{ pointsLabel }}</span>
             </div>
           </div>
@@ -119,7 +122,7 @@ const percentileLabel = computed(() => {
           <div class="passport__stat">
             <span class="passport__stat-icon">🏆</span>
             <div class="passport__stat-body">
-              <span class="passport__stat-label">МЕСТО В РЕЙТИНГЕ</span>
+              <span class="passport__stat-label">{{ $t('passport.rank') }}</span>
               <span class="passport__stat-value">{{ rankLabel }}</span>
               <span v-if="percentileLabel" class="passport__stat-sub">{{ percentileLabel }}</span>
             </div>
@@ -128,8 +131,8 @@ const percentileLabel = computed(() => {
           <div class="passport__stat">
             <span class="passport__stat-icon">🔥</span>
             <div class="passport__stat-body">
-              <span class="passport__stat-label">СЕРИЯ ДНЕЙ</span>
-              <span class="passport__stat-value">{{ passport.streak_days }} дней</span>
+              <span class="passport__stat-label">{{ $t('passport.streak') }}</span>
+              <span class="passport__stat-value">{{ $t('plural.days', passport.streak_days) }}</span>
             </div>
           </div>
         </div>
@@ -141,14 +144,14 @@ const percentileLabel = computed(() => {
           <img :src="logoSvg" class="passport__watermark-img" alt="" />
         </div>
         <img v-if="qrDataUrl" :src="qrDataUrl" class="passport__qr" alt="QR" />
-        <span class="passport__qr-label">СКАНИРУЙ И СМОТРИ<br>МОЙ ПРОФИЛЬ</span>
+        <span class="passport__qr-label">{{ $t('passport.qrLine1') }}<br>{{ $t('passport.qrLine2') }}</span>
       </div>
 
     </div>
 
     <!-- ═══ BADGES ═══ -->
     <div v-if="passport.badges.length" class="passport__badges-section">
-      <span class="passport__badges-title">ПОЛУЧЕННЫЕ БЕЙДЖИ</span>
+      <span class="passport__badges-title">{{ $t('passport.badgesTitle') }}</span>
       <div class="passport__badges">
         <div
           v-for="badge in passport.badges"
@@ -175,7 +178,7 @@ const percentileLabel = computed(() => {
               v-html="BADGES[badge.type].svg"
             />
           </div>
-          <span class="passport__badge-label">{{ BADGES[badge.type].label }}</span>
+          <span class="passport__badge-label">{{ $t(BADGES[badge.type].label) }}</span>
         </div>
       </div>
     </div>
@@ -183,7 +186,7 @@ const percentileLabel = computed(() => {
     <!-- ═══ FOOTER ═══ -->
     <div class="passport__footer">
       <span class="passport__footer-left">DOVTALAB.APP</span>
-      <span class="passport__footer-right">УЧИСЬ. ПРАКТИКУЙСЯ. ПОБЕЖДАЙ!</span>
+      <span class="passport__footer-right">{{ $t('passport.motto') }}</span>
     </div>
 
   </div>

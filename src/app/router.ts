@@ -5,6 +5,7 @@ const ProfilePage = () =>  import("@/pages/ProfilePage/ProfilePage.vue")
 const LeaderPage = () => import("@/pages/LeaderPage/LeaderPage.vue");
 const DailyChallengePage = () => import("@/pages/DailyChallenge/DailyChallengePage.vue");
 const DuelsPage = () => import("@/pages/DuelsPage/DuelsPage.vue");
+const PrivacyPage = () => import("@/pages/PrivacyPage/PrivacyPage.vue");
 
 const router = createRouter({
     history: createWebHistory(),
@@ -18,6 +19,8 @@ const router = createRouter({
         {path: '/daily', component: DailyChallengePage},
         {path: '/duels', component: DuelsPage},
         {path: '/duels/:duelId', component: DuelsPage},
+        // Публичная страница — доступна без авторизации (meta.public)
+        {path: '/privacy', component: PrivacyPage, meta: {public: true}},
     ]
 })
 

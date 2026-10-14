@@ -19,45 +19,45 @@ const emit = defineEmits<{
     <section class="hero-banner">
       <div class="hero-content">
         <span class="hero-badge">1 VS 1</span>
-        <h1>Битва умов</h1>
-        <p class="subtitle">Отвечай быстрее и точнее соперника в реальном времени</p>
+        <h1>{{ $t('duels.lobbyTitle') }}</h1>
+        <p class="subtitle">{{ $t('duels.lobbySubtitle') }}</p>
       </div>
       <button class="create-btn" type="button" @click="emit('create')">
-        Создать дуэль
+        {{ $t('duels.create') }}
       </button>
     </section>
 
     <div class="lobby-header">
-      <h2>Ожидают соперника</h2>
+      <h2>{{ $t('duels.awaitingOpponent') }}</h2>
       <button class="refresh-btn" type="button" :disabled="loading" @click="emit('refresh')">
-        Обновить
+        {{ $t('duels.refresh') }}
       </button>
     </div>
 
-    <div v-if="loading" class="lobby-state">Загрузка комнат...</div>
+    <div v-if="loading" class="lobby-state">{{ $t('duels.loadingRooms') }}</div>
 
     <div v-else-if="rooms.length === 0" class="empty-state">
       <div class="empty-icon">⚔️</div>
-      <h3>Свободных комнат нет</h3>
-      <p>Создайте первую дуэль и пригласите оппонента</p>
+      <h3>{{ $t('duels.noRoomsTitle') }}</h3>
+      <p>{{ $t('duels.noRoomsSub') }}</p>
     </div>
 
     <div v-else class="rooms-grid">
       <div v-for="room in rooms" :key="room.id" class="room-card">
         <div class="room-info">
-          <span class="room-id">Комната #{{ room.id }}</span>
+          <span class="room-id">{{ $t('duels.room', { id: room.id }) }}</span>
           <h3 class="room-title">{{ room.quiz_title }}</h3>
-          <p class="room-meta">{{ room.question_count }} вопросов · {{ room.participant_count }}/2 игроков</p>
+          <p class="room-meta">{{ $t('plural.questions', room.question_count) }} · {{ $t('duels.players', { n: room.participant_count }) }}</p>
         </div>
         <div class="room-actions">
-          <span class="status-online">● Ждёт игрока</span>
+          <span class="status-online">● {{ $t('duels.waitingPlayer') }}</span>
           <button
             class="join-btn"
             type="button"
             :disabled="isSubmitting"
             @click="emit('join', room)"
           >
-            Войти
+            {{ $t('duels.join') }}
           </button>
         </div>
       </div>

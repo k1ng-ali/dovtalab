@@ -224,14 +224,14 @@ watch(totalSlides, (val) => {
               {{ currentSlide.type === 'continue' ? currentSlide.quiz?.title : currentSlide.banner?.title }}
             </h3>
             <p class="slide-desc">
-              {{ currentSlide.type === 'continue' ? 'Продолжайте играть' : currentSlide.banner?.description }}
+              {{ currentSlide.type === 'continue' ? $t('ad.continuePlaying') : currentSlide.banner?.description }}
             </p>
             <div
               v-if="currentSlide.type === 'continue' || currentSlide.banner?.cta_text"
               class="slide-cta"
               :style="currentSlide.banner?.cta_color ? { background: currentSlide.banner.cta_color } : {}"
             >
-              {{ currentSlide.type === 'continue' ? 'Играть' : currentSlide.banner?.cta_text }}
+              {{ currentSlide.type === 'continue' ? $t('ad.play') : currentSlide.banner?.cta_text }}
             </div>
           </div>
         </div>

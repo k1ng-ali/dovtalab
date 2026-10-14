@@ -11,13 +11,14 @@ import { useNavStore }    from "@/shared/stores/useNavStore.ts"
 import { useHeaderStore } from "@/shared/stores/useHeaderStore.ts"
 import { useQuizFlow }    from "@/features/quizPage/useQuizFlow"
 import {Capacitor, SystemBars, SystemBarsStyle} from "@capacitor/core";
-import {EdgeToEdge} from "@capawesome/capacitor-android-edge-to-edge-support";
+import { useI18n } from 'vue-i18n'
 
 const route       = useRoute()
 const router      = useRouter()
 const navStore    = useNavStore()
 const headerStore = useHeaderStore()
 const flow        = useQuizFlow()
+const { t }       = useI18n()
 
 // ── Синхронизируем header и navigator при смене экрана ────────────────────────
 
@@ -41,7 +42,7 @@ watch(
 
         navStore.showActions([
           {
-            label: "Назад",
+            label: t('common.back'),
             icon: BsArrowLeft,
             variant: "default",
             onClick: () => flow.backToList(),
@@ -66,7 +67,7 @@ watch(
         if (hasContext) {
           headerStore.setRightAction({
             icon: MdOutlinedMenuBook,
-            label: "Контекст",
+            label: t('quiz.context'),
             onClick: () => {
               // событие открытия модалки — слушает QuizRunner
               window.dispatchEvent(new Event("open-context-modal"))
@@ -79,13 +80,13 @@ watch(
         // Навигатор в режиме quiz управляется из QuizRunner через updateAction
         navStore.showActions([
           {
-            label: "Назад",
+            label: t('common.back'),
             icon: BsArrowLeft,
             variant: "default",
             onClick: () => flow.backToInfo(),
           },
           {
-            label: "Ответить",
+            label: t('quiz.answer'),
             variant: "primary",
             disabled: true,
             onClick: () => {
@@ -110,7 +111,6 @@ onMounted(async () => {
     try {
       // Исходное состояние при загрузке
       await SystemBars.setStyle({ style: SystemBarsStyle.Light})
-      await EdgeToEdge.setBackgroundColor({ color: '#F6F6F6' });
     } catch (e) {
       console.error('Ошибка настройки StatusBar:', e);
     }
@@ -173,8 +173,8 @@ onUnmounted(() => headerStore.reset())
 
 .page-body {
   padding: 20px;
-  padding-top: 80px;   /* под фиксированным Header */
-  padding-bottom: 100px; /* над фиксированным Navigator */
+  padding-top: calc(80px + var(--sat));   /* под фиксированным Header */
+  padding-bottom: calc(100px + var(--sab)); /* над фиксированным Navigator */
   max-width: 900px;
   width: 100%;
 }

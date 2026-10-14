@@ -8,6 +8,7 @@ import MultipleChoice from '@/features/quizPage/quiz/questions/MultipleChoice.vu
 import Matching from '@/features/quizPage/quiz/questions/Matching.vue'
 import InputQuestion from '@/features/quizPage/quiz/questions/InputQuestion.vue'
 import { useNavStore } from '@/shared/stores/useNavStore.ts'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{
   gameState: DuelGameState
@@ -19,6 +20,7 @@ const emit = defineEmits<{
 }>()
 
 const navStore = useNavStore()
+const { t } = useI18n()
 
 const currentAnswer = ref<any>(null)
 const hasSubmitted = ref(false)
@@ -65,7 +67,7 @@ const isTimeUp = computed(() => secondsLeft.value === 0)
 // Синхронизация кнопки в нижнем баре через NavStore
 watch([hasAnswer, hasSubmitted, isTimeUp, () => props.isSubmitting], () => {
   navStore.updateAction(1, {
-    label: hasSubmitted.value ? 'Ожидание оппонента...' : isTimeUp.value ? 'Время вышло' : 'Ответить',
+    label: hasSubmitted.value ? t('duels.waitingOpponent') : isTimeUp.value ? t('duels.timeUp') : t('quiz.answer'),
     disabled: !hasAnswer.value || hasSubmitted.value || isTimeUp.value || props.isSubmitting,
   })
 })
@@ -123,9 +125,9 @@ onUnmounted(() => {
 <template>
   <div class="duel-arena">
     <div class="round-tracker">
-      <span>Раунд {{ gameState.question.round_number }} из {{ gameState.question.total_questions }}</span>
+      <span>{{ $t('duels.roundNofM', { n: gameState.question.round_number, m: gameState.question.total_questions }) }}</span>
       <span v-if="secondsLeft !== null" class="round-timer" :class="{ urgent: secondsLeft <= 5 }">
-        ⏱ {{ secondsLeft }} сек
+        ⏱ {{ $t('units.sec', { n: secondsLeft }) }}
       </span>
     </div>
 
@@ -162,11 +164,11 @@ onUnmounted(() => {
 
     <div v-if="hasSubmitted" class="waiting-indicator">
       <div class="loader-dot" />
-      <span>Ответ отправлен. Ожидаем завершения раунда соперником...</span>
+      <span>{{ $t('duels.answerSent') }}</span>
     </div>
     <div v-else-if="isTimeUp" class="waiting-indicator">
       <div class="loader-dot" />
-      <span>Время вышло — ответ не засчитан. Переходим к следующему раунду...</span>
+      <span>{{ $t('duels.timeUpDesc') }}</span>
     </div>
   </div>
 </template>

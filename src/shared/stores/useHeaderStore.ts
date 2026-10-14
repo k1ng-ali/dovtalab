@@ -1,5 +1,8 @@
 import { defineStore } from "pinia"
 import { markRaw, type Component } from "vue"
+import i18n from '@/shared/i18n'
+
+const { t } = i18n.global
 
 export interface HeaderAction {
     icon?: Component
@@ -17,7 +20,7 @@ export interface HeaderNotification {
 
 export const useHeaderStore = defineStore("header", {
     state: () => ({
-        title: "Тесты" as string,
+        title: t('nav.quizzes') as string,
         leftAction: null as HeaderAction | null,
         rightAction: null as HeaderAction | null,
         is_visible: true,
@@ -77,7 +80,7 @@ export const useHeaderStore = defineStore("header", {
 
         /** Сброс к дефолтному состоянию (список квизов) */
         reset() {
-            this.title = "Тесты"
+            this.title = t('nav.quizzes')
             this.leftAction = null
             this.rightAction = null
             this.notification = null

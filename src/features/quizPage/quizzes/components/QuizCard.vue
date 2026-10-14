@@ -2,6 +2,9 @@
 import type { QuizIn } from '@/features/quizPage/types.ts'
 import { computed } from 'vue'
 import { MdRoundFavorite } from '@kalimahapps/vue-icons'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   quiz: QuizIn
@@ -54,7 +57,7 @@ const isCompleted = computed(() =>
 
 const timeLabel = computed(() => {
   const mins = Math.floor(props.quiz.time_limit / 60)
-  return mins > 0 ? `${mins} мин` : null
+  return mins > 0 ? t('units.min', { n: mins }) : null
 })
 </script>
 
@@ -86,10 +89,10 @@ const timeLabel = computed(() => {
       <div class="badges">
         <span v-if="timeLabel" class="badge badge--time">⏱ {{ timeLabel }}</span>
         <span v-if="totalQuestions" class="badge badge--questions">
-          📝 {{ totalQuestions }} вопр.
+          📝 {{ $t('units.questionsShort', { n: totalQuestions }) }}
         </span>
         <span v-if="contextsCount" class="badge badge--contexts">
-          📂 {{ contextsCount }} разд.
+          📂 {{ $t('units.sectionsShort', { n: contextsCount }) }}
         </span>
         <span v-if="isCompleted" class="badge badge--done">
           ✓ × {{ progress!.completed_attempts }}

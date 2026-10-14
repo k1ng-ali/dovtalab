@@ -61,15 +61,15 @@ async function activate(planId: string) {
           <!-- Success state -->
           <div v-if="success" class="success-state">
             <span class="success-icon">🎉</span>
-            <h3 class="success-title">Подписка активирована!</h3>
-            <p class="success-desc">Теперь вам доступны все Pro-возможности</p>
-            <button class="btn-primary" @click="emit('close')">Отлично</button>
+            <h3 class="success-title">{{ $t('subscription.activated') }}</h3>
+            <p class="success-desc">{{ $t('subscription.activatedDesc') }}</p>
+            <button class="btn-primary" @click="emit('close')">{{ $t('subscription.great') }}</button>
           </div>
 
           <!-- Plans -->
           <div v-else class="plans-content">
-            <h2 class="plans-title">Выберите план</h2>
-            <p class="plans-subtitle">Разблокируйте продвинутые функции обучения</p>
+            <h2 class="plans-title">{{ $t('subscription.choosePlan') }}</h2>
+            <p class="plans-subtitle">{{ $t('subscription.choosePlanDesc') }}</p>
 
             <div class="plans-list">
               <div
@@ -79,8 +79,8 @@ async function activate(planId: string) {
                 :class="{ unavailable: !plan.available, pro: plan.id === 'pro', creator: plan.id === 'creator' }"
               >
                 <!-- Ribbon -->
-                <div v-if="plan.discount_percent === 100" class="plan-ribbon">Бесплатно</div>
-                <div v-else-if="!plan.available" class="plan-ribbon soon">Скоро</div>
+                <div v-if="plan.discount_percent === 100" class="plan-ribbon">{{ $t('subscription.free') }}</div>
+                <div v-else-if="!plan.available" class="plan-ribbon soon">{{ $t('subscription.soon') }}</div>
 
                 <div class="plan-header">
                   <span class="plan-icon">{{ plan.id === 'pro' ? '⚡' : '🎨' }}</span>
@@ -89,13 +89,13 @@ async function activate(planId: string) {
 
                 <!-- Price -->
                 <div class="plan-price">
-                  <span v-if="plan.discount_percent === 100" class="price-free">Бесплатно</span>
+                  <span v-if="plan.discount_percent === 100" class="price-free">{{ $t('subscription.free') }}</span>
                   <template v-else>
                     <span class="price-amount">{{ plan.price }} TJS</span>
-                    <span class="price-period">/ месяц</span>
+                    <span class="price-period">/ {{ $t('subscription.month') }}</span>
                   </template>
                   <span v-if="plan.discount_percent === 100" class="price-original">
-                    <s>{{ plan.price }} TJS/мес</s>
+                    <s>{{ $t('subscription.perMonth', { n: plan.price }) }}</s>
                   </span>
                 </div>
 
@@ -115,10 +115,10 @@ async function activate(planId: string) {
                   :disabled="activating"
                   @click="activate(plan.id)"
                 >
-                  {{ activating ? 'Оформление...' : 'Оформить бесплатно' }}
+                  {{ activating ? $t('subscription.activating') : $t('subscription.activateFree') }}
                 </button>
                 <button v-else class="btn-unavailable" disabled>
-                  Временно недоступен
+                  {{ $t('subscription.unavailable') }}
                 </button>
               </div>
             </div>
@@ -139,7 +139,7 @@ async function activate(planId: string) {
   align-items: flex-end;
   justify-content: center;
   z-index: 1000;
-  padding: 20px;
+  padding: calc(20px + var(--sat)) 20px calc(20px + var(--sab));
 }
 
 .modal-sheet {

@@ -12,6 +12,7 @@ import DuelResult from '@/features/duels/components/DuelResult.vue'
 import CreateDuelModal from '@/features/duels/components/CreateDuelModal.vue'
 import { useHeaderStore } from '@/shared/stores/useHeaderStore.ts'
 import { useNavStore } from '@/shared/stores/useNavStore.ts'
+import { useI18n } from 'vue-i18n'
 
 const route = useRoute()
 const router = useRouter()
@@ -19,6 +20,7 @@ const flow = useDuelFlow()
 const { store } = flow
 const headerStore = useHeaderStore()
 const navStore = useNavStore()
+const { t } = useI18n()
 const arenaRef = ref<InstanceType<typeof DuelArena> | null>(null)
 
 onMounted(() => {
@@ -52,7 +54,7 @@ async function handleCreate(payload: DuelCreatePayload) {
     flow.isCreateOpen.value = false
     await router.push(`/duels/${room.id}`)
   } catch {
-    alert('Не удалось создать комнату')
+    alert(t('duels.createFailed'))
   }
 }
 
@@ -74,9 +76,9 @@ async function handleAnswer(answer: UserAnswerPayload) {
     const res = await store.submitAnswer(flow.roomId.value, answer)
 
     if (res.is_correct) {
-      headerStore.showNotification('Правильно! 🎉', 'success', 2000)
+      headerStore.showNotification(t('duels.correct'), 'success', 2000)
     } else {
-      headerStore.showNotification('Неверно 😕', 'error', 2000)
+      headerStore.showNotification(t('duels.wrong'), 'error', 2000)
     }
   } catch (error) {
     // 409 — ответ уже есть / раунд закрыт: состояние подтянется с сервера.
@@ -85,7 +87,7 @@ async function handleAnswer(answer: UserAnswerPayload) {
       await store.fetchRoom(flow.roomId.value)
     } else {
       arenaRef.value?.resetSubmit()
-      headerStore.showNotification('Ошибка отправки ответа', 'error', 2500)
+      headerStore.showNotification(t('duels.submitFailed'), 'error', 2500)
     }
   }
 }
@@ -162,8 +164,8 @@ async function handleAnswer(answer: UserAnswerPayload) {
 
 .page-body {
   padding: 20px;
-  padding-top: 80px;   /* под фиксированный Header */
-  padding-bottom: 100px; /* над Navigator */
+  padding-top: calc(80px + var(--sat));   /* под фиксированный Header */
+  padding-bottom: calc(100px + var(--sab)); /* над Navigator */
   max-width: 900px;
   width: 100%;
 }

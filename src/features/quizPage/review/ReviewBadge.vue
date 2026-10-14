@@ -36,9 +36,9 @@ onMounted(async () => {
     <div class="review-left">
       <span class="review-icon">🔁</span>
       <div class="review-text">
-        <span class="review-title">Повторение</span>
+        <span class="review-title">{{ $t('review.title') }}</span>
         <span class="review-desc">
-          {{ pending }} {{ pending === 1 ? 'вопрос' : pending < 5 ? 'вопроса' : 'вопросов' }} готовы к повторению
+          {{ $t('review.pending', pending) }}
         </span>
       </div>
     </div>
@@ -53,9 +53,9 @@ onMounted(async () => {
     <div class="review-left">
       <span class="review-icon">🔁</span>
       <div class="review-text">
-        <span class="review-title">Повторение</span>
+        <span class="review-title">{{ $t('review.title') }}</span>
         <span class="review-desc">
-          {{ totalInQueue }} в очереди — повторение скоро
+          {{ $t('review.queued', { n: totalInQueue }) }}
         </span>
       </div>
     </div>

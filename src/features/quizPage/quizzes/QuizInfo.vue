@@ -9,6 +9,9 @@ import ReviewBadge from '@/features/quizPage/review/ReviewBadge.vue'
 import ProBadge from '@/features/subscription/ProBadge.vue'
 import SubscriptionModal from '@/features/subscription/SubscriptionModal.vue'
 import { useUserStore } from '@/features/user/store.ts'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   quiz: QuizIn
@@ -94,9 +97,9 @@ const totalTimeSpent = computed(() => {
   const h = Math.floor(total / 3600)
   const m = Math.floor((total % 3600) / 60)
 
-  if (h > 0) return `${h} ч ${m} мин`
-  if (m > 0) return `${m} мин`
-  return `${Math.floor(total)} сек`
+  if (h > 0) return t('units.hMin', { h, m })
+  if (m > 0) return t('units.min', { n: m })
+  return t('units.sec', { n: Math.floor(total) })
 })
 
 const addToFavorite = async (id: number) => {
@@ -138,7 +141,7 @@ const quickTestOptions = computed(() => {
       <div class="hash-code" @click="copyHashCode">
         <span class="hash-label">📋</span>
         <span class="hash-value">{{ quiz.hash_code }}</span>
-        <span class="hash-copied" :class="{ visible: copied }">Скопировано!</span>
+        <span class="hash-copied" :class="{ visible: copied }">{{ $t('quizInfo.copied') }}</span>
       </div>
 
       <MdRoundFavorite
@@ -157,9 +160,9 @@ const quickTestOptions = computed(() => {
 
       <!-- Мини-статистика -->
       <div class="hero-stats" v-if="Stats?.total_questions">
-        <span class="hero-stat">📝 {{ Stats.total_questions }} вопросов</span>
+        <span class="hero-stat">📝 {{ $t('plural.questions', Stats.total_questions) }}</span>
         <span class="hero-stat" v-if="Stats?.completed_attempt_stats?.length">
-          🏆 Пройдено {{ Stats.completed_attempt_stats.length }}×
+          🏆 {{ $t('quizInfo.completedTimes', { n: Stats.completed_attempt_stats.length }) }}
         </span>
         <span class="hero-stat" v-if="totalTimeSpent">
           ⏱ {{ totalTimeSpent }}
@@ -180,9 +183,9 @@ const quickTestOptions = computed(() => {
             <span class="adaptive-icon">🧠</span>
             <div class="adaptive-text">
               <span class="adaptive-title">
-                Адаптивное обучение
+                {{ $t('quizInfo.adaptiveTitle') }}
               </span>
-              <span class="adaptive-desc">Вопросы подбираются по вашим слабым местам</span>
+              <span class="adaptive-desc">{{ $t('quizInfo.adaptiveDesc') }}</span>
             </div>
           </div>
           <div v-if="userStore.is_pro" class="quick-test-toggle" :class="{ on: props.selectedMode === 'adaptive' }">
@@ -204,8 +207,8 @@ const quickTestOptions = computed(() => {
           <div class="quick-test-left">
             <span class="quick-test-icon">🚀</span>
             <div class="quick-test-text">
-              <span class="quick-test-title">Быстрый тест</span>
-              <span class="quick-test-desc">Один шанс на вопрос, результат в конце</span>
+              <span class="quick-test-title">{{ $t('quizInfo.quickTitle') }}</span>
+              <span class="quick-test-desc">{{ $t('quizInfo.quickDesc') }}</span>
             </div>
           </div>
           <div class="quick-test-toggle" :class="{ on: props.selectedMode === 'exam' }">
@@ -216,7 +219,7 @@ const quickTestOptions = computed(() => {
         <!-- Количество вопросов (показывается только при активном режиме) -->
         <Transition name="slide-down">
           <div v-if="props.selectedMode === 'exam'" class="quick-test-options" @click.stop>
-            <span class="options-label">Количество вопросов:</span>
+            <span class="options-label">{{ $t('quizInfo.questionCount') }}</span>
             <div class="options-pills">
               <button
                   v-for="n in quickTestOptions"
@@ -241,8 +244,8 @@ const quickTestOptions = computed(() => {
 
     <!-- ── Контексты ── -->
     <div class="section" v-if="!loading && contexts.length > 0">
-      <h2 class="section-title">Контексты</h2>
-      <p class="section-hint">Выберите контекст, чтобы пройти только связанные вопросы</p>
+      <h2 class="section-title">{{ $t('quizInfo.contexts') }}</h2>
+      <p class="section-hint">{{ $t('quizInfo.contextsHint') }}</p>
 
       <div class="context-list">
         <div
@@ -255,7 +258,7 @@ const quickTestOptions = computed(() => {
           <div class="context-top">
             <span class="context-name">{{ ctx.title }}</span>
             <span class="context-count" v-if="ctx.detail?.questions">
-              {{ ctx.detail.questions }} вопр.
+              {{ $t('units.questionsShort', { n: ctx.detail.questions }) }}
             </span>
           </div>
           <p class="context-text" v-if="ctx.text">{{ ctx.text }}</p>

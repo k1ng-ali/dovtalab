@@ -41,12 +41,12 @@ const emit = defineEmits<{
   >
     <div class="ad tg-gr-ad-1">
         <div class="container">
-          <h3 class="title">В Телеграмме</h3>
-          <p class="desc">Сообщество абитуриентов</p>
+          <h3 class="title">{{ $t('ad.telegramTitle') }}</h3>
+          <p class="desc">{{ $t('ad.telegramDesc') }}</p>
           <div class="btn"
                @click="open('https://t.me/mmt_taj')"
           >
-            Перейти
+            {{ $t('ad.go') }}
           </div>
       </div>
     </div>
@@ -54,20 +54,20 @@ const emit = defineEmits<{
     <div class="ad" v-if="quiz">
       <div class="container">
         <h3 class="title">{{quiz.title}}</h3>
-        <p class="desc">Продольжайте играть</p>
+        <p class="desc">{{ $t('ad.continuePlaying') }}</p>
         <div class="btn"
-        @click="emit('select', quiz)">Играть</div>
+        @click="emit('select', quiz)">{{ $t('ad.play') }}</div>
       </div>
     </div>
 
     <div class="ad tg-gr-ad-2">
       <div class="container">
-        <h3 class="title">Новости</h3>
-        <p class="desc">последние анонсы проекта</p>
+        <h3 class="title">{{ $t('ad.newsTitle') }}</h3>
+        <p class="desc">{{ $t('ad.newsDesc') }}</p>
         <div class="btn"
              @click="open('https://t.me/dovtalab_io')"
         >
-          Перейти
+          {{ $t('ad.go') }}
         </div>
       </div>
     </div>

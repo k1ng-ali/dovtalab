@@ -38,7 +38,7 @@ onUnmounted(() => window.removeEventListener('open-context-modal', onGlobalOpen)
             <p class="context-text">{{ context.text }}</p>
 
             <div class="rule-block" v-if="context.rule">
-              <p class="rule-label">📌 Правило</p>
+              <p class="rule-label">{{ $t('quiz.rule') }}</p>
               <p class="rule-text">{{ context.rule }}</p>
             </div>
           </div>
@@ -65,7 +65,7 @@ onUnmounted(() => window.removeEventListener('open-context-modal', onGlobalOpen)
   max-height: 75vh;
   background: #F6F6F6;
   border-radius: 28px 28px 0 0;
-  padding: 0 20px 40px;
+  padding: 0 20px calc(40px + var(--sab));
   display: flex;
   flex-direction: column;
   gap: 16px;

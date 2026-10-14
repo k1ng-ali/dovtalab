@@ -32,11 +32,12 @@ onMounted(async () => {
   }
 })
 
+// label — ключ i18n
 const masteryConfig: Record<MasteryLevel, { label: string; emoji: string; color: string; bg: string }> = {
-  not_started: { label: 'Не начато', emoji: '⚪', color: '#9CA3AF', bg: 'rgba(156,163,175,0.08)' },
-  weak:        { label: 'Нужна практика', emoji: '🔴', color: '#EF4444', bg: 'rgba(239,68,68,0.08)' },
-  learning:    { label: 'В процессе', emoji: '🟡', color: '#F59E0B', bg: 'rgba(245,158,11,0.08)' },
-  strong:      { label: 'Освоено', emoji: '🟢', color: '#10B981', bg: 'rgba(16,185,129,0.08)' },
+  not_started: { label: 'knowledgeMap.notStarted', emoji: '⚪', color: '#9CA3AF', bg: 'rgba(156,163,175,0.08)' },
+  weak:        { label: 'knowledgeMap.weak', emoji: '🔴', color: '#EF4444', bg: 'rgba(239,68,68,0.08)' },
+  learning:    { label: 'knowledgeMap.learning', emoji: '🟡', color: '#F59E0B', bg: 'rgba(245,158,11,0.08)' },
+  strong:      { label: 'knowledgeMap.strong', emoji: '🟢', color: '#10B981', bg: 'rgba(16,185,129,0.08)' },
 }
 
 const hasTopics = computed(() => data.value && data.value.topics.length > 0)
@@ -66,8 +67,8 @@ const progressPercent = computed(() => {
     <!-- Summary card (always visible) -->
     <div class="km-header" :class="{ 'pro-glow': userStore.is_pro }" @click="expanded = !expanded">
       <div class="km-header-top">
-        <span class="km-title">🗺️ Карта знаний</span>
-        <span class="km-progress">{{ progressPercent }}% освоено</span>
+        <span class="km-title">🗺️ {{ $t('knowledgeMap.title') }}</span>
+        <span class="km-progress">{{ $t('knowledgeMap.mastered', { n: progressPercent }) }}</span>
       </div>
 
       <div class="km-summary-pills">
@@ -97,14 +98,14 @@ const progressPercent = computed(() => {
         </div>
         <div class="skill-info">
           <span class="skill-name">{{ data!.skill_level.level_name }}</span>
-          <span class="skill-percentile">Лучше {{ data!.skill_level.percentile }}% пользователей</span>
+          <span class="skill-percentile">{{ $t('knowledgeMap.betterThan', { n: data!.skill_level.percentile }) }}</span>
         </div>
       </div>
 
       <!-- Expand button -->
       <button class="km-expand-btn" :class="{ expanded }">
         <span class="km-expand-icon">▾</span>
-        <span class="km-expand-label">{{ expanded ? 'Скрыть темы' : 'Показать темы' }}</span>
+        <span class="km-expand-label">{{ expanded ? $t('knowledgeMap.hideTopics') : $t('knowledgeMap.showTopics') }}</span>
       </button>
     </div>
 
@@ -128,7 +129,7 @@ const progressPercent = computed(() => {
               class="train-btn"
               @click.stop="emit('train-topic', topic.cluster_id)"
             >
-              Тренировать
+              {{ $t('knowledgeMap.train') }}
             </button>
             <ProBadge v-else @click="emit('open-subscription')" />
           </div>
@@ -136,10 +137,10 @@ const progressPercent = computed(() => {
           <div class="topic-bottom">
             <div class="topic-stats">
               <span class="topic-accuracy" v-if="topic.answers_count > 0">
-                {{ Math.round(topic.accuracy * 100) }}% точность
+                {{ $t('knowledgeMap.accuracy', { n: Math.round(topic.accuracy * 100) }) }}
               </span>
               <span class="topic-count">
-                {{ topic.answers_count }} / {{ topic.total_questions }} вопр.
+                {{ $t('knowledgeMap.answered', { a: topic.answers_count, b: topic.total_questions }) }}
               </span>
             </div>
 
@@ -162,7 +163,7 @@ const progressPercent = computed(() => {
               class="topic-badge"
               :style="{ background: masteryConfig[topic.mastery_level].bg, color: masteryConfig[topic.mastery_level].color }"
             >
-              {{ masteryConfig[topic.mastery_level].label }}
+              {{ $t(masteryConfig[topic.mastery_level].label) }}
             </span>
           </div>
         </div>
