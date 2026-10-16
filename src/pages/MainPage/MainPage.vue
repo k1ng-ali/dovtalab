@@ -67,11 +67,11 @@ onUnmounted(() => {
 <template>
   <Background />
   <div class="content" ref="contentRef">
-    <AssignmentsWidget/>
-    <DailyChallenge/>
-    <ProBanner/>
-    <Leaderboard/>
-    <Statistics/>
+    <AssignmentsWidget class="block--wide"/>
+    <DailyChallenge class="block--wide"/>
+    <div class="block--wide"><ProBanner/></div>
+    <Leaderboard class="block--left"/>
+    <Statistics class="block--right"/>
   </div>
 </template>
 
@@ -110,25 +110,20 @@ onUnmounted(() => {
       width: 100%;
     }
 
-    // Daily Challenge — full width
-    & > :nth-child(1) {
-      grid-column: 1 / -1;
-      max-width: 700px;
-    }
-
-    // Pro Banner — full width
-    & > :nth-child(2) {
+    // Задания, Daily Challenge, Pro Banner — на всю ширину
+    // (по классам, а не nth-child: блоки бывают скрыты через v-if)
+    & > .block--wide {
       grid-column: 1 / -1;
       max-width: 700px;
     }
 
     // Leaderboard — left
-    & > :nth-child(3) {
+    & > .block--left {
       grid-column: 1;
     }
 
     // Statistics — right
-    & > :nth-child(4) {
+    & > .block--right {
       grid-column: 2;
     }
   }
