@@ -31,11 +31,13 @@ export default defineConfig({
     outDir: 'dist',
   },
   server: {
+    port: 5173,
+    strictPort: true,
     host: true,
     allowedHosts: [
-        "http://127.0.0.1:8000/",
+        "http://localhost:8000/",
         "https://api.dovtalab.app/",
         "https://t.me/"
     ]
-  }
+  },
 })
