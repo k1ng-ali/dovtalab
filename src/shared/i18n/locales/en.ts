@@ -95,6 +95,7 @@ export default {
     timerDesc: 'Show countdown timer',
     languageName: 'Interface language',
     languageDesc: 'Choose language',
+    logout: 'Log out',
   },
 
   // ── Quiz ──

@@ -95,6 +95,7 @@ export default {
     timerDesc: 'Нишон додани ҳисоби чаппа',
     languageName: 'Забони интерфейс',
     languageDesc: 'Забонро интихоб кунед',
+    logout: 'Баромадан аз ҳисоб',
   },
 
   // ── Quiz ──

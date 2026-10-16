@@ -95,6 +95,7 @@ export default {
     timerDesc: 'Показывать обратный отсчёт',
     languageName: 'Язык интерфейса',
     languageDesc: 'Выберите язык',
+    logout: 'Выйти из аккаунта',
   },
 
   // ── Quiz ──
