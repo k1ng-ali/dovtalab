@@ -30,11 +30,12 @@ $shimmer: linear-gradient(
   display: flex;
   gap: 14px;
   padding: 16px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.07);
+  border-radius: var(--r-lg);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  box-shadow: var(--shadow-card);
 }
 
 .skeleton-icon {

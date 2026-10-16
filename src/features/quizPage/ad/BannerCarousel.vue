@@ -260,7 +260,7 @@ watch(totalSlides, (val) => {
 <style scoped lang="scss">
 .banner-carousel {
   position: relative;
-  border-radius: 20px;
+  border-radius: var(--r-xl);
   overflow: hidden;
 }
 

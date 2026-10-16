@@ -9,6 +9,9 @@ import { useQuiz } from "@/features/quizPage/store.ts"
 import { computed, onMounted, onUnmounted, ref, watch } from "vue"
 import { type HeaderAction, useHeaderStore } from "@/shared/stores/useHeaderStore.ts"
 import { useI18n } from 'vue-i18n'
+import FireIcon from '@iconify-vue/solar/fire-linear'
+import SearchIcon from '@iconify-vue/solar/magnifer-linear'
+import CloseIcon from '@iconify-vue/solar/close-circle-linear'
 
 const { t } = useI18n()
 const headerStore = useHeaderStore()
@@ -151,7 +154,7 @@ onUnmounted(() => {
 
     <!-- ─── Top Quizzes (горизонтальный скролл) ─── -->
     <section class="top-section">
-      <h3 class="section-title">🔥 {{ t('quiz.topQuizzes') }}</h3>
+      <h3 class="section-title"><FireIcon class="section-title__icon" />{{ t('quiz.topQuizzes') }}</h3>
       <div class="top-scroll">
         <template v-if="loading">
           <TopQuizCardSkeleton v-for="i in 3" :key="i" />
@@ -171,7 +174,7 @@ onUnmounted(() => {
     <!-- ─── Поиск ─── -->
     <section class="search-section">
       <div class="search-input-wrapper">
-        <span class="search-icon">🔍</span>
+        <SearchIcon class="search-icon" />
         <input
           v-model="searchQuery"
           type="text"
@@ -180,9 +183,11 @@ onUnmounted(() => {
         />
         <button
           v-if="searchQuery"
+          type="button"
           class="clear-btn"
+          :aria-label="t('common.close')"
           @click="searchQuery = ''"
-        >✕</button>
+        ><CloseIcon /></button>
       </div>
     </section>
 
@@ -235,14 +240,18 @@ onUnmounted(() => {
   margin-top: 16px;
 }
 
-/* ── Top Section ─────────────────────────────────────────────────────── */
-.top-section {
-  .section-title {
-    margin: 0 0 12px;
-    font-size: 16px;
-    font-weight: 700;
-    color: #234970;
-  }
+/* ── Популярные ─────────────────────────────────────────────── */
+.top-section .section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 0 6px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--c-navy-900);
+
+  &__icon { font-size: 20px; color: var(--c-wrong); }
 }
 
 .top-scroll {
@@ -250,110 +259,94 @@ onUnmounted(() => {
   gap: 12px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
-  padding: 8px 4px 14px;
-  margin: -8px -4px -14px;
+  padding: 8px 4px 18px;
+  margin: -8px -4px -18px;
   -webkit-overflow-scrolling: touch;
-  border-radius: 24px;
-
-  // Hide scrollbar
   scrollbar-width: none;
-  &::-webkit-scrollbar {
-    display: none;
-  }
 
-  & > * {
-    scroll-snap-align: start;
-  }
+  &::-webkit-scrollbar { display: none; }
+  & > * { scroll-snap-align: start; }
 }
 
-/* ── Search Section ──────────────────────────────────────────────────── */
+/* ── Поиск: стеклянная пилюля, прилипает под шапкой ─────────── */
 .search-section {
   position: sticky;
-  top: calc(70px + var(--sat));  /* прилипает под фиксированный Header */
+  top: calc(var(--sat) + 76px);
   z-index: 10;
+
+  @media (min-width: 1024px) { top: 84px; }
 }
 
 .search-input-wrapper {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 16px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  min-height: 52px;
+  padding: 0 8px 0 18px;
+  box-sizing: border-box;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.2s ease;
 
-  &:focus-within {
-    border-color: var(--c-teal-600);
-    box-shadow: 0 4px 20px rgba(78, 190, 194, 0.15);
-  }
+  &:focus-within { box-shadow: inset 0 0 0 2px var(--c-teal-600), var(--shadow-card); }
 }
 
-.search-icon {
-  font-size: 16px;
-  flex-shrink: 0;
-}
+.search-icon { font-size: 20px; color: var(--c-muted); flex-shrink: 0; }
 
 .search-input {
   flex: 1;
+  min-width: 0;
   border: none;
   outline: none;
   background: transparent;
   font-size: 15px;
-  color: #234970;
+  color: var(--c-ink);
   font-family: inherit;
 
-  &::placeholder {
-    color: #9CA3AF;
-  }
+  &::placeholder { color: var(--c-muted-2); }
 }
 
 .clear-btn {
   flex-shrink: 0;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(0, 0, 0, 0.06);
-  color: #6B7280;
-  font-size: 12px;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s ease;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--c-muted);
+  font-size: 20px;
+  cursor: pointer;
 
-  &:active {
-    background: rgba(0, 0, 0, 0.12);
-  }
+  &:active { background: rgba(35, 73, 112, 0.08); }
 }
 
-/* ── List Section ────────────────────────────────────────────────────── */
+/* ── Список: одна колонка на телефоне, две на десктопе ──────── */
 .list-section {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
 
-  .quiz {
-    margin-bottom: 10px;
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
   }
 }
 
 .empty {
-  color: #6B7280;
-  width: 100%;
+  grid-column: 1 / -1;
+  margin: 40px 0 0;
+  color: var(--c-muted);
   text-align: center;
-  margin-top: 40px;
-  font-size: 16px;
+  font-size: 15px;
 }
 
-.loading-more {
-  margin-top: 10px;
-}
-
-.sentinel {
-  height: 1px;
-  width: 100%;
-}
+.loading-more, .sentinel { grid-column: 1 / -1; }
+.sentinel { height: 1px; }
 </style>

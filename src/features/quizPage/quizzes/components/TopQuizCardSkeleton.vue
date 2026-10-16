@@ -15,18 +15,21 @@
 
 $shimmer: linear-gradient(
   90deg,
-  rgba(255, 255, 255, 0.05) 25%,
-  rgba(255, 255, 255, 0.12) 50%,
-  rgba(255, 255, 255, 0.05) 75%
+  rgba(23, 46, 74, 0.06) 25%,
+  rgba(23, 46, 74, 0.1) 50%,
+  rgba(23, 46, 74, 0.06) 75%
 );
 
 .top-card-skeleton {
   flex-shrink: 0;
-  width: 200px;
-  min-height: 140px;
-  border-radius: 20px;
+  width: 210px;
+  min-height: 160px;
+  box-sizing: border-box;
+  border-radius: var(--r-lg);
   padding: 16px;
-  background: linear-gradient(135deg, #b0bec5, #78909c);
+  background: var(--glass-bg);
+  border: var(--glass-border);
+  box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
   gap: 8px;
