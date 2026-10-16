@@ -78,7 +78,7 @@ const emit = defineEmits<{
 .ad {
   display: flex;
   flex-direction: column;
-  background: linear-gradient(to left,#4EBEC2 0%, #234970 100%);
+  background: var(--grad-primary);
   color: white;
   border-radius: 20px;
 

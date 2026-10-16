@@ -36,10 +36,10 @@ const current = computed<AppLocale>(() => (locale.value as AppLocale) ?? getLoca
   display: inline-flex;
   gap: 2px;
   padding: 3px;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(24px);
+  border: var(--glass-border);
+  border-radius: var(--r-pill);
   box-shadow: 0 2px 10px rgba(35, 73, 112, 0.08);
 
   &__btn {
@@ -47,7 +47,7 @@ const current = computed<AppLocale>(() => (locale.value as AppLocale) ?? getLoca
     border: none;
     border-radius: 30px;
     background: transparent;
-    color: #6B7280;
+    color: var(--c-ink-2);
     font-family: inherit;
     font-size: 12px;
     font-weight: 600;
@@ -58,9 +58,10 @@ const current = computed<AppLocale>(() => (locale.value as AppLocale) ?? getLoca
     &:active { transform: scale(0.95); }
 
     &--active {
-      background: var(--grad-primary);
-      color: #fff;
-      box-shadow: 0 2px 8px rgba(78, 190, 194, 0.35);
+      background: #FFFFFF;
+      color: var(--c-navy-900);
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(23, 46, 74, 0.1);
     }
   }
 }

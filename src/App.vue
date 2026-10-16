@@ -464,7 +464,7 @@ onUnmounted(() => {
 .splash-brand {
   font-size: 28px;
   font-weight: 700;
-  color: #234970;
+  color: var(--c-navy-900);
   letter-spacing: -0.5px;
 }
 
@@ -495,7 +495,7 @@ onUnmounted(() => {
   margin: 0;
   font-size: 14px;
   font-weight: 400;
-  color: #9CA3AF;
+  color: var(--c-muted-2);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -540,13 +540,13 @@ onUnmounted(() => {
   margin: 0;
   font-size: 18px;
   font-weight: 700;
-  color: #234970;
+  color: var(--c-navy-900);
 }
 
 .error-desc {
   margin: 0;
   font-size: 14px;
-  color: #6B7280;
+  color: var(--c-muted);
   line-height: 1.6;
 }
 

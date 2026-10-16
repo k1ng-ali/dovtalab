@@ -12,31 +12,29 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <span class="pro-badge" @click.stop="emit('click')">PRO</span>
+  <button type="button" class="pro-badge" @click.stop="emit('click')">PRO</button>
 </template>
 
 <style scoped>
 .pro-badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
-  background: linear-gradient(135deg, #7C3AED, #4F46E5);
-  color: #fff;
-  font-size: 10px;
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border: none;
+  border-radius: var(--r-pill);
+  background: var(--grad-primary);
+  color: #FFFFFF;
+  font-family: inherit;
+  font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.5px;
-  border-radius: 6px;
+  letter-spacing: 0.6px;
   cursor: pointer;
-  transition: all 0.2s ease;
   user-select: none;
-}
-
-.pro-badge:hover {
-  transform: scale(1.05);
-  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+  transition: transform 0.18s ease;
 }
 
 .pro-badge:active {
-  transform: scale(0.95);
+  transform: scale(0.94);
 }
 </style>

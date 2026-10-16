@@ -6,6 +6,27 @@ import { CONTACT_EMAIL, POLICY } from '@/features/privacy/content.ts'
 import type { AppLocale } from '@/shared/i18n'
 import LangSwitch from '@/shared/components/LangSwitch.vue'
 import logoSvg from '@/assets/logo.svg'
+import ShieldIcon from '@iconify-vue/solar/shield-check-linear'
+import DocIcon from '@iconify-vue/solar/document-text-linear'
+import FolderIcon from '@iconify-vue/solar/folder-linear'
+import TargetIcon from '@iconify-vue/solar/target-linear'
+import UsersIcon from '@iconify-vue/solar/users-group-rounded-linear'
+import PhoneIcon from '@iconify-vue/solar/smartphone-linear'
+import ShareIcon from '@iconify-vue/solar/hand-shake-linear'
+import HourglassIcon from '@iconify-vue/solar/hourglass-linear'
+import LockIcon from '@iconify-vue/solar/lock-keyhole-linear'
+import ScaleIcon from '@iconify-vue/solar/scale-linear'
+import ChildIcon from '@iconify-vue/solar/user-heart-linear'
+import RefreshIcon from '@iconify-vue/solar/refresh-linear'
+import MailIcon from '@iconify-vue/solar/letter-linear'
+import type { Component } from 'vue'
+
+// Иконка раздела по его id (эмодзи из content.ts не используем)
+const SECTION_ICONS: Record<string, Component> = {
+  general: DocIcon, collect: FolderIcon, purpose: TargetIcon, public: UsersIcon,
+  device: PhoneIcon, share: ShareIcon, retention: HourglassIcon, security: LockIcon,
+  rights: ScaleIcon, children: ChildIcon, changes: RefreshIcon, contacts: MailIcon,
+}
 
 const router = useRouter()
 const { locale } = useI18n()
@@ -74,7 +95,7 @@ onBeforeUnmount(() => {
     <main class="privacy__content">
       <!-- 2. Hero -->
       <section class="hero">
-        <div class="hero__icon">🛡️</div>
+        <div class="hero__icon"><ShieldIcon /></div>
         <h1 class="hero__title">{{ policy.title }}</h1>
         <span class="hero__date">{{ policy.updatedLabel }} {{ policy.updatedAt }}</span>
         <p class="hero__intro">{{ policy.intro }}</p>
@@ -105,7 +126,7 @@ onBeforeUnmount(() => {
           class="section"
       >
         <div class="section__head">
-          <span class="section__icon">{{ s.icon }}</span>
+          <span class="section__icon"><component :is="SECTION_ICONS[s.id] ?? DocIcon" /></span>
           <div>
             <span class="section__num">{{ String(i + 1).padStart(2, '0') }}</span>
             <h2 class="section__title">{{ s.title }}</h2>
@@ -146,8 +167,9 @@ onBeforeUnmount(() => {
 .privacy {
   position: relative;
   min-height: 100vh;
-  background: linear-gradient(160deg, #e8f4f8 0%, #F6F6F6 40%, #eef6f7 100%);
-  color: #222;
+  background-color: var(--c-ground);
+  background-image: var(--grad-ground);
+  color: var(--c-ink);
 
   /* ── Фоновые пятна ── */
   &__bg {
@@ -172,7 +194,7 @@ onBeforeUnmount(() => {
   position: absolute;
   border-radius: 50%;
   filter: blur(60px);
-  opacity: 0.45;
+  opacity: 0.3;
 
   &--teal {
     width: 320px;
@@ -187,7 +209,7 @@ onBeforeUnmount(() => {
     height: 280px;
     bottom: -60px;
     left: -120px;
-    background: #234970;
+    background: var(--c-navy-900);
     opacity: 0.18;
   }
 }
@@ -201,7 +223,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 12px;
   padding: calc(10px + var(--sat, 0px)) 16px 10px;
-  background: rgba(246, 246, 246, 0.6);
+  background: transparent;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   transition: box-shadow 0.2s ease, background 0.2s ease;
@@ -220,7 +242,7 @@ onBeforeUnmount(() => {
     border: 1px solid rgba(255, 255, 255, 0.9);
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.85);
-    color: #234970;
+    color: var(--c-navy-900);
     cursor: pointer;
     box-shadow: 0 2px 10px rgba(35, 73, 112, 0.08);
     transition: all 0.2s ease;
@@ -236,7 +258,7 @@ onBeforeUnmount(() => {
     gap: 8px;
     font-weight: 700;
     font-size: 17px;
-    color: #234970;
+    color: var(--c-navy-900);
     min-width: 0;
   }
 
@@ -307,12 +329,12 @@ onBeforeUnmount(() => {
 
 /* ── Glass card (общая база) ─────────────────── */
 %glass {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 20px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.07);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
 }
 
 /* ── TOC ─────────────────────────────────────── */
@@ -324,7 +346,7 @@ onBeforeUnmount(() => {
     margin: 0 0 12px;
     font-size: 15px;
     font-weight: 700;
-    color: #234970;
+    color: var(--c-navy-900);
   }
 
   &__list {
@@ -343,7 +365,7 @@ onBeforeUnmount(() => {
     background: transparent;
     font-family: inherit;
     font-size: 14px;
-    color: #374151;
+    color: var(--c-ink);
     text-align: left;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -360,7 +382,7 @@ onBeforeUnmount(() => {
     flex-shrink: 0;
     border-radius: 8px;
     background: rgba(78, 190, 194, 0.15);
-    color: #234970;
+    color: var(--c-navy-900);
     font-size: 12px;
     font-weight: 700;
   }
@@ -387,7 +409,8 @@ onBeforeUnmount(() => {
     flex-shrink: 0;
     font-size: 22px;
     border-radius: 14px;
-    background: linear-gradient(135deg, rgba(78, 190, 194, 0.18), rgba(35, 73, 112, 0.1));
+    background: var(--c-teal-tint);
+    color: var(--c-teal-600);
   }
 
   &__num {
@@ -403,14 +426,14 @@ onBeforeUnmount(() => {
     font-size: 18px;
     font-weight: 700;
     line-height: 1.3;
-    color: #234970;
+    color: var(--c-navy-900);
   }
 
   &__text {
     margin: 0 0 10px;
     font-size: 15px;
     line-height: 1.7;
-    color: #4B5563;
+    color: var(--c-ink-2);
 
     &:last-child { margin-bottom: 0; }
   }
@@ -420,10 +443,10 @@ onBeforeUnmount(() => {
     padding: 12px 14px;
     border-radius: 14px;
     background: rgba(78, 190, 194, 0.1);
-    border-left: 3px solid #4EBEC2;
+    border-left: 3px solid var(--c-teal-600);
     font-size: 14px;
     line-height: 1.6;
-    color: #234970;
+    color: var(--c-navy-900);
   }
 
   &__mail {
@@ -461,7 +484,7 @@ onBeforeUnmount(() => {
       padding-left: 22px;
       font-size: 15px;
       line-height: 1.65;
-      color: #4B5563;
+      color: var(--c-ink-2);
 
       &::before {
         content: '';
@@ -485,7 +508,7 @@ onBeforeUnmount(() => {
   gap: 8px;
   padding: 12px 0 0;
   font-size: 13px;
-  color: #9CA3AF;
+  color: var(--c-muted-2);
 
   &__logo {
     width: 20px;

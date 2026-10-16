@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import BoltIcon from '@iconify-vue/solar/bolt-linear'
+import PaletteIcon from '@iconify-vue/solar/pallete-2-linear'
+import CheckIcon from '@iconify-vue/solar/check-circle-linear'
+import DoneIcon from '@iconify-vue/solar/confetti-minimalistic-linear'
+import CloseIcon from '@iconify-vue/solar/close-circle-linear'
 import { getPlans, activateSubscription } from './api.ts'
 import type { Plan } from './api.ts'
 import { useUserStore } from '@/features/user/store.ts'
 import { useAuthStore } from '@/features/auth/store.ts'
 
-const props = defineProps<{
+defineProps<{
   visible: boolean
 }>()
 
@@ -16,6 +21,7 @@ const emit = defineEmits<{
 
 const userStore = useUserStore()
 const authStore = useAuthStore()
+
 const plans = ref<Plan[]>([])
 const loading = ref(true)
 const activating = ref(false)
@@ -52,77 +58,81 @@ async function activate(planId: string) {
 
 <template>
   <Teleport to="body">
-    <Transition name="modal">
-      <div v-if="visible" class="modal-overlay" @click.self="emit('close')">
-        <div class="modal-sheet">
-          <!-- Handle -->
-          <div class="sheet-handle" />
+    <Transition name="ui-sheet">
+      <div v-if="visible" class="ui-sheet-overlay" @click.self="emit('close')">
+        <div class="ui-sheet sub" role="dialog" aria-modal="true">
+          <div class="ui-sheet__handle" />
 
-          <!-- Success state -->
-          <div v-if="success" class="success-state">
-            <span class="success-icon">🎉</span>
-            <h3 class="success-title">{{ $t('subscription.activated') }}</h3>
-            <p class="success-desc">{{ $t('subscription.activatedDesc') }}</p>
-            <button class="btn-primary" @click="emit('close')">{{ $t('subscription.great') }}</button>
+          <!-- Успех -->
+          <div v-if="success" class="success">
+            <span class="success__icon"><DoneIcon /></span>
+            <h3 class="success__title">{{ $t('subscription.activated') }}</h3>
+            <p class="success__desc">{{ $t('subscription.activatedDesc') }}</p>
+            <button type="button" class="ui-btn ui-btn--primary ui-btn--block" @click="emit('close')">{{ $t('subscription.great') }}</button>
           </div>
 
-          <!-- Plans -->
-          <div v-else class="plans-content">
-            <h2 class="plans-title">{{ $t('subscription.choosePlan') }}</h2>
-            <p class="plans-subtitle">{{ $t('subscription.choosePlanDesc') }}</p>
+          <!-- Тарифы -->
+          <template v-else>
+            <div class="ui-sheet__head">
+              <div>
+                <h2 class="ui-sheet__title">{{ $t('subscription.choosePlan') }}</h2>
+                <p class="sub__desc">{{ $t('subscription.choosePlanDesc') }}</p>
+              </div>
+              <button type="button" class="ui-icon-btn ui-sheet__close" @click="emit('close')"><CloseIcon /></button>
+            </div>
 
-            <div class="plans-list">
+            <div v-if="loading" class="plans">
+              <div v-for="i in 2" :key="i" class="ui-skeleton plan-skeleton" />
+            </div>
+
+            <div v-else class="plans">
               <div
                 v-for="plan in plans"
                 :key="plan.id"
-                class="plan-card"
-                :class="{ unavailable: !plan.available, pro: plan.id === 'pro', creator: plan.id === 'creator' }"
+                class="plan"
+                :class="{ 'plan--off': !plan.available, 'plan--pro': plan.id === 'pro' }"
               >
-                <!-- Ribbon -->
-                <div v-if="plan.discount_percent === 100" class="plan-ribbon">{{ $t('subscription.free') }}</div>
-                <div v-else-if="!plan.available" class="plan-ribbon soon">{{ $t('subscription.soon') }}</div>
+                <span v-if="plan.discount_percent === 100" class="ui-chip ui-chip--success plan__ribbon">{{ $t('subscription.free') }}</span>
+                <span v-else-if="!plan.available" class="ui-chip plan__ribbon">{{ $t('subscription.soon') }}</span>
 
-                <div class="plan-header">
-                  <span class="plan-icon">{{ plan.id === 'pro' ? '⚡' : '🎨' }}</span>
-                  <h3 class="plan-name">{{ plan.name }}</h3>
-                </div>
-
-                <!-- Price -->
-                <div class="plan-price">
-                  <span v-if="plan.discount_percent === 100" class="price-free">{{ $t('subscription.free') }}</span>
-                  <template v-else>
-                    <span class="price-amount">{{ plan.price }} TJS</span>
-                    <span class="price-period">/ {{ $t('subscription.month') }}</span>
-                  </template>
-                  <span v-if="plan.discount_percent === 100" class="price-original">
-                    <s>{{ $t('subscription.perMonth', { n: plan.price }) }}</s>
+                <div class="plan__head">
+                  <span class="plan__icon">
+                    <BoltIcon v-if="plan.id === 'pro'" />
+                    <PaletteIcon v-else />
                   </span>
+                  <h3 class="plan__name">{{ plan.name }}</h3>
                 </div>
 
-                <!-- Features -->
-                <ul class="plan-features">
-                  <li v-for="(feature, i) in plan.features" :key="i" class="plan-feature">
-                    <span class="feature-check">✓</span>
-                    {{ feature }}
+                <div class="plan__price">
+                  <span v-if="plan.discount_percent === 100" class="plan__amount">{{ $t('subscription.free') }}</span>
+                  <template v-else>
+                    <span class="plan__amount">{{ plan.price }} TJS</span>
+                    <span class="plan__period">/ {{ $t('subscription.month') }}</span>
+                  </template>
+                  <s v-if="plan.discount_percent === 100" class="plan__original">{{ $t('subscription.perMonth', { n: plan.price }) }}</s>
+                </div>
+
+                <ul class="plan__features">
+                  <li v-for="(feature, i) in plan.features" :key="i">
+                    <CheckIcon />{{ feature }}
                   </li>
                 </ul>
 
-                <!-- Action -->
                 <button
                   v-if="plan.available"
-                  class="btn-activate"
-                  :class="{ loading: activating }"
+                  type="button"
+                  class="ui-btn ui-btn--primary ui-btn--block"
                   :disabled="activating"
                   @click="activate(plan.id)"
                 >
                   {{ activating ? $t('subscription.activating') : $t('subscription.activateFree') }}
                 </button>
-                <button v-else class="btn-unavailable" disabled>
+                <button v-else type="button" class="ui-btn ui-btn--secondary ui-btn--block" disabled>
                   {{ $t('subscription.unavailable') }}
                 </button>
               </div>
             </div>
-          </div>
+          </template>
         </div>
       </div>
     </Transition>
@@ -130,249 +140,103 @@ async function activate(planId: string) {
 </template>
 
 <style scoped lang="scss">
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  z-index: 1000;
-  padding: calc(20px + var(--sat)) 20px calc(20px + var(--sab));
+.sub {
+  &__desc { margin: 4px 0 0; font-size: 13px; color: var(--c-muted); line-height: 1.45; }
 }
 
-.modal-sheet {
-  width: 100%;
-  max-width: 480px;
-  max-height: 85vh;
-  overflow-y: auto;
-  background: #fff;
-  border-radius: 28px 28px 0 0;
-  padding: 16px 24px 32px;
-  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.15);
+.plans {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
 
-  @media (min-width: 768px) {
-    border-radius: 28px;
-    margin-bottom: auto;
-    margin-top: auto;
-  }
+  @media (min-width: 640px) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-.sheet-handle {
-  width: 40px;
-  height: 4px;
-  background: rgba(0, 0, 0, 0.12);
-  border-radius: 4px;
-  margin: 0 auto 20px;
-}
+.plan-skeleton { height: 260px; }
 
-/* ── Plans ── */
-.plans-content {
-  text-align: center;
-}
-
-.plans-title {
-  margin: 0 0 4px;
-  color: #234970;
-  font-size: 20px;
-}
-
-.plans-subtitle {
-  margin: 0 0 20px;
-  color: #6B7280;
-  font-size: 14px;
-}
-
-.plans-list {
+.plan {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
+  padding: 18px;
+  border-radius: var(--r-lg);
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 0 0 1px var(--c-line-2);
+
+  &--pro { box-shadow: inset 0 0 0 2px var(--c-teal-600); background: rgba(231, 245, 246, 0.7); }
+  &--off { opacity: 0.7; }
+
+  &__ribbon { position: absolute; top: 16px; right: 16px; }
+
+  &__head { display: flex; align-items: center; gap: 10px; }
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--grad-primary);
+    color: #FFFFFF;
+    font-size: 20px;
+  }
+
+  &--off &__icon { background: rgba(35, 73, 112, 0.1); color: var(--c-ink-2); }
+
+  &__name { margin: 0; font-size: 18px; font-weight: 800; color: var(--c-navy-900); }
+
+  &__price { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; }
+  &__amount { font-size: 24px; font-weight: 800; color: var(--c-navy-900); }
+  &__period { font-size: 13px; color: var(--c-muted); }
+  &__original { font-size: 13px; color: var(--c-muted-2); }
+
+  &__features {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 14px;
+      line-height: 1.4;
+      color: var(--c-ink);
+    }
+
+    svg { flex-shrink: 0; margin-top: 1px; font-size: 17px; color: var(--c-teal-600); }
+  }
 }
 
-.plan-card {
-  position: relative;
-  text-align: left;
-  padding: 20px;
-  border: 2px solid rgba(0, 0, 0, 0.06);
-  border-radius: 20px;
-  transition: all 0.2s;
-
-  &.pro {
-    border-color: rgba(124, 58, 237, 0.3);
-    background: rgba(124, 58, 237, 0.03);
-  }
-
-  &.creator {
-    border-color: rgba(0, 0, 0, 0.06);
-  }
-
-  &.unavailable {
-    opacity: 0.7;
-  }
-}
-
-.plan-ribbon {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  padding: 3px 10px;
-  border-radius: 10px;
-  font-size: 11px;
-  font-weight: 700;
-  background: linear-gradient(135deg, #10B981, #059669);
-  color: #fff;
-
-  &.soon {
-    background: rgba(0, 0, 0, 0.08);
-    color: #6B7280;
-  }
-}
-
-.plan-header {
+.success {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 10px;
-  margin-bottom: 12px;
-}
-
-.plan-icon {
-  font-size: 24px;
-}
-
-.plan-name {
-  margin: 0;
-  font-size: 18px;
-  color: #234970;
-}
-
-.plan-price {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  margin-bottom: 14px;
-}
-
-.price-free {
-  font-size: 22px;
-  font-weight: 800;
-  color: #10B981;
-}
-
-.price-original {
-  font-size: 13px;
-  color: #9CA3AF;
-}
-
-.price-amount {
-  font-size: 22px;
-  font-weight: 800;
-  color: #234970;
-}
-
-.price-period {
-  font-size: 13px;
-  color: #6B7280;
-}
-
-.plan-features {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.plan-feature {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #4B5563;
-}
-
-.feature-check {
-  color: #10B981;
-  font-weight: 700;
-}
-
-.btn-activate {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #7C3AED, #4F46E5);
-  color: #fff;
-  font-size: 15px;
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:active { transform: scale(0.98); }
-  &:disabled { opacity: 0.6; cursor: not-allowed; }
-}
-
-.btn-unavailable {
-  width: 100%;
-  padding: 14px;
-  border: 1.5px solid rgba(0, 0, 0, 0.1);
-  border-radius: 14px;
-  background: transparent;
-  color: #9CA3AF;
-  font-size: 15px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: not-allowed;
-}
-
-/* ── Success ── */
-.success-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding: 20px 0;
+  padding: 16px 0 4px;
   text-align: center;
-}
 
-.success-icon { font-size: 48px; }
-.success-title { margin: 0; color: #234970; }
-.success-desc { margin: 0; color: #6B7280; font-size: 14px; }
-
-.btn-primary {
-  margin-top: 12px;
-  padding: 12px 32px;
-  border: none;
-  border-radius: 14px;
-  background: var(--grad-primary);
-  color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-
-  &:active { transform: scale(0.97); }
-}
-
-/* ── Transition ── */
-.modal-enter-active,
-.modal-leave-active {
-  transition: all 0.3s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-
-  .modal-sheet {
-    transform: translateY(100%);
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 76px;
+    height: 76px;
+    margin-bottom: 4px;
+    border-radius: 26px;
+    background: var(--grad-primary);
+    color: #FFFFFF;
+    font-size: 38px;
+    box-shadow: var(--shadow-hero);
   }
-}
 
-.modal-enter-active .modal-sheet,
-.modal-leave-active .modal-sheet {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  &__title { margin: 0; font-size: var(--fs-h2); font-weight: 800; color: var(--c-navy-900); }
+  &__desc { margin: 0 0 10px; font-size: 14px; color: var(--c-muted); }
 }
 </style>

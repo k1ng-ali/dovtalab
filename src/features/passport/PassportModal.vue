@@ -5,6 +5,9 @@ import PassportCard from './PassportCard.vue'
 import { usePassport } from './usePassport'
 import { usePassportExport } from './usePassportExport'
 import { useI18n } from 'vue-i18n'
+import CloseIcon from '@iconify-vue/solar/close-circle-linear'
+import ShareIcon from '@iconify-vue/solar/share-linear'
+import DownloadIcon from '@iconify-vue/solar/download-minimalistic-linear'
 
 const props  = defineProps<{ open: boolean }>()
 const emit   = defineEmits<{ (e: 'close'): void }>()
@@ -80,14 +83,14 @@ const onDownload = async () => {
 </script>
 
 <template>
-  <Transition name="modal-fade">
-    <div v-if="open" class="pm-overlay" @click.self="emit('close')">
-      <div class="pm-sheet">
+  <Transition name="ui-sheet">
+    <div v-if="open" class="ui-sheet-overlay pm-overlay" @click.self="emit('close')">
+      <div class="ui-sheet pm-sheet" role="dialog" aria-modal="true">
+        <div class="ui-sheet__handle" />
 
-        <!-- Header -->
-        <div class="pm-header">
-          <span class="pm-title">{{ $t('passport.my') }}</span>
-          <button class="pm-close" @click="emit('close')" :aria-label="$t('common.close')">✕</button>
+        <div class="ui-sheet__head">
+          <span class="ui-sheet__title">{{ $t('passport.my') }}</span>
+          <button type="button" class="ui-icon-btn ui-sheet__close" @click="emit('close')" :aria-label="$t('common.close')"><CloseIcon /></button>
         </div>
 
         <!-- Card preview — масштабируется через transform, высота вычисляется динамически -->
@@ -108,19 +111,22 @@ const onDownload = async () => {
         <!-- Actions -->
         <div class="pm-actions">
           <button
-            class="pm-btn pm-btn--primary"
+            type="button"
+            class="ui-btn ui-btn--primary pm-btn"
             :disabled="!passport || exporting"
             @click="onShare"
           >
-            <span v-if="exporting">⏳ {{ $t('passport.generating') }}</span>
-            <span v-else>📤 {{ $t('passport.share') }}</span>
+            <span v-if="exporting" class="pm-spinner" />
+            <span v-if="exporting">{{ $t('passport.generating') }}</span>
+            <template v-else><ShareIcon />{{ $t('passport.share') }}</template>
           </button>
           <button
-            class="pm-btn pm-btn--secondary"
+            type="button"
+            class="ui-btn ui-btn--secondary pm-btn"
             :disabled="!passport || exporting"
             @click="onDownload"
           >
-            ⬇ {{ $t('passport.download') }}
+            <DownloadIcon />{{ $t('passport.download') }}
           </button>
         </div>
 
@@ -130,57 +136,8 @@ const onDownload = async () => {
 </template>
 
 <style scoped lang="scss">
-.pm-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(4px);
-  z-index: 999;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-bottom: var(--sab);
-}
-
-.pm-sheet {
-  width: 100%;
-  max-width: 760px;
-  background: #F6F6F6;
-  border-radius: 24px 24px 0 0;
-  padding: 20px 20px 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  max-height: 92dvh;
-  overflow-y: auto;
-}
-
-.pm-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.pm-title {
-  font-size: 17px;
-  font-weight: 700;
-  color: #1A2E4A;
-}
-
-.pm-close {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(0,0,0,0.08);
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #555;
-  &:active { transform: scale(0.93); }
-}
+.pm-overlay { z-index: 999; }
+.pm-sheet { max-width: 760px; max-height: 92dvh; }
 
 /* Preview — точная высота вычисляется динамически по реальному контенту */
 .pm-preview {
@@ -191,65 +148,44 @@ const onDownload = async () => {
   position: relative;
 }
 
-.pm-card-scaler {
-  display: block;
-  /* width задаётся инлайн (680px) */
-}
+.pm-card-scaler { display: block; }
 
 .pm-skeleton {
   width: 680px;
   height: 360px;
   border-radius: 18px;
-  background: rgba(0,0,0,0.07);
+  background: rgba(23, 46, 74, 0.07);
   animation: pulse 1.4s ease infinite;
 }
 
 .pm-error {
   padding: 24px;
   text-align: center;
-  color: #9CA3AF;
+  color: var(--c-muted);
   font-size: 14px;
 }
 
 .pm-actions {
-  display: flex;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
 
-.pm-btn {
-  flex: 1;
-  padding: 14px;
-  border-radius: 16px;
-  border: none;
-  font-size: 15px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: transform 0.15s, opacity 0.15s;
+.pm-btn :deep(svg) { font-size: 18px; }
 
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
-  &:active:not(:disabled) { transform: scale(0.97); }
-
-  &--primary {
-    background: var(--grad-primary);
-    color: #fff;
-    box-shadow: 0 4px 16px rgba(78, 190, 194, 0.3);
-  }
-
-  &--secondary {
-    background: rgba(26, 46, 74, 0.08);
-    color: #234970;
-  }
+.pm-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
 }
 
-/* Transition */
-.modal-fade-enter-active,
-.modal-fade-leave-active { transition: opacity 0.25s ease; }
-.modal-fade-enter-from,
-.modal-fade-leave-to     { opacity: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }
-  50%       { opacity: 0.45; }
+  50% { opacity: 0.5; }
 }
 </style>

@@ -9,6 +9,9 @@ import {Capacitor, SystemBars, SystemBarsStyle} from "@capacitor/core";
 import { useI18n } from 'vue-i18n'
 import LangSwitch from "@/shared/components/LangSwitch.vue";
 import logoSvg from '@/assets/logo.svg'
+import BookIcon from '@iconify-vue/solar/book-2-linear'
+import BoltIcon from '@iconify-vue/solar/bolt-linear'
+import CupIcon from '@iconify-vue/solar/cup-star-linear'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -22,9 +25,9 @@ const formState = reactive<SuperUser>({
 })
 
 const FEATURES = [
-  { icon: '📚', key: 'auth.featureQuizzes' },
-  { icon: '⚔️', key: 'auth.featureDuels' },
-  { icon: '🏆', key: 'auth.featureRating' },
+  { icon: BookIcon, key: 'auth.featureQuizzes' },
+  { icon: BoltIcon, key: 'auth.featureDuels' },
+  { icon: CupIcon, key: 'auth.featureRating' },
 ]
 
 // ── Actions ──
@@ -92,7 +95,7 @@ onMounted(async () =>{
 
         <div class="features">
           <span v-for="f in FEATURES" :key="f.key" class="features__chip">
-            <span class="features__icon">{{ f.icon }}</span>
+            <component :is="f.icon" class="features__icon" />
             {{ $t(f.key) }}
           </span>
         </div>
@@ -184,7 +187,8 @@ onMounted(async () =>{
   overflow-y: auto;
   padding: calc(12px + var(--sat, 0px)) 16px calc(16px + var(--sab, 0px));
   box-sizing: border-box;
-  background: linear-gradient(160deg, #e8f4f8 0%, #f0f7ff 50%, #eef6f7 100%);
+  background-color: var(--c-ground);
+  background-image: var(--grad-ground);
 
   &__bg {
     position: fixed;
@@ -222,10 +226,10 @@ onMounted(async () =>{
     text-align: center;
     font-size: 12px;
     line-height: 1.5;
-    color: #9CA3AF;
+    color: var(--c-muted-2);
 
     a {
-      color: #234970;
+      color: var(--c-navy-900);
       font-weight: 600;
       text-decoration: none;
       border-bottom: 1px solid rgba(35, 73, 112, 0.3);
@@ -249,7 +253,7 @@ onMounted(async () =>{
     top: -110px;
     right: -120px;
     background: #4EBEC2;
-    opacity: 0.45;
+    opacity: 0.3;
   }
 
   &--navy {
@@ -257,8 +261,8 @@ onMounted(async () =>{
     height: 300px;
     bottom: -100px;
     left: -130px;
-    background: #234970;
-    opacity: 0.2;
+    background: var(--c-navy-900);
+    opacity: 0.12;
     animation-delay: -4s;
   }
 
@@ -315,7 +319,7 @@ onMounted(async () =>{
     margin: 0;
     font-size: 15px;
     font-weight: 500;
-    color: #6B7280;
+    color: var(--c-muted);
   }
 
   &__brand {
@@ -335,7 +339,7 @@ onMounted(async () =>{
     margin: 8px 0 0;
     font-size: 14px;
     line-height: 1.55;
-    color: #6B7280;
+    color: var(--c-muted);
   }
 }
 
@@ -362,17 +366,17 @@ onMounted(async () =>{
     align-items: center;
     gap: 6px;
     padding: 7px 13px;
-    border-radius: 30px;
-    background: rgba(255, 255, 255, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(10px);
+    border-radius: var(--r-pill);
+    background: var(--glass-bg);
+    border: var(--glass-border);
+    backdrop-filter: blur(16px);
     box-shadow: 0 2px 10px rgba(35, 73, 112, 0.06);
     font-size: 13px;
     font-weight: 600;
-    color: #234970;
+    color: var(--c-navy-900);
   }
 
-  &__icon { font-size: 15px; }
+  &__icon { font-size: 16px; color: var(--c-teal-600); }
 }
 
 /* ── Card ───────────────────────────────────── */
@@ -381,12 +385,12 @@ onMounted(async () =>{
   flex-direction: column;
   gap: 12px;
   padding: 22px 20px;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 24px;
-  box-shadow: 0 10px 32px rgba(35, 73, 112, 0.1);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-card);
 
   &__head {
     display: flex;
@@ -398,14 +402,14 @@ onMounted(async () =>{
     margin: 0;
     font-size: 19px;
     font-weight: 700;
-    color: #234970;
+    color: var(--c-navy-900);
   }
 
   &__desc {
     margin: 0 0 4px;
     font-size: 14px;
     line-height: 1.5;
-    color: #6B7280;
+    color: var(--c-muted);
   }
 }
 
@@ -427,7 +431,7 @@ onMounted(async () =>{
   align-items: center;
   gap: 12px;
   font-size: 12px;
-  color: #9CA3AF;
+  color: var(--c-muted-2);
   text-transform: uppercase;
   letter-spacing: 1px;
 
@@ -465,7 +469,7 @@ onMounted(async () =>{
   &--outline {
     background: rgba(255, 255, 255, 0.9);
     border: 1.5px solid rgba(35, 73, 112, 0.15);
-    color: #234970;
+    color: var(--c-navy-900);
 
     &:hover { border-color: var(--c-teal-600); background: #fff; }
   }
@@ -497,12 +501,12 @@ onMounted(async () =>{
   font-family: inherit;
   font-size: 14px;
   font-weight: 500;
-  color: #6B7280;
+  color: var(--c-muted);
   cursor: pointer;
   transition: color 0.2s ease;
 
   svg { width: 16px; height: 16px; }
-  &:hover { color: #234970; }
+  &:hover { color: var(--c-navy-900); }
 }
 
 .icon-btn {
@@ -514,7 +518,7 @@ onMounted(async () =>{
   border: none;
   border-radius: 50%;
   background: rgba(35, 73, 112, 0.06);
-  color: #234970;
+  color: var(--c-navy-900);
   cursor: pointer;
   transition: all 0.2s ease;
 
@@ -529,21 +533,21 @@ onMounted(async () =>{
   gap: 10px;
   height: 52px;
   padding: 0 16px;
-  border-radius: 16px;
-  background: #fff;
-  border: 1.5px solid rgba(35, 73, 112, 0.12);
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.85);
+  border: 1.5px solid var(--c-line-2);
   transition: all 0.2s ease;
 
   &:focus-within {
     border-color: var(--c-teal-600);
-    box-shadow: 0 0 0 4px rgba(78, 190, 194, 0.15);
+    box-shadow: 0 0 0 4px var(--c-teal-tint);
   }
 
   &__icon {
     width: 20px;
     height: 20px;
     flex-shrink: 0;
-    color: #9CA3AF;
+    color: var(--c-muted-2);
   }
 
   &__input {
@@ -556,10 +560,10 @@ onMounted(async () =>{
     font-family: inherit;
     font-size: 16px;
     letter-spacing: 1px;
-    color: #222;
+    color: var(--c-ink);
 
     &::placeholder {
-      color: #9CA3AF;
+      color: var(--c-muted-2);
       letter-spacing: 0;
     }
   }
