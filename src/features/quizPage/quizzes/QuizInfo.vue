@@ -4,6 +4,14 @@ import type { QuizIn, ContextIn, QuizMode } from '@/features/quizPage/types.ts'
 import { useQuiz } from '@/features/quizPage/store.ts'
 import MdRoundFavoriteBorder from '@iconify-vue/solar/heart-linear'
 import MdRoundFavorite from '@iconify-vue/solar/heart-bold'
+import CopyIcon from '@iconify-vue/solar/copy-linear'
+import ListIcon from '@iconify-vue/solar/notebook-linear'
+import CupIcon from '@iconify-vue/solar/cup-star-linear'
+import TimeIcon from '@iconify-vue/solar/stopwatch-linear'
+import AdaptiveIcon from '@iconify-vue/solar/lightbulb-bolt-linear'
+import RocketIcon from '@iconify-vue/solar/rocket-2-linear'
+import CheckIcon from '@iconify-vue/solar/check-circle-bold'
+import { subjectInitials, subjectTint } from '@/shared/lib/subjectTint.ts'
 import {useHeaderStore} from "@/shared/stores/useHeaderStore.ts";
 import KnowledgeMap from '@/features/quizPage/knowledgeMap/KnowledgeMap.vue'
 import ReviewBadge from '@/features/quizPage/review/ReviewBadge.vue'
@@ -38,6 +46,7 @@ const showSubModal = ref(false)
 const copied = ref(false)
 const Stats = computed(() => quizStore.quizStat(props.quiz.id))
 const headerStore = useHeaderStore()
+const tint = computed(() => subjectTint(props.quiz.id))
 
 const copyHashCode = async () => {
   try {
@@ -121,6 +130,8 @@ const toggleContext = (ctx: ContextIn) => {
   }
 }
 
+const quickAvailable = computed(() => (Stats.value?.total_questions ?? 0) >= 15)
+
 // Варианты количества вопросов для быстрого теста
 const quickTestOptions = computed(() => {
   const total = Stats.value?.total_questions ?? 0
@@ -137,95 +148,83 @@ const quickTestOptions = computed(() => {
   <div class="quiz-info">
 
     <!-- ── Шапка ── -->
-    <div class="hero">
-      <!-- Хеш-код для копирования -->
-      <div class="hash-code" @click="copyHashCode">
-        <span class="hash-label">📋</span>
-        <span class="hash-value">{{ quiz.hash_code }}</span>
-        <span class="hash-copied" :class="{ visible: copied }">{{ $t('quizInfo.copied') }}</span>
-      </div>
-
-      <MdRoundFavorite
-          v-if="quiz.on_fav"
-          class="fav-ico active"
-          @click="deleteFavorite(quiz.id)"
-      />
-      <MdRoundFavoriteBorder
-          v-if="!quiz.on_fav"
-          class="fav-ico"
-          @click="addToFavorite(quiz.id)"
-      />
-      <div class="hero-icon">📘</div>
-      <h2 class="hero-title">{{ quiz.title }}</h2>
-      <p class="hero-desc">{{ quiz.description }}</p>
-
-      <!-- Мини-статистика -->
-      <div class="hero-stats" v-if="Stats?.total_questions">
-        <span class="hero-stat">📝 {{ $t('plural.questions', Stats.total_questions) }}</span>
-        <span class="hero-stat" v-if="Stats?.completed_attempt_stats?.length">
-          🏆 {{ $t('quizInfo.completedTimes', { n: Stats.completed_attempt_stats.length }) }}
-        </span>
-        <span class="hero-stat" v-if="totalTimeSpent">
-          ⏱ {{ totalTimeSpent }}
-        </span>
-      </div>
-    </div>
-
-
-    <!-- ── Адаптивное обучение ── -->
-    <div class="mode-section" v-if="adaptiveAvailable">
-      <div
-          class="adaptive-card"
-          :class="{ active: props.selectedMode === 'adaptive', locked: !userStore.is_pro, 'pro-glow': userStore.is_pro }"
-          @click="userStore.is_pro ? emit('select-mode', props.selectedMode === 'adaptive' ? 'practice' : 'adaptive') : (showSubModal = true)"
-      >
-        <div class="adaptive-header">
-          <div class="adaptive-left">
-            <span class="adaptive-icon">🧠</span>
-            <div class="adaptive-text">
-              <span class="adaptive-title">
-                {{ $t('quizInfo.adaptiveTitle') }}
-              </span>
-              <span class="adaptive-desc">{{ $t('quizInfo.adaptiveDesc') }}</span>
-            </div>
-          </div>
-          <div v-if="userStore.is_pro" class="quick-test-toggle" :class="{ on: props.selectedMode === 'adaptive' }">
-            <div class="toggle-thumb" />
-          </div>
-          <ProBadge v-else @click="showSubModal = true" />
+    <section class="hero ui-card">
+      <div class="hero__top">
+        <span class="hero__tile" :style="{ background: tint.bg, color: tint.color }">{{ subjectInitials(quiz.title) }}</span>
+        <div class="hero__actions">
+          <button type="button" class="hash-code" @click="copyHashCode">
+            <CopyIcon />
+            <span class="hash-value">{{ quiz.hash_code }}</span>
+            <span class="hash-copied" :class="{ visible: copied }">{{ $t('quizInfo.copied') }}</span>
+          </button>
+          <button
+              type="button"
+              class="ui-icon-btn fav-btn"
+              :class="{ active: quiz.on_fav }"
+              @click="quiz.on_fav ? deleteFavorite(quiz.id) : addToFavorite(quiz.id)"
+          >
+            <MdRoundFavorite v-if="quiz.on_fav" />
+            <MdRoundFavoriteBorder v-else />
+          </button>
         </div>
       </div>
-    </div>
 
-    <!-- ── Быстрый тест ── -->
-    <div class="mode-section" v-if="Stats?.total_questions && Stats.total_questions >= 15">
+      <h2 class="hero__title">{{ quiz.title }}</h2>
+      <p v-if="quiz.description" class="hero__desc">{{ quiz.description }}</p>
+
+      <!-- Мини-статистика -->
+      <div class="hero__stats" v-if="Stats?.total_questions">
+        <span class="ui-chip"><ListIcon />{{ $t('plural.questions', Stats.total_questions) }}</span>
+        <span class="ui-chip ui-chip--success" v-if="Stats?.completed_attempt_stats?.length">
+          <CupIcon />{{ $t('quizInfo.completedTimes', { n: Stats.completed_attempt_stats.length }) }}
+        </span>
+        <span class="ui-chip" v-if="totalTimeSpent"><TimeIcon />{{ totalTimeSpent }}</span>
+      </div>
+    </section>
+
+    <!-- ── Режимы ── -->
+    <div class="modes ui-card ui-card--list" v-if="adaptiveAvailable || quickAvailable">
+      <!-- Адаптивное обучение -->
       <div
-          class="quick-test-card"
-          :class="{ active: props.selectedMode === 'exam', disabled: props.selectedMode === 'adaptive' }"
-          @click="props.selectedMode !== 'adaptive' && emit('select-mode', props.selectedMode === 'exam' ? 'practice' : 'exam')"
+          v-if="adaptiveAvailable"
+          class="mode ui-row"
+          :class="{ active: props.selectedMode === 'adaptive' }"
+          @click="userStore.is_pro ? emit('select-mode', props.selectedMode === 'adaptive' ? 'practice' : 'adaptive') : (showSubModal = true)"
       >
-        <div class="quick-test-header">
-          <div class="quick-test-left">
-            <span class="quick-test-icon">🚀</span>
-            <div class="quick-test-text">
-              <span class="quick-test-title">{{ $t('quizInfo.quickTitle') }}</span>
-              <span class="quick-test-desc">{{ $t('quizInfo.quickDesc') }}</span>
-            </div>
-          </div>
-          <div class="quick-test-toggle" :class="{ on: props.selectedMode === 'exam' }">
-            <div class="toggle-thumb" />
-          </div>
+        <span class="ui-tile-icon mode__icon"><AdaptiveIcon /></span>
+        <span class="mode__text">
+          <b class="mode__title">{{ $t('quizInfo.adaptiveTitle') }}</b>
+          <span class="mode__desc">{{ $t('quizInfo.adaptiveDesc') }}</span>
+        </span>
+        <span v-if="userStore.is_pro" class="ui-switch" :class="{ on: props.selectedMode === 'adaptive' }" />
+        <ProBadge v-else @click="showSubModal = true" />
+      </div>
+
+      <!-- Быстрый тест -->
+      <div
+          v-if="quickAvailable"
+          class="mode mode--quick"
+          :class="{ active: props.selectedMode === 'exam', disabled: props.selectedMode === 'adaptive' }"
+      >
+        <div class="ui-row mode__head" @click="props.selectedMode !== 'adaptive' && emit('select-mode', props.selectedMode === 'exam' ? 'practice' : 'exam')">
+          <span class="ui-tile-icon mode__icon"><RocketIcon /></span>
+          <span class="mode__text">
+            <b class="mode__title">{{ $t('quizInfo.quickTitle') }}</b>
+            <span class="mode__desc">{{ $t('quizInfo.quickDesc') }}</span>
+          </span>
+          <span class="ui-switch" :class="{ on: props.selectedMode === 'exam' }" />
         </div>
 
         <!-- Количество вопросов (показывается только при активном режиме) -->
         <Transition name="slide-down">
-          <div v-if="props.selectedMode === 'exam'" class="quick-test-options" @click.stop>
-            <span class="options-label">{{ $t('quizInfo.questionCount') }}</span>
-            <div class="options-pills">
+          <div v-if="props.selectedMode === 'exam'" class="quick-options" @click.stop>
+            <span class="quick-options__label">{{ $t('quizInfo.questionCount') }}</span>
+            <div class="ui-segmented quick-options__pills">
               <button
                   v-for="n in quickTestOptions"
                   :key="n"
-                  class="pill"
+                  type="button"
+                  class="ui-segmented__item"
                   :class="{ active: props.examQuestionLimit === n }"
                   @click="emit('set-exam-limit', n)"
               >
@@ -244,34 +243,36 @@ const quickTestOptions = computed(() => {
     <KnowledgeMap :quiz-id="quiz.id" @train-topic="(id) => emit('train-cluster', id)" @open-subscription="showSubModal = true" />
 
     <!-- ── Контексты ── -->
-    <div class="section" v-if="!loading && contexts.length > 0">
-      <h2 class="section-title">{{ $t('quizInfo.contexts') }}</h2>
-      <p class="section-hint">{{ $t('quizInfo.contextsHint') }}</p>
+    <section class="section" v-if="!loading && contexts.length > 0">
+      <div class="section__head">
+        <h3 class="ui-section-head__title">{{ $t('quizInfo.contexts') }}</h3>
+        <p class="section__hint">{{ $t('quizInfo.contextsHint') }}</p>
+      </div>
 
       <div class="context-list">
         <div
             v-for="ctx in contexts"
             :key="ctx.id"
-            class="context-card"
+            class="context-card ui-card ui-option"
             :class="{ selected: selectedContext?.id === ctx.id }"
             @click="toggleContext(ctx)"
         >
-          <div class="context-top">
-            <span class="context-name">{{ ctx.title }}</span>
-            <span class="context-count" v-if="ctx.detail?.questions">
+          <div class="context-card__top">
+            <span class="context-card__name">{{ ctx.title }}</span>
+            <CheckIcon v-if="selectedContext?.id === ctx.id" class="context-card__check" />
+            <span v-else-if="ctx.detail?.questions" class="ui-chip">
               {{ $t('units.questionsShort', { n: ctx.detail.questions }) }}
             </span>
           </div>
-          <p class="context-text" v-if="ctx.text">{{ ctx.text }}</p>
-          <div class="context-check" v-if="selectedContext?.id === ctx.id">✓</div>
+          <p class="context-card__text" v-if="ctx.text">{{ ctx.text }}</p>
         </div>
       </div>
-    </div>
+    </section>
 
     <!-- Скелетон загрузки контекстов -->
     <div class="section" v-if="loading">
-      <div class="skeleton-title" />
-      <div class="skeleton-card" v-for="i in 2" :key="i" />
+      <div class="ui-skeleton skeleton-title" />
+      <div class="ui-skeleton skeleton-card" v-for="i in 2" :key="i" />
     </div>
 
     <!-- Subscription Modal -->
@@ -288,351 +289,155 @@ const quickTestOptions = computed(() => {
 .quiz-info {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 14px;
 }
 
 /* ── Hero ── */
 .hero {
   display: flex;
-  position: relative;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 28px 20px 20px;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 24px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.07);
-}
+  gap: 8px;
+  padding: 18px;
 
-.fav-ico {
-  position: absolute;
-  right: 20px;
-  top: 20px;
-  width: 30px;
-  height: 30px;
-  color: #4F4F4F;
-  cursor: pointer;
-
-  &:hover{
-    fill: rgba(153, 27, 27, 0.5);
+  &__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
   }
 
-  &.active {
-    fill: #d82e2e;
+  &__tile {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    font-weight: 800;
+  }
+
+  &__actions { display: flex; align-items: center; gap: 8px; min-width: 0; }
+
+  &__title {
+    margin: 0;
+    font-size: var(--fs-h1);
+    font-weight: 800;
+    line-height: 1.2;
+    color: var(--c-navy-900);
+  }
+
+  &__desc {
+    margin: 0;
+    font-size: 14px;
+    color: var(--c-muted);
+    line-height: 1.5;
+  }
+
+  &__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--c-line);
+
+    :deep(svg) { font-size: 14px; }
   }
 }
 
-.hero-icon {
-  font-size: 48px;
-  margin-bottom: 12px;
-}
+.fav-btn {
+  font-size: 22px;
+  color: var(--c-ink-2);
 
-.hero-title {
-  margin: 0 0 8px;
-  color: #234970;
-}
-
-.hero-desc {
-  margin: 0;
-  color: #6B7280;
-  line-height: 1.5;
+  &.active { color: #E5484D; background: rgba(229, 72, 77, 0.1); }
 }
 
 /* ── Hash Code ── */
 .hash-code {
-  position: absolute;
-  left: 16px;
-  top: 18px;
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 5px 10px;
-  background: rgba(35, 73, 112, 0.06);
-  border: 1px dashed rgba(35, 73, 112, 0.2);
-  border-radius: 10px;
+  gap: 6px;
+  height: 42px;
+  padding: 0 14px;
+  border: none;
+  border-radius: var(--r-pill);
+  background: rgba(35, 73, 112, 0.08);
+  color: var(--c-ink-2);
+  font-family: inherit;
+  font-size: 16px;
   cursor: pointer;
-  transition: all 0.2s ease;
   user-select: none;
-  z-index: 1;
+  transition: transform 0.18s ease, background 0.18s ease;
 
-  &:active {
-    transform: scale(0.95);
-    background: rgba(78, 190, 194, 0.12);
-    border-color: rgba(78, 190, 194, 0.4);
-  }
-}
-
-.hash-label {
-  font-size: 12px;
+  &:active { transform: scale(0.95); background: var(--c-teal-tint); }
 }
 
 .hash-value {
-  font-size: 11px;
-  font-weight: 600;
-  color: #234970;
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-navy-900);
+  font-family: ui-monospace, 'SF Mono', 'Fira Code', monospace;
   letter-spacing: 0.3px;
 }
 
 .hash-copied {
   position: absolute;
-  top: -28px;
+  top: -32px;
   left: 50%;
   transform: translateX(-50%) scale(0.8);
-  background: #234970;
-  color: #fff;
+  background: var(--c-navy-900);
+  color: #FFFFFF;
   font-size: 11px;
   font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 8px;
+  padding: 5px 10px;
+  border-radius: var(--r-pill);
   white-space: nowrap;
   opacity: 0;
   pointer-events: none;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
-  &.visible {
-    opacity: 1;
-    transform: translateX(-50%) scale(1);
-  }
+  &.visible { opacity: 1; transform: translateX(-50%) scale(1); }
 }
 
-.hero-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.hero-stat {
-  font-size: 13px;
-  font-weight: 500;
-  color: #4B5563;
-  background: rgba(0, 0, 0, 0.04);
-  padding: 4px 10px;
-  border-radius: 12px;
-}
-
-/* ── Section ── */
-.section, .mode-section {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.section-title {
-  margin: 0;
-  color: #234970;
-}
-
-.section-hint {
-  margin: 0;
-  color: #9CA3AF;
-  line-height: 1.4;
-}
-
-/* ── Quick Test Card ── */
-.quick-test-card {
-  padding: 16px 18px;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(0, 0, 0, 0.06);
-  border-radius: 20px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+/* ── Режимы ── */
+.mode {
   cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+  user-select: none;
+  transition: background 0.2s ease;
 
-  &:active { transform: scale(0.98); }
+  &.active { background: rgba(231, 245, 246, 0.7); }
+  &.disabled { opacity: 0.45; pointer-events: none; }
 
-  &.active {
-    border-color: rgba(78, 190, 194, 0.5);
-    background: rgba(78, 190, 194, 0.06);
-    box-shadow: 0 4px 16px rgba(78, 190, 194, 0.15);
-  }
+  &--quick { display: block; }
 
-  &.disabled {
-    opacity: 0.5;
-    pointer-events: none;
-  }
+  &__head { border-bottom: none; }
+
+  &__icon { width: 40px; height: 40px; border-radius: 12px; font-size: 20px; }
+
+  &__text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+  &__title { font-size: 15px; font-weight: 700; color: var(--c-navy-900); }
+  &__desc { font-size: 12px; color: var(--c-muted); line-height: 1.35; }
 }
 
-/* ── Adaptive Card ── */
-.adaptive-card {
-  padding: 16px 18px;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(0, 0, 0, 0.06);
-  border-radius: 20px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:active { transform: scale(0.98); }
-
-  &.active {
-    border-color: rgba(147, 51, 234, 0.5);
-    background: rgba(147, 51, 234, 0.06);
-    box-shadow: 0 4px 16px rgba(147, 51, 234, 0.15);
-  }
-
-  &.locked {
-    border-color: rgba(124, 58, 237, 0.2);
-    background: rgba(124, 58, 237, 0.03);
-  }
-
-  &.pro-glow {
-    box-shadow: 0 3px 16px rgba(124, 58, 237, 0.12);
-    border-color: rgba(124, 58, 237, 0.2);
-  }
-}
-
-.adaptive-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.adaptive-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.adaptive-icon {
-  font-size: 28px;
-}
-
-.adaptive-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.adaptive-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #234970;
-}
-
-.adaptive-desc {
-  font-size: 12px;
-  color: #9CA3AF;
-}
-
-.quick-test-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.quick-test-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.quick-test-icon {
-  font-size: 28px;
-}
-
-.quick-test-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.quick-test-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #234970;
-}
-
-.quick-test-desc {
-  font-size: 12px;
-  color: #9CA3AF;
-}
-
-.quick-test-toggle {
-  position: relative;
-  width: 44px;
-  height: 26px;
-  border-radius: 26px;
-  background: rgba(0, 0, 0, 0.1);
-  transition: background 0.25s ease;
-  flex-shrink: 0;
-
-  &.on {
-    background: #4EBEC2;
-  }
-
-  .toggle-thumb {
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #fff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  &.on .toggle-thumb {
-    transform: translateX(18px);
-  }
-}
-
-.quick-test-options {
+.quick-options {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding-top: 4px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-}
+  padding: 0 16px 14px;
 
-.options-label {
-  font-size: 13px;
-  color: #6B7280;
-  font-weight: 500;
-}
-
-.options-pills {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.pill {
-  padding: 6px 14px;
-  border-radius: 20px;
-  border: 1.5px solid rgba(0, 0, 0, 0.1);
-  background: transparent;
-  font-size: 14px;
-  font-weight: 600;
-  color: #6B7280;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:active { transform: scale(0.95); }
-
-  &.active {
-    background: rgba(78, 190, 194, 0.15);
-    border-color: var(--c-teal-600);
-    color: #234970;
-  }
+  &__label { font-size: 13px; font-weight: 600; color: var(--c-muted); }
+  &__pills { background: rgba(23, 46, 74, 0.05); }
 }
 
 /* ── Slide-down transition ── */
 .slide-down-enter-active,
 .slide-down-leave-active {
   transition: all 0.25s ease;
+  overflow: hidden;
 }
 .slide-down-enter-from,
 .slide-down-leave-to {
@@ -643,106 +448,55 @@ const quickTestOptions = computed(() => {
 .slide-down-enter-to,
 .slide-down-leave-from {
   opacity: 1;
-  max-height: 100px;
+  max-height: 120px;
 }
 
-/* ── Context cards ── */
-.context-list {
+/* ── Контексты ── */
+.section {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  margin-top: 6px;
+
+  &__head { padding: 0 6px; display: flex; flex-direction: column; gap: 2px; }
+  &__hint { margin: 0; font-size: 13px; color: var(--c-muted); line-height: 1.4; }
+}
+
+.context-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+
+  @media (min-width: 1024px) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 .context-card {
-  position: relative;
   padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.7);
-  border: 1.5px solid rgba(255, 255, 255, 0.9);
-  border-radius: 18px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  user-select: none;
 
-  &:active {
-    transform: scale(0.98);
+  &__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
   }
 
-  &.selected {
-    border-color: rgba(78, 190, 194, 0.6);
-    background: rgba(78, 190, 194, 0.08);
-    box-shadow: 0 4px 16px rgba(78, 190, 194, 0.2);
+  &__name { font-weight: 700; font-size: 15px; color: var(--c-navy-900); }
+  &__check { font-size: 22px; color: var(--c-teal-600); }
+
+  &__text {
+    margin: 0;
+    font-size: 13px;
+    color: var(--c-muted);
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
-}
-
-.context-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
-}
-
-.context-name {
-  font-weight: 600;
-  color: #234970;
-}
-
-.context-count {
-  font-size: 12px;
-  color: #9CA3AF;
-  background: rgba(0, 0, 0, 0.05);
-  padding: 2px 8px;
-  border-radius: 20px;
-}
-
-.context-text {
-  margin: 0;
-  font-size: 13px;
-  color: #6B7280;
-  line-height: 1.45;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.context-check {
-  position: absolute;
-  top: 12px;
-  right: 14px;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: #4EBEC2;
-  color: #fff;
-  font-size: 13px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
 }
 
 /* ── Skeleton ── */
-.skeleton-title {
-  height: 20px;
-  width: 120px;
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.07);
-  animation: pulse 1.4s ease infinite;
-}
-
-.skeleton-card {
-  height: 72px;
-  border-radius: 18px;
-  background: rgba(0, 0, 0, 0.07);
-  animation: pulse 1.4s ease infinite;
-
-  &:nth-child(2) { animation-delay: 0.2s; }
-  &:nth-child(3) { animation-delay: 0.4s; }
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.5; }
-}
+.skeleton-title { height: 20px; width: 140px; border-radius: 8px; }
+.skeleton-card { height: 72px; }
 </style>

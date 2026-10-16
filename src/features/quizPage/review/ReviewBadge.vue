@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import RepeatIcon from '@iconify-vue/solar/restart-linear'
+import ArrowRight from '@iconify-vue/solar/alt-arrow-right-linear'
 import { getReviewPending } from './api.ts'
 
 const props = defineProps<{
@@ -28,108 +30,74 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div
+  <button
     v-if="!loading && pending > 0"
-    class="review-badge"
+    type="button"
+    class="review ui-card"
     @click="emit('start-review')"
   >
-    <div class="review-left">
-      <span class="review-icon">🔁</span>
-      <div class="review-text">
-        <span class="review-title">{{ $t('review.title') }}</span>
-        <span class="review-desc">
-          {{ $t('review.pending', pending) }}
-        </span>
-      </div>
-    </div>
-    <span class="review-count">{{ pending }}</span>
-  </div>
+    <span class="ui-tile-icon review__icon"><RepeatIcon /></span>
+    <span class="review__text">
+      <b class="review__title">{{ $t('review.title') }}</b>
+      <span class="review__desc">{{ $t('review.pending', pending) }}</span>
+    </span>
+    <span class="review__count">{{ pending }}</span>
+    <ArrowRight class="review__arrow" />
+  </button>
 
-  <!-- Subtle indicator when queue exists but nothing due yet -->
+  <!-- Очередь есть, но повторять пока нечего -->
   <div
     v-else-if="!loading && totalInQueue > 0 && pending === 0"
-    class="review-badge upcoming"
+    class="review review--upcoming ui-card"
   >
-    <div class="review-left">
-      <span class="review-icon">🔁</span>
-      <div class="review-text">
-        <span class="review-title">{{ $t('review.title') }}</span>
-        <span class="review-desc">
-          {{ $t('review.queued', { n: totalInQueue }) }}
-        </span>
-      </div>
-    </div>
+    <span class="ui-tile-icon review__icon"><RepeatIcon /></span>
+    <span class="review__text">
+      <b class="review__title">{{ $t('review.title') }}</b>
+      <span class="review__desc">{{ $t('review.queued', { n: totalInQueue }) }}</span>
+    </span>
   </div>
 </template>
 
 <style scoped lang="scss">
-.review-badge {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(78, 190, 194, 0.4);
-  border-radius: 20px;
-  box-shadow: 0 3px 12px rgba(78, 190, 194, 0.12);
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:active {
-    transform: scale(0.98);
-    box-shadow: 0 2px 8px rgba(78, 190, 194, 0.2);
-  }
-
-  &.upcoming {
-    border-color: rgba(0, 0, 0, 0.06);
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
-    cursor: default;
-
-    &:active {
-      transform: none;
-      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
-    }
-  }
-}
-
-.review-left {
+.review {
   display: flex;
   align-items: center;
   gap: 12px;
-}
+  width: 100%;
+  padding: 12px 16px;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.18s ease;
 
-.review-icon {
-  font-size: 24px;
-}
+  &:active { transform: scale(0.99); }
 
-.review-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
+  &--upcoming {
+    cursor: default;
+    &:active { transform: none; }
+    .review__icon { background: rgba(35, 73, 112, 0.08); color: var(--c-ink-2); }
+  }
 
-.review-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #234970;
-}
+  &__icon { width: 40px; height: 40px; border-radius: 12px; font-size: 20px; }
+  &__text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+  &__title { font-size: 15px; font-weight: 700; color: var(--c-navy-900); }
+  &__desc { font-size: 12px; color: var(--c-muted); }
 
-.review-desc {
-  font-size: 12px;
-  color: #6B7280;
-}
+  &__count {
+    min-width: 26px;
+    height: 26px;
+    padding: 0 8px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--r-pill);
+    background: var(--grad-primary);
+    color: #FFFFFF;
+    font-size: 13px;
+    font-weight: 800;
+  }
 
-.review-count {
-  min-width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: #4EBEC2;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 700;
+  &__arrow { font-size: 18px; color: var(--c-muted); }
 }
 </style>

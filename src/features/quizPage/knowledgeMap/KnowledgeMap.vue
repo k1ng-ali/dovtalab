@@ -1,5 +1,8 @@
 <script setup lang="ts">
+// Карта знаний: сводка по темам одной полосой, уровень и список тем по раскрытию.
 import { ref, computed, onMounted } from 'vue'
+import MapIcon from '@iconify-vue/solar/map-linear'
+import ArrowDown from '@iconify-vue/solar/alt-arrow-down-linear'
 import { getKnowledgeMap } from './api.ts'
 import type { KnowledgeMapResponse, MasteryLevel } from './types.ts'
 import { useUserStore } from '@/features/user/store.ts'
@@ -32,15 +35,25 @@ onMounted(async () => {
   }
 })
 
-// label — ключ i18n
-const masteryConfig: Record<MasteryLevel, { label: string; emoji: string; color: string; bg: string }> = {
-  not_started: { label: 'knowledgeMap.notStarted', emoji: '⚪', color: '#9CA3AF', bg: 'rgba(156,163,175,0.08)' },
-  weak:        { label: 'knowledgeMap.weak', emoji: '🔴', color: '#EF4444', bg: 'rgba(239,68,68,0.08)' },
-  learning:    { label: 'knowledgeMap.learning', emoji: '🟡', color: '#F59E0B', bg: 'rgba(245,158,11,0.08)' },
-  strong:      { label: 'knowledgeMap.strong', emoji: '🟢', color: '#10B981', bg: 'rgba(16,185,129,0.08)' },
+// label — ключ i18n; порядок — от освоенных к не начатым
+const LEVELS: MasteryLevel[] = ['strong', 'learning', 'weak', 'not_started']
+const masteryConfig: Record<MasteryLevel, { label: string; color: string; bg: string }> = {
+  strong:      { label: 'knowledgeMap.strong', color: 'var(--c-correct)', bg: 'var(--c-teal-tint)' },
+  learning:    { label: 'knowledgeMap.learning', color: '#D9A21B', bg: 'rgba(217, 162, 27, 0.14)' },
+  weak:        { label: 'knowledgeMap.weak', color: 'var(--c-wrong)', bg: 'var(--c-warning-tint)' },
+  not_started: { label: 'knowledgeMap.notStarted', color: 'var(--c-empty)', bg: 'rgba(23, 46, 74, 0.06)' },
 }
 
 const hasTopics = computed(() => data.value && data.value.topics.length > 0)
+
+const summaryParts = computed(() => {
+  if (!data.value) return []
+  const total = data.value.topics.length || 1
+  return LEVELS
+    .map(level => ({ level, n: data.value!.summary[level] ?? 0 }))
+    .filter(p => p.n > 0)
+    .map(p => ({ ...p, width: (p.n / total) * 100 }))
+})
 
 const progressPercent = computed(() => {
   if (!data.value || !data.value.topics.length) return 0
@@ -58,75 +71,56 @@ const progressPercent = computed(() => {
 
 <template>
   <!-- Skeleton -->
-  <div v-if="loading" class="km-skeleton">
-    <div class="skeleton-bar" />
-  </div>
+  <div v-if="loading" class="ui-skeleton km-skeleton" />
 
   <!-- Content -->
-  <div v-else-if="hasTopics" class="knowledge-map">
-    <!-- Summary card (always visible) -->
-    <div class="km-header" :class="{ 'pro-glow': userStore.is_pro }" @click="expanded = !expanded">
-      <div class="km-header-top">
-        <span class="km-title">🗺️ {{ $t('knowledgeMap.title') }}</span>
-        <span class="km-progress">{{ $t('knowledgeMap.mastered', { n: progressPercent }) }}</span>
-      </div>
+  <section v-else-if="hasTopics" class="km ui-card">
+    <button type="button" class="km__head" :aria-expanded="expanded" @click="expanded = !expanded">
+      <span class="ui-tile-icon km__icon"><MapIcon /></span>
+      <span class="km__heading">
+        <b class="km__title">{{ $t('knowledgeMap.title') }}</b>
+        <span class="km__progress">{{ $t('knowledgeMap.mastered', { n: progressPercent }) }}</span>
+      </span>
+      <ArrowDown class="km__chevron" :class="{ open: expanded }" />
+    </button>
 
-      <div class="km-summary-pills">
-        <span class="km-pill" v-if="data!.summary.strong > 0">
-          🟢 {{ data!.summary.strong }}
-        </span>
-        <span class="km-pill" v-if="data!.summary.learning > 0">
-          🟡 {{ data!.summary.learning }}
-        </span>
-        <span class="km-pill" v-if="data!.summary.weak > 0">
-          🔴 {{ data!.summary.weak }}
-        </span>
-        <span class="km-pill" v-if="data!.summary.not_started > 0">
-          ⚪ {{ data!.summary.not_started }}
-        </span>
-      </div>
-
-      <!-- Skill Level -->
-      <div v-if="data!.skill_level" class="km-skill">
-        <div class="skill-bar">
-          <div
-            v-for="i in 5"
-            :key="i"
-            class="skill-segment"
-            :class="{ active: i <= data!.skill_level.level }"
-          />
-        </div>
-        <div class="skill-info">
-          <span class="skill-name">{{ data!.skill_level.level_name }}</span>
-          <span class="skill-percentile">{{ $t('knowledgeMap.betterThan', { n: data!.skill_level.percentile }) }}</span>
-        </div>
-      </div>
-
-      <!-- Expand button -->
-      <button class="km-expand-btn" :class="{ expanded }">
-        <span class="km-expand-icon">▾</span>
-        <span class="km-expand-label">{{ expanded ? $t('knowledgeMap.hideTopics') : $t('knowledgeMap.showTopics') }}</span>
-      </button>
+    <!-- Сводка одной полосой -->
+    <div class="km__bar" role="img" :aria-label="$t('knowledgeMap.mastered', { n: progressPercent })">
+      <span
+        v-for="p in summaryParts"
+        :key="p.level"
+        :style="{ width: p.width + '%', background: masteryConfig[p.level].color }"
+      />
+    </div>
+    <div class="km__legend">
+      <span v-for="p in summaryParts" :key="p.level" class="km__legend-item">
+        <i :style="{ background: masteryConfig[p.level].color }" />{{ $t(masteryConfig[p.level].label) }} · {{ p.n }}
+      </span>
     </div>
 
-    <!-- Topic cards (collapsible) -->
+    <!-- Уровень навыка -->
+    <div v-if="data!.skill_level" class="km__skill">
+      <div class="km__skill-bar">
+        <span v-for="i in 5" :key="i" :class="{ active: i <= data!.skill_level.level }" />
+      </div>
+      <span class="km__skill-name">{{ data!.skill_level.level_name }}</span>
+      <span class="km__skill-pct">{{ $t('knowledgeMap.betterThan', { n: data!.skill_level.percentile }) }}</span>
+    </div>
+
+    <!-- Темы -->
     <Transition name="collapse">
-      <div v-if="expanded" class="km-topics">
-        <div
-          v-for="topic in data!.topics"
-          :key="topic.cluster_id"
-          class="km-topic-card"
-          :style="{ borderLeftColor: masteryConfig[topic.mastery_level].color }"
-        >
-          <div class="topic-top">
-            <span class="topic-emoji">{{ masteryConfig[topic.mastery_level].emoji }}</span>
-            <div class="topic-info">
-              <span class="topic-name">{{ topic.name }}</span>
-              <span class="topic-desc" v-if="topic.description">{{ topic.description }}</span>
+      <div v-if="expanded" class="km__topics">
+        <div v-for="topic in data!.topics" :key="topic.cluster_id" class="topic">
+          <div class="topic__top">
+            <i class="topic__dot" :style="{ background: masteryConfig[topic.mastery_level].color }" />
+            <div class="topic__info">
+              <span class="topic__name">{{ topic.name }}</span>
+              <span class="topic__desc" v-if="topic.description">{{ topic.description }}</span>
             </div>
             <button
               v-if="userStore.is_pro"
-              class="train-btn"
+              type="button"
+              class="ui-btn ui-btn--secondary ui-btn--sm"
               @click.stop="emit('train-topic', topic.cluster_id)"
             >
               {{ $t('knowledgeMap.train') }}
@@ -134,315 +128,167 @@ const progressPercent = computed(() => {
             <ProBadge v-else @click="emit('open-subscription')" />
           </div>
 
-          <div class="topic-bottom">
-            <div class="topic-stats">
-              <span class="topic-accuracy" v-if="topic.answers_count > 0">
-                {{ $t('knowledgeMap.accuracy', { n: Math.round(topic.accuracy * 100) }) }}
-              </span>
-              <span class="topic-count">
-                {{ $t('knowledgeMap.answered', { a: topic.answers_count, b: topic.total_questions }) }}
-              </span>
-            </div>
-
-            <!-- Progress double-bar: coverage + accuracy -->
-            <div class="topic-bar" v-if="topic.answers_count > 0">
-              <div
-                class="topic-bar-coverage"
-                :style="{ width: Math.round((topic.answers_count / topic.total_questions) * 100) + '%' }"
-              />
-              <div
-                class="topic-bar-accuracy"
-                :style="{
-                  width: Math.round((topic.answers_count / topic.total_questions) * topic.accuracy * 100) + '%',
-                  background: masteryConfig[topic.mastery_level].color
-                }"
-              />
-            </div>
-
+          <div class="topic__bar" v-if="topic.answers_count > 0">
             <span
-              class="topic-badge"
-              :style="{ background: masteryConfig[topic.mastery_level].bg, color: masteryConfig[topic.mastery_level].color }"
+              class="topic__bar-coverage"
+              :style="{ width: Math.round((topic.answers_count / topic.total_questions) * 100) + '%' }"
+            />
+            <span
+              class="topic__bar-accuracy"
+              :style="{
+                width: Math.round((topic.answers_count / topic.total_questions) * topic.accuracy * 100) + '%',
+                background: masteryConfig[topic.mastery_level].color
+              }"
+            />
+          </div>
+
+          <div class="topic__meta">
+            <span
+              class="ui-chip"
+              :style="{ background: masteryConfig[topic.mastery_level].bg, color: 'var(--c-ink-2)' }"
             >
               {{ $t(masteryConfig[topic.mastery_level].label) }}
             </span>
+            <span v-if="topic.answers_count > 0">{{ $t('knowledgeMap.accuracy', { n: Math.round(topic.accuracy * 100) }) }}</span>
+            <span>{{ $t('knowledgeMap.answered', { a: topic.answers_count, b: topic.total_questions }) }}</span>
           </div>
         </div>
       </div>
     </Transition>
-  </div>
+  </section>
 </template>
 
 <style scoped lang="scss">
-.knowledge-map {
+.km-skeleton { height: 120px; }
+
+.km {
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
+  padding: 14px 16px 16px;
 
-/* ── Header ── */
-.km-header {
-  padding: 16px 18px;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 20px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-  cursor: pointer;
-  transition: box-shadow 0.2s ease;
-
-  &:active {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: none;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
   }
 
-  &.pro-glow {
-    box-shadow: 0 4px 16px rgba(124, 58, 237, 0.12);
-    border-color: rgba(124, 58, 237, 0.15);
+  &__icon { width: 40px; height: 40px; border-radius: 12px; font-size: 20px; }
+  &__heading { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+  &__title { font-size: 15px; font-weight: 700; color: var(--c-navy-900); }
+  &__progress { font-size: 12px; color: var(--c-muted); }
+
+  &__chevron {
+    font-size: 20px;
+    color: var(--c-muted);
+    transition: transform 0.25s ease;
+    &.open { transform: rotate(180deg); }
+  }
+
+  &__bar {
+    display: flex;
+    gap: 3px;
+    height: 10px;
+
+    span { border-radius: 5px; min-width: 6px; }
+  }
+
+  &__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    font-size: 12px;
+    color: var(--c-muted);
+  }
+
+  &__legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    i { width: 8px; height: 8px; border-radius: 50%; }
+  }
+
+  &__skill {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    padding-top: 12px;
+    border-top: 1px solid var(--c-line);
+  }
+
+  &__skill-bar {
+    display: flex;
+    gap: 3px;
+
+    span {
+      width: 16px;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(23, 46, 74, 0.1);
+      &.active { background: var(--c-teal-600); }
+    }
+  }
+
+  &__skill-name { font-size: 13px; font-weight: 700; color: var(--c-navy-900); }
+  &__skill-pct { font-size: 12px; color: var(--c-muted); margin-left: auto; }
+
+  &__topics {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--c-line);
   }
 }
 
-.km-header-top {
+.topic {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.km-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: #234970;
-}
-
-.km-progress {
-  font-size: 13px;
-  font-weight: 600;
-  color: #10B981;
-}
-
-.km-summary-pills {
-  display: flex;
+  flex-direction: column;
   gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-}
+  padding: 12px 0;
+  border-bottom: 1px solid var(--c-line);
 
-.km-pill {
-  font-size: 13px;
-  padding: 4px 10px;
-  background: rgba(0, 0, 0, 0.04);
-  border-radius: 20px;
-  font-weight: 500;
-  color: #4B5563;
-}
+  &:last-child { border-bottom: none; padding-bottom: 0; }
 
-/* ── Skill Level ── */
-.km-skill {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 10px 0;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
-  margin-bottom: 2px;
-}
+  &__top { display: flex; align-items: center; gap: 10px; }
+  &__dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  &__info { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+  &__name { font-size: 14px; font-weight: 700; color: var(--c-navy-900); }
+  &__desc { font-size: 12px; color: var(--c-muted); line-height: 1.35; }
 
-.skill-bar {
-  display: flex;
-  gap: 4px;
-  height: 6px;
-}
-
-.skill-segment {
-  flex: 1;
-  border-radius: 3px;
-  background: rgba(0, 0, 0, 0.08);
-  transition: background 0.3s ease;
-
-  &.active {
-    background: linear-gradient(90deg, var(--c-teal-400), var(--c-teal-600));
+  &__bar {
+    position: relative;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(23, 46, 74, 0.08);
+    overflow: hidden;
   }
-}
 
-.skill-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.skill-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: #234970;
-}
-
-.skill-percentile {
-  font-size: 12px;
-  color: #6B7280;
-}
-
-/* ── Expand button ── */
-.km-expand-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  width: 100%;
-  padding: 8px 0;
-  border: none;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-  background: transparent;
-  cursor: pointer;
-  font-family: inherit;
-}
-
-.km-expand-icon {
-  font-size: 14px;
-  color: #6B7280;
-  transition: transform 0.3s ease;
-
-  .expanded & {
-    transform: rotate(180deg);
+  &__bar-coverage, &__bar-accuracy {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    border-radius: 3px;
   }
-}
 
-.km-expand-label {
-  font-size: 13px;
-  font-weight: 500;
-  color: #6B7280;
-}
+  &__bar-coverage { background: rgba(23, 46, 74, 0.12); }
 
-/* ── Topic cards ── */
-.km-topics {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.km-topic-card {
-  padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  border-left: 4px solid;
-  border-radius: 18px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.topic-top {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.topic-emoji {
-  font-size: 18px;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-
-.topic-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1;
-  min-width: 0;
-}
-
-.topic-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: #234970;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-}
-
-.topic-desc {
-  font-size: 12px;
-  color: #6B7280;
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.train-btn {
-  flex-shrink: 0;
-  align-self: flex-start;
-  padding: 5px 12px;
-  border: 1.5px solid rgba(35, 73, 112, 0.15);
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  background: rgba(35, 73, 112, 0.05);
-  color: #234970;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-
-  &:active {
-    transform: scale(0.95);
-    background: rgba(35, 73, 112, 0.12);
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    font-size: 12px;
+    color: var(--c-muted);
   }
-}
-
-/* ── Bottom ── */
-.topic-bottom {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-left: 28px;
-}
-
-.topic-stats {
-  display: flex;
-  gap: 12px;
-  font-size: 12px;
-  color: #9CA3AF;
-}
-
-.topic-accuracy {
-  font-weight: 600;
-  color: #4B5563;
-}
-
-.topic-count {
-  font-weight: 500;
-}
-
-.topic-bar {
-  position: relative;
-  height: 6px;
-  width: 100%;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.06);
-  overflow: hidden;
-}
-
-.topic-bar-coverage {
-  position: absolute;
-  height: 100%;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.10);
-  transition: width 0.4s ease;
-}
-
-.topic-bar-accuracy {
-  position: absolute;
-  height: 100%;
-  border-radius: 6px;
-  transition: width 0.4s ease;
-}
-
-.topic-badge {
-  align-self: flex-start;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 12px;
 }
 
 /* ── Collapse transition ── */
@@ -451,35 +297,14 @@ const progressPercent = computed(() => {
   transition: all 0.3s ease;
   overflow: hidden;
 }
-
 .collapse-enter-from,
 .collapse-leave-to {
   opacity: 0;
-  transform: translateY(-10px);
+  max-height: 0;
 }
-
 .collapse-enter-to,
 .collapse-leave-from {
   opacity: 1;
-  transform: translateY(0);
-}
-
-/* ── Skeleton ── */
-.km-skeleton {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.skeleton-bar {
-  height: 100px;
-  border-radius: 20px;
-  background: rgba(0, 0, 0, 0.06);
-  animation: pulse 1.4s ease infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.5; }
+  max-height: 3000px;
 }
 </style>

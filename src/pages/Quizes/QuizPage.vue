@@ -132,7 +132,7 @@ onUnmounted(() => headerStore.reset())
         </div>
 
         <!-- Информация о квизе -->
-        <div v-else-if="flow.view.value === 'info'" key="info">
+        <div v-else-if="flow.view.value === 'info'" key="info" class="narrow">
           <QuizInfo
               :quiz="flow.selectedQuiz.value!"
               :selected-context="flow.selectedContext.value"
@@ -147,7 +147,7 @@ onUnmounted(() => headerStore.reset())
         </div>
 
         <!-- Прохождение теста -->
-        <div v-else-if="flow.view.value === 'quiz'" key="quiz">
+        <div v-else-if="flow.view.value === 'quiz'" key="quiz" class="narrow">
           <QuizRunner
               :quiz="flow.selectedQuiz.value!"
               :context="flow.selectedContext.value"
@@ -173,12 +173,18 @@ onUnmounted(() => headerStore.reset())
 }
 
 .page-body {
-  padding: 20px;
-  padding-top: calc(80px + var(--sat));   /* под фиксированным Header */
-  padding-bottom: calc(100px + var(--sab)); /* над фиксированным Navigator */
-  max-width: 900px;
   width: 100%;
+  max-width: 720px;
+  box-sizing: border-box;
+  padding: calc(var(--sat) + 90px) 14px calc(var(--sab) + 120px);
+
+  @media (min-width: 1024px) {
+    max-width: var(--content-max);
+    padding: 96px 24px 48px;
+  }
 }
+
+.narrow { max-width: 760px; margin: 0 auto; }
 
 /* ── Slide transition ── */
 .slide-enter-active,

@@ -2,6 +2,9 @@
 import { ref, watch, computed } from 'vue'
 import type { QuestionPublic, AttemptResult} from '@/features/quizPage/types.ts'
 import {isInputAnswer} from "@/features/quizPage/types.ts"
+import PenIcon from '@iconify-vue/solar/pen-linear'
+import CorrectIcon from '@iconify-vue/solar/check-circle-bold'
+import CloseIcon from '@iconify-vue/solar/close-circle-bold'
 
 const props = defineProps<{
   question: QuestionPublic
@@ -41,9 +44,11 @@ const correctValue = computed(() => {
 </script>
 
 <template>
-  <div class="input-question">
-    <p class="question-text">{{ question.text }}</p>
-    <img v-if="question.image_url" :src="question.image_url" class="question-image" alt="" />
+  <div class="ui-q">
+    <div class="ui-q__card ui-card">
+      <p class="ui-q__text">{{ question.text }}</p>
+      <img v-if="question.image_url" :src="question.image_url" class="ui-q__image" alt="" />
+    </div>
 
     <div class="input-wrapper">
       <input
@@ -56,9 +61,12 @@ const correctValue = computed(() => {
           @input="onInput"
           autocomplete="off" autocorrect="off" spellcheck="false"
       />
-      <span class="input-icon">
-        <template v-if="result">{{ result.is_correct ? '✅' : '❌' }}</template>
-        <template v-else>✏️</template>
+      <span class="input-icon" :class="inputClass">
+        <template v-if="result">
+          <CorrectIcon v-if="result.is_correct" />
+          <CloseIcon v-else />
+        </template>
+        <PenIcon v-else />
       </span>
     </div>
 
@@ -66,45 +74,58 @@ const correctValue = computed(() => {
       {{ $t('questions.correctAnswer') }} <strong>{{ correctValue }}</strong>
     </div>
 
-    <p class="case-hint" v-if="payload && !payload.numeric && !result">{{ $t('questions.caseInsensitive') }}</p>
+    <p class="ui-q__hint" v-if="payload && !payload.numeric && !result">{{ $t('questions.caseInsensitive') }}</p>
   </div>
 </template>
 
 <style scoped lang="scss">
-.input-question { display: flex; flex-direction: column; gap: 16px; }
-.question-text { margin: 0; font-size: 17px; font-weight: 600; color: #234970; line-height: 1.5; }
-
-.question-image {
-  width: 100%;           /* масштаб по ширине контейнера */
-  border-radius: 16px;
-  object-fit: cover;     /* изображение полностью заполнит квадрат, обрезая лишнее */
-  max-height: 500px;      /* если нужно ограничить по ширине */
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-}
-
 .input-wrapper { position: relative; }
 
 .answer-input {
-  width: 100%; box-sizing: border-box; padding: 14px 46px 14px 16px;
-  font-size: 16px; font-family: inherit; color: #234970;
-  background: rgba(255,255,255,0.85); border: 1.5px solid rgba(35,73,112,0.15);
-  border-radius: 18px; outline: none; box-shadow: 0 3px 10px rgba(0,0,0,0.05);
-  transition: border-color 0.2s, box-shadow 0.2s;
-  &::placeholder { color: #C0C6CF; }
-  &:focus { border-color: rgba(78,190,194,0.7); box-shadow: 0 0 0 3px rgba(78,190,194,0.12); }
-  &:disabled { cursor: default; opacity: 0.85; }
-  &.input-correct { border-color: rgba(34,197,94,0.7); background: rgba(34,197,94,0.06); box-shadow: 0 0 0 3px rgba(34,197,94,0.1); }
-  &.input-wrong   { border-color: rgba(239,68,68,0.7);  background: rgba(239,68,68,0.05);  box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 58px;
+  padding: 0 52px 0 20px;
+  font-size: 17px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--c-navy-900);
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: none;
+  border-radius: var(--r-md);
+  outline: none;
+  box-shadow: inset 0 0 0 1px var(--c-line-2), var(--shadow-card);
+  transition: box-shadow 0.2s ease;
+
+  &::placeholder { color: var(--c-muted-2); font-weight: 500; }
+  &:focus { box-shadow: inset 0 0 0 2px var(--c-teal-600), var(--shadow-card); }
+  &:disabled { cursor: default; }
+  &.input-correct { background: rgba(225, 241, 241, 0.92); box-shadow: inset 0 0 0 2px var(--c-correct), var(--shadow-card); }
+  &.input-wrong   { background: rgba(253, 238, 226, 0.92); box-shadow: inset 0 0 0 2px var(--c-wrong), var(--shadow-card); }
 }
 
-.input-icon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 18px; pointer-events: none; }
+.input-icon {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 22px;
+  color: var(--c-muted-2);
+  pointer-events: none;
+
+  &.input-correct { color: var(--c-correct); }
+  &.input-wrong { color: var(--c-wrong); }
+}
 
 .correct-answer-hint {
-  font-size: 13px; color: #166534;
-  background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.25);
-  border-radius: 12px; padding: 10px 14px;
-  strong { font-weight: 700; }
-}
+  padding: 12px 16px;
+  border-radius: var(--r-md);
+  background: var(--c-teal-tint);
+  font-size: 14px;
+  color: var(--c-ink);
 
-.case-hint { margin: 0; font-size: 12px; color: #9CA3AF; }
+  strong { font-weight: 800; color: var(--c-correct); }
+}
 </style>

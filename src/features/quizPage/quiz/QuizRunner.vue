@@ -20,6 +20,13 @@ import InputQuestion  from './questions/InputQuestion.vue'
 import ContextModal   from './ContextModal.vue'
 import {useHeaderStore} from "@/shared/stores/useHeaderStore.ts";
 import { useI18n } from 'vue-i18n'
+import SadIcon from '@iconify-vue/solar/sad-circle-linear'
+import ReadIcon from '@iconify-vue/solar/book-2-linear'
+import CheckIcon from '@iconify-vue/solar/check-circle-linear'
+import CloseIcon from '@iconify-vue/solar/close-circle-linear'
+import ListIcon from '@iconify-vue/solar/notebook-linear'
+import StarIcon from '@iconify-vue/solar/star-linear'
+import DoneIcon from '@iconify-vue/solar/confetti-minimalistic-linear'
 
 const props = defineProps<{
   quiz: QuizIn
@@ -251,100 +258,85 @@ const finishQuiz = () => {
 
     <!-- Загрузка -->
     <div v-if="loading" class="loading-state">
-      <div class="skeleton-q" />
-      <div class="skeleton-opt" v-for="i in 4" :key="i" />
+      <div class="ui-skeleton skeleton-q" />
+      <div class="ui-skeleton skeleton-opt" v-for="i in 4" :key="i" />
     </div>
 
     <!-- Ошибка при старте: нет вопросов или сервер недоступен -->
-    <div v-else-if="startError" class="finish-screen">
-      <div class="finish-icon">😕</div>
-      <h2 class="finish-title">{{ t('quiz.cantStart') }}</h2>
-      <p class="finish-sub">
-        {{ t('quiz.cantStartDesc') }}
-      </p>
-      <button class="finish-btn" @click="emit('finish')">{{ t('quiz.backToList') }}</button>
+    <div v-else-if="startError" class="finish ui-card">
+      <span class="finish__icon finish__icon--muted"><SadIcon /></span>
+      <h2 class="finish__title">{{ t('quiz.cantStart') }}</h2>
+      <p class="finish__sub">{{ t('quiz.cantStartDesc') }}</p>
+      <button type="button" class="ui-btn ui-btn--primary ui-btn--block" @click="emit('finish')">{{ t('quiz.backToList') }}</button>
     </div>
 
     <!-- Экран чтения контекста перед стартом -->
     <div v-else-if="showingContext && context" class="context-reading">
-      <div class="context-card">
-        <div class="context-badge">{{ t('quiz.readText') }}</div>
-        <h3 class="context-title">{{ context.title }}</h3>
-        <p class="context-text">{{ context.text }}</p>
+      <div class="context-card ui-card">
+        <span class="ui-chip ui-chip--teal context-card__badge"><ReadIcon />{{ t('quiz.readText') }}</span>
+        <h3 class="context-card__title">{{ context.title }}</h3>
+        <p class="context-card__text">{{ context.text }}</p>
 
-        <div v-if="context.rule" class="context-rule">
-          <p class="rule-label">{{ t('quiz.rule') }}</p>
-          <p class="rule-text">{{ context.rule }}</p>
+        <div v-if="context.rule" class="context-card__rule">
+          <p class="context-card__rule-label">{{ t('quiz.rule') }}</p>
+          <p class="context-card__rule-text">{{ context.rule }}</p>
         </div>
       </div>
 
-      <p class="context-hint">
-        {{ t('quiz.contextHint') }}
-      </p>
+      <p class="context-reading__hint">{{ t('quiz.contextHint') }}</p>
     </div>
 
     <!-- Финальный экран -->
-    <div v-else-if="finished" class="finish-screen">
+    <div v-else-if="finished" class="finish ui-card">
       <!-- Exam mode: детальный результат -->
       <template v-if="examResult">
-        <div class="exam-result">
-          <div class="exam-result-icon">{{ examResult.score >= 70 ? '🎉' : examResult.score >= 40 ? '💪' : '📚' }}</div>
-          <h2 class="exam-result-title">
-            {{ examResult.score >= 70 ? t('quiz.excellent') : examResult.score >= 40 ? t('quiz.notBad') : t('quiz.needWork') }}
-          </h2>
+        <h2 class="finish__title">
+          {{ examResult.score >= 70 ? t('quiz.excellent') : examResult.score >= 40 ? t('quiz.notBad') : t('quiz.needWork') }}
+        </h2>
 
-          <div class="exam-score-ring">
-            <svg viewBox="0 0 120 120" class="score-ring-svg">
-              <circle cx="60" cy="60" r="50" fill="none" stroke="#E5E7EB" stroke-width="8" />
-              <circle
-                  cx="60" cy="60" r="50" fill="none"
-                  :stroke="examResult.score >= 70 ? '#22c55e' : examResult.score >= 40 ? '#f59e0b' : '#ef4444'"
-                  stroke-width="8" stroke-linecap="round"
-                  :stroke-dasharray="314"
-                  :stroke-dashoffset="314 - (examResult.score / 100) * 314"
-                  class="score-ring-progress"
-              />
-            </svg>
-            <div class="score-ring-label">
-              <span class="score-ring-value">{{ examResult.score }}%</span>
-            </div>
-          </div>
-
-          <div class="exam-stats-grid">
-            <div class="exam-stat">
-              <span class="exam-stat-icon">✅</span>
-              <span class="exam-stat-value">{{ examResult.correct_count }}</span>
-              <span class="exam-stat-label">{{ t('quiz.correctCount') }}</span>
-            </div>
-            <div class="exam-stat">
-              <span class="exam-stat-icon">❌</span>
-              <span class="exam-stat-value">{{ examResult.total_count - examResult.correct_count }}</span>
-              <span class="exam-stat-label">{{ t('quiz.errors') }}</span>
-            </div>
-            <div class="exam-stat">
-              <span class="exam-stat-icon">📝</span>
-              <span class="exam-stat-value">{{ examResult.total_count }}/{{ examResult.total_questions }}</span>
-              <span class="exam-stat-label">{{ t('quiz.questions') }}</span>
-            </div>
-            <div class="exam-stat">
-              <span class="exam-stat-icon">⭐</span>
-              <span class="exam-stat-value">{{ examResult.earned_points }}</span>
-              <span class="exam-stat-label">{{ t('quiz.pointsEarned') }}</span>
-            </div>
-          </div>
-
-          <button class="finish-btn" @click="emit('finish')">{{ t('quiz.backToQuiz') }}</button>
+        <div class="score-ring">
+          <svg viewBox="0 0 120 120" width="148" height="148" class="score-ring__svg">
+            <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(23, 46, 74, 0.08)" stroke-width="10" />
+            <circle
+                cx="60" cy="60" r="50" fill="none"
+                :stroke="examResult.score >= 40 ? 'var(--c-correct)' : 'var(--c-wrong)'"
+                stroke-width="10" stroke-linecap="round"
+                :stroke-dasharray="314"
+                :stroke-dashoffset="314 - (examResult.score / 100) * 314"
+                class="score-ring__progress"
+            />
+          </svg>
+          <span class="score-ring__value">{{ examResult.score }}%</span>
         </div>
+
+        <div class="finish__stats">
+          <div class="ui-stat">
+            <span class="ui-stat__label"><CheckIcon class="ic-correct" />{{ t('quiz.correctCount') }}</span>
+            <b class="ui-stat__value">{{ examResult.correct_count }}</b>
+          </div>
+          <div class="ui-stat">
+            <span class="ui-stat__label"><CloseIcon class="ic-wrong" />{{ t('quiz.errors') }}</span>
+            <b class="ui-stat__value">{{ examResult.total_count - examResult.correct_count }}</b>
+          </div>
+          <div class="ui-stat">
+            <span class="ui-stat__label"><ListIcon />{{ t('quiz.questions') }}</span>
+            <b class="ui-stat__value">{{ examResult.total_count }}/{{ examResult.total_questions }}</b>
+          </div>
+          <div class="ui-stat">
+            <span class="ui-stat__label"><StarIcon />{{ t('quiz.pointsEarned') }}</span>
+            <b class="ui-stat__value">{{ examResult.earned_points }}</b>
+          </div>
+        </div>
+
+        <button type="button" class="ui-btn ui-btn--primary ui-btn--block" @click="emit('finish')">{{ t('quiz.backToQuiz') }}</button>
       </template>
 
       <!-- Practice mode: простой финиш -->
       <template v-else>
-        <div class="finish-icon">🎉</div>
-        <h2 class="finish-title">{{ t('quiz.finished') }}</h2>
-        <p class="finish-sub">
-          {{ t('quiz.answeredN', { n: answeredCount }) }}
-        </p>
-        <button class="finish-btn" @click="emit('finish')">{{ t('quiz.backToQuiz') }}</button>
+        <span class="finish__icon"><DoneIcon /></span>
+        <h2 class="finish__title">{{ t('quiz.finished') }}</h2>
+        <p class="finish__sub">{{ t('quiz.answeredN', { n: answeredCount }) }}</p>
+        <button type="button" class="ui-btn ui-btn--primary ui-btn--block" @click="emit('finish')">{{ t('quiz.backToQuiz') }}</button>
       </template>
     </div>
 
@@ -353,15 +345,12 @@ const finishQuiz = () => {
 
       <!-- Прогресс-бар и счётчик для быстрого теста -->
       <div v-if="props.mode === 'exam' && props.questionLimit" class="exam-progress">
-        <div class="exam-progress-info">
-          <span class="exam-progress-label">{{ t('quiz.questionNofM', { n: answeredCount + 1, m: props.questionLimit }) }}</span>
-          <span class="exam-progress-score">✅ {{ correctCount }}</span>
+        <div class="exam-progress__info">
+          <span class="exam-progress__label">{{ t('quiz.questionNofM', { n: answeredCount + 1, m: props.questionLimit }) }}</span>
+          <span class="ui-chip ui-chip--teal"><CheckIcon />{{ correctCount }}</span>
         </div>
-        <div class="exam-progress-track">
-          <div
-              class="exam-progress-fill"
-              :style="{ width: ((answeredCount) / props.questionLimit * 100) + '%' }"
-          />
+        <div class="ui-progress">
+          <div class="ui-progress__fill" :style="{ width: ((answeredCount) / props.questionLimit * 100) + '%' }" />
         </div>
       </div>
 
@@ -419,424 +408,163 @@ const finishQuiz = () => {
 
 <style scoped lang="scss">
 .quiz-runner {
-  padding: 16px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* ── Экран чтения контекста ── */
-.context-reading {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.context-card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 24px;
-  padding: 24px 20px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.07);
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-.context-badge {
-  display: inline-flex;
-  align-self: flex-start;
-  padding: 6px 12px;
-  background: rgba(78, 190, 194, 0.1);
-  border: 1px solid rgba(78, 190, 194, 0.25);
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #234970;
-}
-
-.context-title {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 700;
-  color: #234970;
-  line-height: 1.3;
-}
-
-.context-text {
-  margin: 0;
-  font-size: 15px;
-  color: #374151;
-  line-height: 1.7;
-  white-space: pre-wrap;
-}
-
-.context-rule {
-  background: rgba(78, 190, 194, 0.08);
-  border-left: 3px solid #4EBEC2;
-  border-radius: 0 12px 12px 0;
-  padding: 12px 14px;
-}
-
-.rule-label {
-  margin: 0 0 6px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--c-teal-600);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.rule-text {
-  margin: 0;
-  font-size: 14px;
-  color: #374151;
-  line-height: 1.55;
-}
-
-.context-hint {
-  margin: 0;
-  font-size: 13px;
-  color: #9CA3AF;
-  text-align: center;
-  line-height: 1.5;
-  padding: 0 12px;
-}
-
-/* ── Прогресс-бар ── */
-.progress-bar-wrap {
+/* ── Чтение контекста ── */
+.context-reading {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 12px;
-}
 
-.progress-track {
-  flex: 1;
-  height: 8px;
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.07);
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--c-teal-400), var(--c-teal-600));
-  border-radius: 8px;
-  transition: width 0.35s ease;
-}
-
-.timer {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 14px;
-  font-weight: 700;
-  color: #234970;
-  background: rgba(255, 255, 255, 0.8);
-  padding: 4px 10px;
-  border-radius: 20px;
-  border: 1.5px solid rgba(35, 73, 112, 0.15);
-  transition: all 0.3s;
-  white-space: nowrap;
-
-  &.danger {
-    color: #ef4444;
-    border-color: rgba(239, 68, 68, 0.3);
-    background: rgba(239, 68, 68, 0.07);
-    animation: pulse-timer 1s ease infinite;
+  &__hint {
+    margin: 0;
+    text-align: center;
+    font-size: 13px;
+    color: var(--c-muted);
   }
 }
 
-@keyframes pulse-timer {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.7; }
+.context-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+
+  &__badge { align-self: flex-start; :deep(svg) { font-size: 14px; } }
+
+  &__title {
+    margin: 0;
+    font-size: var(--fs-h2);
+    font-weight: 800;
+    color: var(--c-navy-900);
+  }
+
+  &__text {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--c-ink);
+    white-space: pre-wrap;
+  }
+
+  &__rule {
+    padding: 12px 14px;
+    border-radius: var(--r-md);
+    background: var(--c-teal-tint);
+  }
+
+  &__rule-label {
+    margin: 0 0 4px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--c-teal-600);
+  }
+
+  &__rule-text { margin: 0; font-size: 14px; line-height: 1.5; color: var(--c-ink); }
 }
 
+/* ── Счётчики ── */
 .counter {
   margin: 0;
+  padding: 0 6px;
   font-size: 13px;
-  color: #9CA3AF;
-  font-weight: 500;
+  font-weight: 700;
+  color: var(--c-muted);
 }
 
-/* ── Exam progress bar ── */
 .exam-progress {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding: 0 6px;
+
+  &__info { display: flex; justify-content: space-between; align-items: center; }
+  &__label { font-size: 13px; font-weight: 700; color: var(--c-muted); }
+  :deep(.ui-chip svg) { font-size: 14px; }
 }
 
-.exam-progress-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.exam-progress-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #234970;
-}
-
-.exam-progress-score {
-  font-size: 13px;
-  font-weight: 600;
-  color: #22c55e;
-}
-
-.exam-progress-track {
-  width: 100%;
-  height: 6px;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.06);
-  overflow: hidden;
-}
-
-.exam-progress-fill {
-  height: 100%;
-  border-radius: 6px;
-  background: linear-gradient(90deg, var(--c-teal-400), var(--c-teal-600));
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* ── Карточка вопроса ── */
-.question-card {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 24px;
-  padding: 20px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.07);
-}
-
-/* ── Баннер результата ── */
-.result-banner {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 14px 18px;
-  border-radius: 16px;
-  border: 1.5px solid;
-
-  &.result-correct {
-    background: rgba(34, 197, 94, 0.08);
-    border-color: rgba(34, 197, 94, 0.35);
-    color: #166534;
-  }
-
-  &.result-wrong {
-    background: rgba(239, 68, 68, 0.08);
-    border-color: rgba(239, 68, 68, 0.35);
-    color: #991b1b;
-  }
-}
-
-.result-icon {
-  font-size: 20px;
-  line-height: 1.4;
-  flex-shrink: 0;
-}
-
-.result-text {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-
-  strong {
-    font-size: 15px;
-    font-weight: 700;
-  }
-}
-
-.result-explanation {
-  margin: 0;
-  font-size: 13px;
-  opacity: 0.85;
-  line-height: 1.5;
-}
-
-/* ── Transitions ── */
-.result-fade-enter-active,
-.result-fade-leave-active {
-  transition: all 0.3s ease;
-}
-.result-fade-enter-from,
-.result-fade-leave-to {
-  opacity: 0;
-  transform: translateY(6px);
-}
+.question-card { display: flex; flex-direction: column; }
 
 .qslide-enter-active,
 .qslide-leave-active {
   transition: all 0.22s ease;
 }
-.qslide-enter-from {
-  opacity: 0;
-  transform: translateY(12px);
-}
-.qslide-leave-to {
-  opacity: 0;
-  transform: translateY(-8px);
-}
+.qslide-enter-from { opacity: 0; transform: translateX(24px); }
+.qslide-leave-to { opacity: 0; transform: translateX(-24px); }
 
-/* ── Финальный экран ── */
-.finish-screen {
+/* ── Финиш ── */
+.finish {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 12px;
+  padding: 28px 20px 20px;
   text-align: center;
-  gap: 12px;
-  padding: 40px 20px;
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    border-radius: 24px;
+    background: var(--grad-primary);
+    color: #FFFFFF;
+    font-size: 36px;
+    box-shadow: var(--shadow-hero);
+
+    &--muted { background: rgba(35, 73, 112, 0.08); color: var(--c-ink-2); box-shadow: none; }
+  }
+
+  &__title { margin: 0; font-size: var(--fs-h1); font-weight: 800; color: var(--c-navy-900); }
+  &__sub { margin: 0 0 6px; font-size: 14px; color: var(--c-muted); max-width: 320px; }
+
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 6px;
+    text-align: left;
+
+    .ui-stat { box-shadow: none; background: rgba(255, 255, 255, 0.7); }
+    .ui-stat__label { display: inline-flex; align-items: center; gap: 6px; }
+  }
 }
 
-.finish-icon  { font-size: 64px; }
+.ic-correct { color: var(--c-correct); }
+.ic-wrong { color: var(--c-wrong); }
 
-.finish-title {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 700;
-  color: #234970;
-}
-
-.finish-sub {
-  margin: 0;
-  font-size: 15px;
-  color: #6B7280;
-}
-
-.finish-btn {
-  margin-top: 16px;
-  padding: 14px 32px;
-  background: var(--grad-primary);
-  color: #fff;
-  border: none;
-  border-radius: 30px;
-  font-size: 16px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  box-shadow: 0 4px 16px rgba(78, 190, 194, 0.35);
-  transition: transform 0.2s;
-
-  &:active { transform: scale(0.96); }
-}
-
-/* ── Skeleton ── */
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 20px;
-}
-
-.skeleton-q {
-  height: 28px;
-  border-radius: 10px;
-  background: rgba(0,0,0,0.07);
-  animation: pulse 1.4s ease infinite;
-  width: 80%;
-}
-
-.skeleton-opt {
-  height: 52px;
-  border-radius: 16px;
-  background: rgba(0,0,0,0.06);
-  animation: pulse 1.4s ease infinite;
-
-  &:nth-child(2) { animation-delay: 0.15s; }
-  &:nth-child(3) { animation-delay: 0.3s;  }
-  &:nth-child(4) { animation-delay: 0.45s; }
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.45; }
-}
-
-/* ── Exam Result Screen ── */
-.exam-result {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  padding: 8px 0;
-}
-
-.exam-result-icon {
-  font-size: 56px;
-}
-
-.exam-result-title {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 700;
-  color: #234970;
-}
-
-.exam-score-ring {
+.score-ring {
   position: relative;
-  width: 140px;
-  height: 140px;
-}
-
-.score-ring-svg {
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-}
-
-.score-ring-progress {
-  transition: stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.score-ring-label {
-  position: absolute;
-  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 4px 0 6px;
+
+  &__svg { transform: rotate(-90deg); }
+  &__progress { transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1); }
+
+  &__value {
+    position: absolute;
+    font-size: 34px;
+    font-weight: 800;
+    color: var(--c-navy-900);
+  }
 }
 
-.score-ring-value {
-  font-size: 32px;
-  font-weight: 800;
-  color: #234970;
-}
-
-.exam-stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  width: 100%;
-}
-
-.exam-stat {
+/* ── Загрузка ── */
+.loading-state {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 14px 10px;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 18px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+  gap: 10px;
 }
 
-.exam-stat-icon {
-  font-size: 20px;
-}
-
-.exam-stat-value {
-  font-size: 20px;
-  font-weight: 800;
-  color: #234970;
-}
-
-.exam-stat-label {
-  font-size: 11px;
-  color: #9CA3AF;
-  font-weight: 500;
-}
+.skeleton-q { height: 120px; }
+.skeleton-opt { height: 58px; border-radius: var(--r-md); }
 </style>

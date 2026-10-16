@@ -2,6 +2,9 @@
 import { ref, watch, computed } from 'vue'
 import type { QuestionPublic, AttemptResult } from '@/features/quizPage/types.ts'
 import {isMatchingAnswer} from "@/features/quizPage/types.ts"
+import ArrowIcon from '@iconify-vue/solar/arrow-right-linear'
+import CorrectIcon from '@iconify-vue/solar/check-circle-bold'
+import CloseIcon from '@iconify-vue/solar/close-circle-bold'
 const props = defineProps<{
   question: QuestionPublic
   disabled?: boolean
@@ -26,7 +29,6 @@ watch(() => props.question.id, () => {
   emit('answer', {} as Record<string, number>)
 })
 
-const matchedRightForLeft = (leftId: number) => matched.value[String(leftId)] ?? null
 const matchedLeftForRight = (rightId: number): number | null => {
   const entry = Object.entries(matched.value).find(([, v]) => v === rightId)
   return entry ? Number(entry[0]) : null
@@ -88,104 +90,174 @@ const rightState = (id: number) => {
   if (selectedRight.value === id) return 'active'
   return 'idle'
 }
+
+// Номер пары — одинаковый бейдж слева и справа
+const pairNumber = (leftId: number): number | null => {
+  const i = Object.keys(matched.value).indexOf(String(leftId))
+  return i === -1 ? null : i + 1
+}
+const pairNumberForRight = (rightId: number): number | null => {
+  const leftId = matchedLeftForRight(rightId)
+  return leftId === null ? null : pairNumber(leftId)
+}
 </script>
 
 <template>
-  <div class="matching">
-    <p class="question-text">{{ question.text }}</p>
+  <div class="ui-q">
+    <div class="ui-q__card ui-card">
+      <p class="ui-q__text">{{ question.text }}</p>
+      <img v-if="question.image_url" :src="question.image_url" class="ui-q__image" alt="" />
+    </div>
 
-    <img
-        v-if="question.image_url"
-        :src="question.image_url"
-        class="question-image"
-        alt=""
-    />
-
-    <p class="hint">{{ $t('questions.matchingHint') }}</p>
+    <p class="ui-q__hint">{{ $t('questions.matchingHint') }}</p>
 
     <div class="columns">
       <div class="column">
-        <div v-for="item in leftItems" :key="item.id" class="match-item" :class="leftState(item.id)" @click="tapLeft(item.id)">
-          {{ item.text }}
-          <span v-if="matched[String(item.id)] != null" class="pair-badge">
-            {{ rightItems.find(r => r.id === matchedRightForLeft(item.id))?.text?.slice(0, 8) }}…
-          </span>
+        <div
+            v-for="item in leftItems"
+            :key="item.id"
+            class="match-item"
+            :class="[leftState(item.id), { locked: disabled }]"
+            @click="tapLeft(item.id)"
+        >
+          <span class="match-item__text">{{ item.text }}</span>
+          <span v-if="pairNumber(item.id)" class="match-item__badge">{{ pairNumber(item.id) }}</span>
         </div>
       </div>
 
-      <div class="divider">
-        <div v-for="(_, i) in leftItems" :key="i" class="divider-line" />
-      </div>
-
       <div class="column">
-        <div v-for="item in rightItems" :key="item.id" class="match-item right" :class="rightState(item.id)" @click="tapRight(item.id)">
-          {{ item.text }}
+        <div
+            v-for="item in rightItems"
+            :key="item.id"
+            class="match-item"
+            :class="[rightState(item.id), { locked: disabled }]"
+            @click="tapRight(item.id)"
+        >
+          <span v-if="pairNumberForRight(item.id)" class="match-item__badge">{{ pairNumberForRight(item.id) }}</span>
+          <span class="match-item__text">{{ item.text }}</span>
         </div>
       </div>
     </div>
 
-    <div class="pairs-summary" v-if="Object.keys(matched).length">
-      <p class="pairs-title">{{ $t('questions.pairs') }}</p>
-      <div v-for="(rightId, leftId) in matched" :key="leftId" class="pair-row" :class="result ? pairResultClass(Number(leftId)) : ''">
-        <span>{{ leftItems.find(l => l.id === Number(leftId))?.text }}</span>
-        <span class="arrow">→</span>
-        <span>{{ rightItems.find(r => r.id === rightId)?.text }}</span>
-        <span v-if="result" class="pair-icon">{{ pairResultClass(Number(leftId)) === 'correct' ? '✅' : '❌' }}</span>
+    <div class="pairs ui-card" v-if="Object.keys(matched).length">
+      <p class="pairs__title">{{ $t('questions.pairs') }}</p>
+      <div
+          v-for="(rightId, leftId) in matched"
+          :key="leftId"
+          class="pairs__row"
+          :class="result ? pairResultClass(Number(leftId)) : ''"
+      >
+        <span class="pairs__num">{{ pairNumber(Number(leftId)) }}</span>
+        <span class="pairs__side">{{ leftItems.find(l => l.id === Number(leftId))?.text }}</span>
+        <ArrowIcon class="pairs__arrow" />
+        <span class="pairs__side">{{ rightItems.find(r => r.id === rightId)?.text }}</span>
+        <template v-if="result">
+          <CorrectIcon v-if="pairResultClass(Number(leftId)) === 'correct'" class="pairs__icon" />
+          <CloseIcon v-else class="pairs__icon" />
+        </template>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-.matching { display: flex; flex-direction: column; gap: 16px; }
-.question-text { margin: 0; font-size: 17px; font-weight: 600; color: #234970; line-height: 1.5; }
-
-
-.question-image {
-  width: 100%;           /* масштаб по ширине контейнера */
-  border-radius: 16px;
-  object-fit: cover;     /* изображение полностью заполнит квадрат, обрезая лишнее */
-  max-height: 500px;      /* если нужно ограничить по ширине */
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+.columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  align-items: start;
 }
 
-.hint { margin: 0; font-size: 13px; color: #9CA3AF; }
-
-.columns { display: flex; gap: 0; align-items: flex-start; }
-.column { flex: 1; display: flex; flex-direction: column; gap: 8px; }
-
-.divider {
-  display: flex; flex-direction: column; gap: 8px; padding: 0 6px;
-  .divider-line { width: 2px; height: 44px; border-radius: 2px; background: rgba(35,73,112,0.15); margin: 0 auto; }
-}
+.column { display: flex; flex-direction: column; gap: 8px; }
 
 .match-item {
-  padding: 10px 12px; border-radius: 14px; font-size: 13px; font-weight: 500; color: #374151;
-  background: rgba(255,255,255,0.75); border: 1.5px solid rgba(255,255,255,0.9);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.2s ease;
-  user-select: none; text-align: left; min-height: 44px;
-  display: flex; flex-direction: column; justify-content: center; gap: 3px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 10px 12px;
+  box-sizing: border-box;
+  border-radius: var(--r-md);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  box-shadow: var(--shadow-card);
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--c-ink);
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+
   &:active { transform: scale(0.97); }
-  &.right { text-align: right; align-items: flex-end; }
-  &.active   { border-color: var(--c-teal-600); background: rgba(78,190,194,0.1); box-shadow: 0 4px 14px rgba(78,190,194,0.25); }
-  &.matched  { border-color: rgba(35,73,112,0.3); background: rgba(35,73,112,0.07); }
-  &.correct  { border-color: rgba(34,197,94,0.7);  background: rgba(34,197,94,0.1);  }
-  &.wrong    { border-color: rgba(239,68,68,0.7);  background: rgba(239,68,68,0.08); }
+  &.locked { pointer-events: none; }
+
+  &__text { flex: 1; min-width: 0; word-break: break-word; }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--c-navy-900);
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  &.active  { background: rgba(231, 245, 246, 0.9); box-shadow: inset 0 0 0 2px var(--c-teal-600), var(--shadow-card); }
+  &.matched { background: rgba(255, 255, 255, 0.85); box-shadow: inset 0 0 0 1px var(--c-line-2), var(--shadow-card); }
+  &.correct { background: rgba(225, 241, 241, 0.92); box-shadow: inset 0 0 0 2px var(--c-correct), var(--shadow-card); .match-item__badge { background: var(--c-correct); } }
+  &.wrong   { background: rgba(253, 238, 226, 0.92); box-shadow: inset 0 0 0 2px var(--c-wrong), var(--shadow-card); .match-item__badge { background: var(--c-wrong); } }
 }
 
-.pair-badge { font-size: 10px; color: var(--c-teal-600); font-weight: 600; }
+.pairs {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
 
-.pairs-summary {
-  background: rgba(255,255,255,0.7); border-radius: 16px; padding: 14px 16px;
-  display: flex; flex-direction: column; gap: 8px; border: 1px solid rgba(255,255,255,0.9);
-}
-.pairs-title { margin: 0; font-size: 12px; font-weight: 600; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.5px; }
-.pair-row {
-  display: flex; align-items: center; gap: 8px; font-size: 13px; color: #374151;
-  padding: 4px 6px; border-radius: 8px; transition: background 0.2s;
-  .arrow { color: var(--c-teal-600); font-weight: 700; }
-  .pair-icon { margin-left: auto; font-size: 14px; }
-  &.correct { background: rgba(34,197,94,0.08); color: #166534; }
-  &.wrong   { background: rgba(239,68,68,0.08); color: #991b1b; }
+  &__title {
+    margin: 0 0 4px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--c-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 12px;
+    font-size: 13px;
+    color: var(--c-ink);
+
+    &.correct { background: rgba(11, 107, 112, 0.08); .pairs__icon { color: var(--c-correct); } }
+    &.wrong   { background: rgba(232, 131, 58, 0.12); .pairs__icon { color: var(--c-wrong); } }
+  }
+
+  &__num {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(35, 73, 112, 0.1);
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  &__side { flex: 1; min-width: 0; }
+  &__arrow { color: var(--c-teal-600); font-size: 16px; }
+  &__icon { font-size: 18px; }
 }
 </style>
