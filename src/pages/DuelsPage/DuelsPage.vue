@@ -163,11 +163,12 @@ async function handleAnswer(answer: UserAnswerPayload) {
 }
 
 .page-body {
-  padding: 20px;
-  padding-top: calc(80px + var(--sat));   /* под фиксированный Header */
-  padding-bottom: calc(100px + var(--sab)); /* над Navigator */
-  max-width: 900px;
   width: 100%;
+  max-width: 760px;
+  box-sizing: border-box;
+  padding: calc(var(--sat) + 90px) 14px calc(var(--sab) + 120px);
+
+  @media (min-width: 1024px) { padding: 96px 24px 48px; }
 }
 
 /* ── Анимация Slide (как в QuizPage) ── */

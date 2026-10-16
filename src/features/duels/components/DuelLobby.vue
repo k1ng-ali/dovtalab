@@ -1,5 +1,10 @@
 <script setup lang="ts">
+import BoltIcon from '@iconify-vue/solar/bolt-linear'
+import RefreshIcon from '@iconify-vue/solar/refresh-linear'
+import ListIcon from '@iconify-vue/solar/notebook-linear'
+import UsersIcon from '@iconify-vue/solar/users-group-rounded-linear'
 import type { DuelRoom } from '../types.ts'
+import { subjectInitials, subjectTint } from '@/shared/lib/subjectTint.ts'
 
 defineProps<{
   rooms: DuelRoom[]
@@ -16,50 +21,55 @@ const emit = defineEmits<{
 
 <template>
   <div class="duel-lobby">
-    <section class="hero-banner">
-      <div class="hero-content">
-        <span class="hero-badge">1 VS 1</span>
-        <h1>{{ $t('duels.lobbyTitle') }}</h1>
-        <p class="subtitle">{{ $t('duels.lobbySubtitle') }}</p>
+    <section class="hero ui-hero">
+      <span class="ui-chip ui-chip--on-dark hero__chip"><BoltIcon />1 VS 1</span>
+      <div class="hero__text">
+        <b class="hero__title">{{ $t('duels.lobbyTitle') }}</b>
+        <span class="hero__sub">{{ $t('duels.lobbySubtitle') }}</span>
       </div>
-      <button class="create-btn" type="button" @click="emit('create')">
+      <button class="ui-btn ui-btn--light hero__cta" type="button" @click="emit('create')">
         {{ $t('duels.create') }}
       </button>
     </section>
 
-    <div class="lobby-header">
-      <h2>{{ $t('duels.awaitingOpponent') }}</h2>
-      <button class="refresh-btn" type="button" :disabled="loading" @click="emit('refresh')">
-        {{ $t('duels.refresh') }}
+    <div class="ui-section-head">
+      <h3 class="ui-section-head__title">{{ $t('duels.awaitingOpponent') }}</h3>
+      <button class="ui-section-head__link refresh" type="button" :disabled="loading" @click="emit('refresh')">
+        <RefreshIcon :class="{ spin: loading }" />{{ $t('duels.refresh') }}
       </button>
     </div>
 
-    <div v-if="loading" class="lobby-state">{{ $t('duels.loadingRooms') }}</div>
-
-    <div v-else-if="rooms.length === 0" class="empty-state">
-      <div class="empty-icon">⚔️</div>
-      <h3>{{ $t('duels.noRoomsTitle') }}</h3>
-      <p>{{ $t('duels.noRoomsSub') }}</p>
+    <div v-if="loading && rooms.length === 0" class="rooms">
+      <div v-for="i in 3" :key="i" class="ui-skeleton room-skeleton" />
     </div>
 
-    <div v-else class="rooms-grid">
-      <div v-for="room in rooms" :key="room.id" class="room-card">
-        <div class="room-info">
-          <span class="room-id">{{ $t('duels.room', { id: room.id }) }}</span>
-          <h3 class="room-title">{{ room.quiz_title }}</h3>
-          <p class="room-meta">{{ $t('plural.questions', room.question_count) }} · {{ $t('duels.players', { n: room.participant_count }) }}</p>
+    <div v-else-if="rooms.length === 0" class="ui-empty ui-card">
+      <BoltIcon class="ui-empty__icon" />
+      <p class="ui-empty__title">{{ $t('duels.noRoomsTitle') }}</p>
+      <p class="ui-empty__text">{{ $t('duels.noRoomsSub') }}</p>
+    </div>
+
+    <div v-else class="rooms">
+      <div v-for="room in rooms" :key="room.id" class="room ui-card">
+        <span class="room__tile" :style="{ background: subjectTint(room.quiz_id).bg, color: subjectTint(room.quiz_id).color }">
+          {{ subjectInitials(room.quiz_title) }}
+        </span>
+        <div class="room__info">
+          <b class="room__title">{{ room.quiz_title }}</b>
+          <span class="room__meta">
+            <span><ListIcon />{{ $t('plural.questions', room.question_count) }}</span>
+            <span><UsersIcon />{{ $t('duels.players', { n: room.participant_count }) }}</span>
+          </span>
+          <span class="room__status"><i />{{ $t('duels.waitingPlayer') }} · {{ $t('duels.room', { id: room.id }) }}</span>
         </div>
-        <div class="room-actions">
-          <span class="status-online">● {{ $t('duels.waitingPlayer') }}</span>
-          <button
-            class="join-btn"
-            type="button"
-            :disabled="isSubmitting"
-            @click="emit('join', room)"
-          >
-            {{ $t('duels.join') }}
-          </button>
-        </div>
+        <button
+          class="ui-btn ui-btn--primary ui-btn--sm"
+          type="button"
+          :disabled="isSubmitting"
+          @click="emit('join', room)"
+        >
+          {{ $t('duels.join') }}
+        </button>
       </div>
     </div>
   </div>
@@ -69,150 +79,106 @@ const emit = defineEmits<{
 .duel-lobby {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 14px;
 }
 
-.hero-banner {
+.hero {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 24px 28px;
-  background: linear-gradient(135deg, #112437, #234970 65%, #4ebec2);
-  border-radius: 24px;
-  color: #fff;
-  box-shadow: 0 12px 30px rgba(35, 73, 112, 0.18);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 22px;
 
-  h1 {
-    margin: 4px 0 6px;
-    font-size: 24px;
+  &__chip { letter-spacing: 0.08em; :deep(svg) { font-size: 14px; } }
+  &__text { display: flex; flex-direction: column; gap: 4px; }
+  &__title { font-size: 24px; line-height: 1.2; }
+  &__sub { font-size: 14px; color: rgba(255, 255, 255, 0.92); }
+  &__cta { align-self: stretch; min-height: 50px; font-size: 16px; }
+
+  @media (min-width: 768px) {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    column-gap: 24px;
+    padding: 28px 32px;
+
+    > .hero__chip { justify-self: start; }
+    &__chip, &__text { grid-column: 1; }
+    &__cta { grid-column: 2; grid-row: 1 / span 2; padding: 0 30px; }
+  }
+}
+
+.refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  &:disabled { opacity: 0.5; }
+  svg { font-size: 16px; }
+}
+
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.rooms {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+
+.room-skeleton { height: 92px; }
+
+.room {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+
+  &__tile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 14px;
+    font-size: 15px;
     font-weight: 800;
   }
 
-  .subtitle {
-    margin: 0;
-    font-size: 14px;
-    opacity: 0.85;
+  &__info { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+
+  &__title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--c-navy-900);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    font-size: 12px;
+    color: var(--c-muted);
+
+    span { display: inline-flex; align-items: center; gap: 4px; }
+    svg { font-size: 14px; }
+  }
+
+  &__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--c-success);
+
+    i { width: 7px; height: 7px; border-radius: 50%; background: var(--c-success); animation: pulse 1.6s ease infinite; }
   }
 }
 
-.hero-badge {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  color: #4ebec2;
-}
-
-.create-btn {
-  padding: 12px 22px;
-  border-radius: 14px;
-  background: #f6c85f;
-  color: #182d43;
-  font-weight: 700;
-  border: none;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: transform 0.2s;
-  &:active { transform: scale(0.96); }
-}
-
-.lobby-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  h2 {
-    margin: 0;
-    font-size: 18px;
-    color: #234970;
-  }
-}
-
-.refresh-btn {
-  background: none;
-  border: none;
-  color: #4ebec2;
-  font-weight: 600;
-  cursor: pointer;
-  &:disabled { opacity: 0.5; }
-}
-
-.rooms-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.room-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 18px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
-}
-
-.room-id {
-  font-size: 11px;
-  font-weight: 700;
-  color: #4ebec2;
-}
-
-.room-title {
-  margin: 2px 0 4px;
-  font-size: 16px;
-  color: #234970;
-}
-
-.room-meta {
-  margin: 0;
-  font-size: 13px;
-  color: #718096;
-}
-
-.room-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-}
-
-.status-online {
-  font-size: 12px;
-  color: #258a72;
-  font-weight: 600;
-}
-
-.join-btn {
-  padding: 8px 18px;
-  background: #234970;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 40px 20px;
-  background: rgba(255, 255, 255, 0.6);
-  border-radius: 20px;
-  border: 1px dashed rgba(35, 73, 112, 0.2);
-
-  .empty-icon { font-size: 40px; margin-bottom: 10px; }
-  h3 { margin: 0 0 6px; color: #234970; }
-  p { margin: 0; color: #718096; font-size: 14px; }
-}
-
-@media (max-width: 600px) {
-  .hero-banner {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-    .create-btn { width: 100%; }
-  }
-}
+@keyframes pulse { 50% { opacity: 0.35; } }
 </style>

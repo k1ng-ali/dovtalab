@@ -9,6 +9,7 @@ import Matching from '@/features/quizPage/quiz/questions/Matching.vue'
 import InputQuestion from '@/features/quizPage/quiz/questions/InputQuestion.vue'
 import { useNavStore } from '@/shared/stores/useNavStore.ts'
 import { useI18n } from 'vue-i18n'
+import TimerIcon from '@iconify-vue/solar/stopwatch-linear'
 
 const props = defineProps<{
   gameState: DuelGameState
@@ -125,10 +126,13 @@ onUnmounted(() => {
 <template>
   <div class="duel-arena">
     <div class="round-tracker">
-      <span>{{ $t('duels.roundNofM', { n: gameState.question.round_number, m: gameState.question.total_questions }) }}</span>
-      <span v-if="secondsLeft !== null" class="round-timer" :class="{ urgent: secondsLeft <= 5 }">
-        ⏱ {{ $t('units.sec', { n: secondsLeft }) }}
+      <span class="round-tracker__label">{{ $t('duels.roundNofM', { n: gameState.question.round_number, m: gameState.question.total_questions }) }}</span>
+      <span v-if="secondsLeft !== null" class="ui-chip round-timer" :class="{ urgent: secondsLeft <= 5 }">
+        <TimerIcon />{{ $t('units.sec', { n: secondsLeft }) }}
       </span>
+    </div>
+    <div class="ui-progress">
+      <div class="ui-progress__fill" :style="{ width: ((gameState.question.round_number - 1) / gameState.question.total_questions * 100) + '%' }" />
     </div>
 
     <div class="question-card">
@@ -162,11 +166,11 @@ onUnmounted(() => {
       />
     </div>
 
-    <div v-if="hasSubmitted" class="waiting-indicator">
+    <div v-if="hasSubmitted" class="waiting-indicator ui-card">
       <div class="loader-dot" />
       <span>{{ $t('duels.answerSent') }}</span>
     </div>
-    <div v-else-if="isTimeUp" class="waiting-indicator">
+    <div v-else-if="isTimeUp" class="waiting-indicator ui-card">
       <div class="loader-dot" />
       <span>{{ $t('duels.timeUpDesc') }}</span>
     </div>
@@ -177,38 +181,25 @@ onUnmounted(() => {
 .duel-arena {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .round-tracker {
   display: flex;
-  justify-content: center;
-  gap: 12px;
-  text-align: center;
-  span {
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    color: #4ebec2;
-    text-transform: uppercase;
-  }
-  .round-timer {
-    color: #234970;
-    font-variant-numeric: tabular-nums;
-    &.urgent {
-      color: #e5484d;
-    }
-  }
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 6px;
+
+  &__label { font-size: 13px; font-weight: 700; color: var(--c-muted); }
 }
 
-.question-card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 24px;
-  padding: 24px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+.round-timer {
+  font-variant-numeric: tabular-nums;
+  :deep(svg) { font-size: 14px; }
+  &.urgent { background: var(--c-warning-tint); color: var(--c-warning-text); }
 }
+
+.question-card { display: flex; flex-direction: column; margin-top: 4px; }
 
 .waiting-indicator {
   display: flex;
@@ -216,9 +207,7 @@ onUnmounted(() => {
   justify-content: center;
   gap: 10px;
   padding: 14px;
-  border-radius: 16px;
-  background: rgba(78, 190, 194, 0.08);
-  color: #234970;
+  color: var(--c-navy-900);
   font-size: 13px;
   font-weight: 600;
 }
@@ -227,7 +216,7 @@ onUnmounted(() => {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #4ebec2;
+  background: var(--c-teal-600);
   animation: pulse 1s infinite alternate;
 }
 

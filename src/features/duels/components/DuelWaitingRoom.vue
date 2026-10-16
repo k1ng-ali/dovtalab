@@ -15,8 +15,8 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="waiting-card">
-    <span class="room-badge">{{ $t('duels.room', { id: room.id }) }}</span>
+  <div class="waiting-card ui-card">
+    <span class="ui-chip ui-chip--teal">{{ $t('duels.room', { id: room.id }) }}</span>
     <h1 class="room-title">{{ room.quiz_title }}</h1>
     <p class="room-meta">{{ $t('plural.questions', room.question_count) }} · {{ $t('duels.participants', { n: room.participant_count }) }}</p>
 
@@ -52,103 +52,106 @@ const emit = defineEmits<{
 
 <style scoped lang="scss">
 .waiting-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   max-width: 520px;
   margin: 0 auto;
-  padding: 32px 24px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 28px;
+  padding: 28px 22px;
   text-align: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
-}
-
-.room-badge {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  color: #4ebec2;
 }
 
 .room-title {
-  margin: 8px 0 4px;
-  font-size: 22px;
-  color: #234970;
+  margin: 12px 0 4px;
+  font-size: var(--fs-h1);
+  font-weight: 800;
+  color: var(--c-navy-900);
 }
 
 .room-meta {
   margin: 0;
   font-size: 13px;
-  color: #718096;
+  color: var(--c-muted);
 }
 
 .versus-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 20px;
-  margin: 36px 0;
+  gap: 18px;
+  margin: 32px 0;
 
   .avatar {
-    width: 72px;
-    height: 72px;
+    width: 76px;
+    height: 76px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
+    font-weight: 800;
     font-size: 14px;
   }
 
   .you {
-    background: #e6f4f5;
-    color: #234970;
-    border: 2px solid #4ebec2;
+    background: var(--grad-primary);
+    color: #FFFFFF;
+    box-shadow: 0 0 0 4px #FFFFFF, var(--shadow-hero);
   }
 
   .opponent {
-    background: #edf2f7;
-    color: #a0aec0;
-    border: 2px dashed #cbd5e0;
+    background: rgba(255, 255, 255, 0.6);
+    color: var(--c-muted-2);
+    font-size: 24px;
+    box-shadow: inset 0 0 0 2px var(--c-line-2);
+    animation: breathe 1.8s ease-in-out infinite;
   }
 
   &.ready .opponent {
-    background: #e6f7f2;
-    color: #258a72;
-    border: 2px solid #258a72;
+    background: var(--c-teal-tint);
+    color: var(--c-teal-600);
+    font-size: 14px;
+    box-shadow: 0 0 0 4px #FFFFFF, inset 0 0 0 2px var(--c-teal-600);
+    animation: none;
   }
 
   .versus-text {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 900;
-    color: #4ebec2;
+    color: var(--c-navy-900);
+    letter-spacing: 0.05em;
   }
 }
+
+@keyframes breathe { 50% { transform: scale(0.94); opacity: 0.7; } }
 
 .status-box {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 16px;
-  border-radius: 20px;
-  background: rgba(0, 0, 0, 0.04);
+  padding: 8px 16px;
+  border-radius: var(--r-pill);
+  background: rgba(35, 73, 112, 0.06);
   font-size: 13px;
-  font-weight: 600;
-  color: #234970;
+  font-weight: 700;
+  color: var(--c-navy-900);
 }
 
 .status-indicator {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #f6c85f;
-  &.ready { background: #258a72; }
+  background: var(--c-wrong);
+  animation: pulse 1.4s ease infinite;
+  &.ready { background: var(--c-success); animation: none; }
 }
+
+@keyframes pulse { 50% { opacity: 0.35; } }
 
 .status-desc {
   margin: 14px 0 0;
+  max-width: 340px;
   font-size: 13px;
-  color: #718096;
+  color: var(--c-muted);
   line-height: 1.5;
 }
 </style>

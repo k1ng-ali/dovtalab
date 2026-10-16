@@ -3,6 +3,11 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useQuiz } from '@/features/quizPage/store.ts'
 import type { QuizIn } from '@/features/quizPage/types.ts'
 import type { DuelCreatePayload } from '../types.ts'
+import CloseIcon from '@iconify-vue/solar/close-circle-linear'
+import SearchIcon from '@iconify-vue/solar/magnifer-linear'
+import ClearIcon from '@iconify-vue/solar/close-circle-bold'
+import CheckIcon from '@iconify-vue/solar/check-circle-bold'
+import { subjectInitials, subjectTint } from '@/shared/lib/subjectTint.ts'
 
 defineProps<{
   isSubmitting: boolean
@@ -90,401 +95,194 @@ function handleSubmit() {
 </script>
 
 <template>
-  <div class="modal-backdrop" @click.self="emit('close')">
-    <div class="modal-card">
-      
-      <!-- Шапка -->
-      <div class="modal-header">
-        <div>
-          <span class="modal-badge">{{ $t('duels.newRoom') }}</span>
-          <h2>{{ $t('duels.create') }}</h2>
-        </div>
-        <button class="close-btn" type="button" @click="emit('close')">✕</button>
-      </div>
+  <Teleport to="body">
+    <div class="ui-sheet-overlay" @click.self="emit('close')">
+      <div class="ui-sheet create" role="dialog" aria-modal="true">
+        <div class="ui-sheet__handle" />
 
-      <!-- Поисковая строка в стиле Quizzes.vue -->
-      <div class="search-box">
-        <span class="search-icon">🔍</span>
-        <input
-          v-model="searchQuery"
-          type="text"
-          class="search-input"
-          :placeholder="$t('duels.searchPlaceholder')"
-        />
-        <button
-          v-if="searchQuery"
-          class="clear-btn"
-          type="button"
-          @click="searchQuery = ''"
-        >
-          ✕
-        </button>
-      </div>
-
-      <!-- Список карточек квизов -->
-      <div class="quiz-scroll-list">
-        <div v-if="isLoading || isSearching" class="loading-state">
-          <div v-for="i in 3" :key="i" class="skeleton-card" />
-        </div>
-
-        <div v-else-if="displayQuizzes.length === 0" class="empty-state">
-          {{ $t('duels.nothingFound') }}
-        </div>
-
-        <div
-          v-else
-          v-for="quiz in displayQuizzes"
-          :key="quiz.id"
-          class="quiz-pick-card"
-          :class="{ active: selectedQuiz?.id === quiz.id }"
-          @click="selectQuiz(quiz)"
-        >
-          <div class="card-left">
-            <span class="card-icon">📘</span>
-            <div class="card-text">
-              <h4 class="card-title">{{ quiz.title }}</h4>
-              <p class="card-desc">{{ quiz.description || $t('duels.noDescription') }}</p>
-            </div>
+        <!-- Шапка -->
+        <div class="ui-sheet__head">
+          <div class="create__heading">
+            <span class="create__badge">{{ $t('duels.newRoom') }}</span>
+            <h2 class="ui-sheet__title">{{ $t('duels.create') }}</h2>
           </div>
-          <div class="radio-indicator">
-            <div class="radio-dot" />
-          </div>
+          <button class="ui-icon-btn ui-sheet__close" type="button" @click="emit('close')"><CloseIcon /></button>
         </div>
-      </div>
 
-      <!-- Выбор количества вопросов (pills) -->
-      <div class="count-selector">
-        <span class="count-label">{{ $t('duels.questionCount') }}</span>
-        <div class="pills-row">
-          <button
-            v-for="count in countPresets"
-            :key="count"
-            type="button"
-            class="pill"
-            :class="{ active: questionCount === count }"
-            @click="questionCount = count"
+        <!-- Поиск -->
+        <div class="search">
+          <SearchIcon class="search__icon" />
+          <input
+            v-model="searchQuery"
+            type="text"
+            class="ui-input search__input"
+            :placeholder="$t('duels.searchPlaceholder')"
+          />
+          <button v-if="searchQuery" class="search__clear" type="button" @click="searchQuery = ''">
+            <ClearIcon />
+          </button>
+        </div>
+
+        <!-- Список тестов -->
+        <div class="picks">
+          <template v-if="isLoading || isSearching">
+            <div v-for="i in 3" :key="i" class="ui-skeleton pick-skeleton" />
+          </template>
+
+          <p v-else-if="displayQuizzes.length === 0" class="picks__empty">{{ $t('duels.nothingFound') }}</p>
+
+          <div
+            v-else
+            v-for="quiz in displayQuizzes"
+            :key="quiz.id"
+            class="pick ui-option"
+            :class="{ selected: selectedQuiz?.id === quiz.id }"
+            @click="selectQuiz(quiz)"
           >
-            {{ count }}
+            <span class="pick__tile" :style="{ background: subjectTint(quiz.id).bg, color: subjectTint(quiz.id).color }">
+              {{ subjectInitials(quiz.title) }}
+            </span>
+            <span class="pick__text">
+              <b class="pick__title">{{ quiz.title }}</b>
+              <span class="pick__desc">{{ quiz.description || $t('duels.noDescription') }}</span>
+            </span>
+            <CheckIcon v-if="selectedQuiz?.id === quiz.id" class="pick__check" />
+          </div>
+        </div>
+
+        <!-- Количество вопросов -->
+        <div class="count">
+          <span class="count__label">{{ $t('duels.questionCount') }}</span>
+          <div class="ui-segmented count__seg">
+            <button
+              v-for="count in countPresets"
+              :key="count"
+              type="button"
+              class="ui-segmented__item"
+              :class="{ active: questionCount === count }"
+              @click="questionCount = count"
+            >
+              {{ count }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Действия -->
+        <div class="create__actions">
+          <button class="ui-btn ui-btn--secondary" type="button" @click="emit('close')">{{ $t('common.cancel') }}</button>
+          <button
+            class="ui-btn ui-btn--primary"
+            type="button"
+            :disabled="isSubmitting || !selectedQuiz"
+            @click="handleSubmit"
+          >
+            {{ isSubmitting ? $t('duels.creating') : $t('duels.createRoom') }}
           </button>
         </div>
       </div>
-
-      <!-- Кнопки действий -->
-      <div class="modal-actions">
-        <button class="cancel-btn" type="button" @click="emit('close')">{{ $t('common.cancel') }}</button>
-        <button
-          class="submit-btn"
-          type="button"
-          :disabled="isSubmitting || !selectedQuiz"
-          @click="handleSubmit"
-        >
-          {{ isSubmitting ? $t('duels.creating') : $t('duels.createRoom') }}
-        </button>
-      </div>
-
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <style scoped lang="scss">
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 200;
-  background: rgba(17, 36, 55, 0.6);
-  backdrop-filter: blur(6px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: calc(16px + var(--sat)) 16px calc(16px + var(--sab));
-}
+.create {
+  &__heading { display: flex; flex-direction: column; gap: 2px; }
 
-.modal-card {
-  width: 100%;
-  max-width: 480px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  background: #ffffff;
-  border-radius: 24px;
-  padding: 24px;
-  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.16);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 16px;
-
-  h2 {
-    margin: 2px 0 0;
-    font-size: 20px;
+  &__badge {
+    font-size: 12px;
     font-weight: 700;
-    color: #234970;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--c-teal-600);
+  }
+
+  &__actions {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 10px;
+    margin-top: 2px;
   }
 }
 
-.modal-badge {
-  font-size: 11px;
-  font-weight: 800;
-  color: #4ebec2;
-  letter-spacing: 0.1em;
+.search {
+  position: relative;
+
+  &__icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: var(--c-muted);
+    pointer-events: none;
+  }
+
+  &__input { padding-left: 44px; padding-right: 44px; }
+
+  &__clear {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    padding: 6px;
+    border: none;
+    background: none;
+    font-size: 20px;
+    color: var(--c-muted);
+    cursor: pointer;
+  }
 }
 
-.close-btn {
-  background: #f0f4f6;
-  border: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  cursor: pointer;
-  color: #234970;
-  font-weight: 700;
-}
-
-/* ── Search Input ── */
-.search-box {
+.picks {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 8px;
-  padding: 10px 14px;
-  background: #f6f8f9;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 14px;
-  margin-bottom: 14px;
-  transition: all 0.2s;
-
-  &:focus-within {
-    border-color: #4ebec2;
-    background: #ffffff;
-    box-shadow: 0 3px 12px rgba(78, 190, 194, 0.15);
-  }
-}
-
-.search-icon {
-  font-size: 15px;
-}
-
-.search-input {
-  flex: 1;
-  border: none;
-  background: transparent;
-  outline: none;
-  font: inherit;
-  font-size: 14px;
-  color: #234970;
-
-  &::placeholder {
-    color: #a0aec0;
-  }
-}
-
-.clear-btn {
-  background: rgba(0, 0, 0, 0.06);
-  border: none;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  font-size: 11px;
-  color: #718096;
-  cursor: pointer;
-}
-
-/* ── Scrollable list of cards ── */
-.quiz-scroll-list {
-  flex: 1;
+  max-height: 300px;
   overflow-y: auto;
-  max-height: 260px;
+  margin: 0 -4px;
+  padding: 2px 4px;
+
+  &__empty { margin: 0; padding: 24px 0; text-align: center; font-size: 14px; color: var(--c-muted); }
+}
+
+.pick-skeleton { height: 66px; border-radius: var(--r-md); }
+
+.pick {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px 10px 10px;
+  border-radius: var(--r-md);
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 0 0 1px var(--c-line);
+
+  &__tile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: 13px;
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  &__text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+
+  &__title, &__desc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  &__title { font-size: 14px; font-weight: 700; color: var(--c-navy-900); }
+  &__desc { font-size: 12px; color: var(--c-muted); }
+  &__check { font-size: 22px; color: var(--c-teal-600); }
+}
+
+.count {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding-right: 4px;
-  margin-bottom: 16px;
 
-  &::-webkit-scrollbar {
-    width: 4px;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: #cbd5e0;
-    border-radius: 4px;
-  }
-}
-
-.quiz-pick-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 14px;
-  border-radius: 14px;
-  border: 1.5px solid #edf2f7;
-  background: #ffffff;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    border-color: rgba(78, 190, 194, 0.4);
-  }
-
-  &.active {
-    background: rgba(78, 190, 194, 0.08);
-    border-color: #4ebec2;
-    box-shadow: 0 4px 12px rgba(78, 190, 194, 0.12);
-
-    .radio-dot {
-      transform: scale(1);
-    }
-  }
-}
-
-.card-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  overflow: hidden;
-}
-
-.card-icon {
-  font-size: 24px;
-  flex-shrink: 0;
-}
-
-.card-text {
-  overflow: hidden;
-}
-
-.card-title {
-  margin: 0 0 2px;
-  font-size: 14px;
-  font-weight: 700;
-  color: #234970;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.card-desc {
-  margin: 0;
-  font-size: 12px;
-  color: #718096;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.radio-indicator {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 2px solid #cbd5e0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-
-  .active & {
-    border-color: #4ebec2;
-  }
-}
-
-.radio-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #4ebec2;
-  transform: scale(0);
-  transition: transform 0.2s ease;
-}
-
-/* ── Skeletons & Empty ── */
-.skeleton-card {
-  height: 52px;
-  border-radius: 14px;
-  background: #f0f4f6;
-  animation: pulse 1.4s ease infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-.empty-state {
-  text-align: center;
-  padding: 30px;
-  font-size: 13px;
-  color: #a0aec0;
-}
-
-/* ── Questions Count Pills ── */
-.count-selector {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-top: 12px;
-  border-top: 1px solid #edf2f7;
-  margin-bottom: 20px;
-}
-
-.count-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #718096;
-}
-
-.pills-row {
-  display: flex;
-  gap: 8px;
-}
-
-.pill {
-  flex: 1;
-  padding: 8px;
-  border-radius: 10px;
-  border: 1.5px solid #e2e8f0;
-  background: transparent;
-  color: #234970;
-  font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &.active {
-    background: #4ebec2;
-    border-color: #4ebec2;
-    color: #ffffff;
-  }
-}
-
-/* ── Actions ── */
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.cancel-btn {
-  background: transparent;
-  border: none;
-  padding: 10px 16px;
-  color: #718096;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.submit-btn {
-  padding: 10px 20px;
-  background: #234970;
-  color: #ffffff;
-  border: none;
-  border-radius: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  &__label { font-size: 13px; font-weight: 600; color: var(--c-muted); }
+  &__seg { background: rgba(23, 46, 74, 0.05); }
 }
 </style>
