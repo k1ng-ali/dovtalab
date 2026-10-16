@@ -4,6 +4,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { Modal } from 'ant-design-vue'
 import { useI18n } from 'vue-i18n'
+import TimerIcon from '@iconify-vue/solar/stopwatch-linear'
 import * as quizApi from '@/features/quizPage/api.ts'
 import * as api from '../api.ts'
 import { assignmentError, questionsCount } from '../format.ts'
@@ -233,8 +234,8 @@ onUnmounted(() => {
 <template>
   <div class="runner">
     <div v-if="loading" class="loading">
-      <div class="skeleton skeleton--q" />
-      <div class="skeleton" v-for="i in 4" :key="i" />
+      <div class="ui-skeleton skeleton skeleton--q" />
+      <div class="ui-skeleton skeleton" v-for="i in 4" :key="i" />
     </div>
 
     <template v-else-if="question">
@@ -244,12 +245,12 @@ onUnmounted(() => {
           <span class="progress__label">
             {{ t('classes.questionNofM', { n: Math.min(answeredCount + 1, total), m: total }) }}
           </span>
-          <span v-if="secondsLeft != null" class="progress__timer" :class="{ 'progress__timer--low': secondsLeft < 60 }">
-            ⏱ {{ timeText }}
+          <span v-if="secondsLeft != null" class="ui-chip progress__timer" :class="{ 'progress__timer--low': secondsLeft < 60 }">
+            <TimerIcon />{{ timeText }}
           </span>
         </div>
-        <div class="progress__track">
-          <div class="progress__fill" :style="{ width: (answeredCount / Math.max(1, total)) * 100 + '%' }" />
+        <div class="ui-progress">
+          <div class="ui-progress__fill" :style="{ width: (answeredCount / Math.max(1, total)) * 100 + '%' }" />
         </div>
       </div>
 
@@ -273,54 +274,36 @@ onUnmounted(() => {
 .runner {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 16px 0;
+  gap: 14px;
 }
 
 .progress {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding: 0 6px;
 
   &__info { display: flex; justify-content: space-between; align-items: center; }
-  &__label { font-size: 14px; font-weight: 600; color: #234970; }
+  &__label { font-size: 13px; font-weight: 700; color: var(--c-muted); }
 
   &__timer {
-    padding: 4px 12px;
-    border-radius: 20px;
-    background: rgba(78, 190, 194, 0.12);
-    color: #234970;
-    font-weight: 700;
     font-variant-numeric: tabular-nums;
-    font-size: 14px;
+    font-size: 13px;
+    :deep(svg) { font-size: 14px; }
 
-    &--low { background: rgba(239, 68, 68, 0.12); color: #EF4444; }
-  }
-
-  &__track { height: 6px; border-radius: 3px; background: rgba(0, 0, 0, 0.06); overflow: hidden; }
-  &__fill {
-    height: 100%;
-    border-radius: 3px;
-    background: linear-gradient(90deg, var(--c-teal-400), var(--c-teal-600));
-    transition: width 0.3s ease;
+    &--low { background: var(--c-warning-tint); color: var(--c-warning-text); }
   }
 }
+
+.question-card { display: flex; flex-direction: column; }
 
 .loading { display: flex; flex-direction: column; gap: 10px; }
 
 .skeleton {
-  height: 52px;
-  border-radius: 16px;
-  background: linear-gradient(90deg, rgba(0,0,0,0.04) 25%, rgba(0,0,0,0.07) 50%, rgba(0,0,0,0.04) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
+  height: 58px;
+  border-radius: var(--r-md);
 
-  &--q { height: 110px; }
-}
-
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  &--q { height: 120px; border-radius: var(--r-lg); }
 }
 
 .qslide-enter-active, .qslide-leave-active { transition: all 0.22s ease; }

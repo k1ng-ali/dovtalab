@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import TaskIcon from '@iconify-vue/solar/document-text-linear'
+import DoneIcon from '@iconify-vue/solar/check-circle-linear'
+import MissedIcon from '@iconify-vue/solar/danger-triangle-linear'
+import TimerIcon from '@iconify-vue/solar/stopwatch-linear'
 import { dueLeft, formatDateTime, isUrgent, questionsCount } from '../format.ts'
 import type { StudentAssignment } from '../types.ts'
 
@@ -27,34 +31,38 @@ const scoreClass = computed(() => {
 </script>
 
 <template>
-  <button class="card" :class="{ 'card--done': isDone, 'card--compact': compact }" type="button"
+  <button class="card ui-card" :class="{ 'card--compact': compact }" type="button"
           @click="emit('open', assignment)">
-    <div class="card__icon">{{ isDone ? '✅' : a.student_status === 'missed' ? '⚠️' : '📝' }}</div>
+    <span class="card__icon" :class="{ 'card__icon--done': isDone, 'card__icon--missed': a.student_status === 'missed' }">
+      <DoneIcon v-if="isDone" />
+      <MissedIcon v-else-if="a.student_status === 'missed'" />
+      <TaskIcon v-else />
+    </span>
 
-    <div class="card__body">
+    <span class="card__body">
       <span class="card__class">{{ a.classroom_title }}</span>
-      <span class="card__title">{{ a.title }}</span>
+      <b class="card__title">{{ a.title }}</b>
       <span class="card__meta">
         {{ t('classes.questions', { n: questionsCount(a) }) }}
-        <template v-if="a.time_limit_min"> · ⏱ {{ t('classes.minutes', { n: a.time_limit_min }) }}</template>
+        <template v-if="a.time_limit_min"> · <TimerIcon class="card__meta-icon" /> {{ t('classes.minutes', { n: a.time_limit_min }) }}</template>
         <template v-if="opensLater"> · {{ t('classes.opensAt', { date: formatDateTime(a.starts_at) }) }}</template>
       </span>
-    </div>
+    </span>
 
-    <div class="card__side">
+    <span class="card__side">
       <template v-if="isDone">
         <span v-if="a.best_score != null" class="score" :class="scoreClass">{{ a.best_score }}%</span>
-        <span class="status status--done">{{ t(`classes.status.${a.student_status}`) }}</span>
+        <span class="ui-chip ui-chip--success">{{ t(`classes.status.${a.student_status}`) }}</span>
       </template>
       <template v-else>
         <span class="due" :class="{ 'due--urgent': isUrgent(a.due_at), 'due--over': a.student_status === 'missed' }">
           {{ dueLeft(a.due_at) }}
         </span>
-        <span v-if="a.student_status === 'in_progress'" class="status status--progress">
+        <span v-if="a.student_status === 'in_progress'" class="ui-chip ui-chip--teal">
           {{ t('classes.status.in_progress') }}
         </span>
       </template>
-    </div>
+    </span>
   </button>
 </template>
 
@@ -65,75 +73,65 @@ const scoreClass = computed(() => {
   gap: 12px;
   width: 100%;
   padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 20px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.07);
   font-family: inherit;
   text-align: left;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 0.18s ease;
 
-  &:active { transform: scale(0.97); }
-  &--done { opacity: 0.85; }
-  &--compact { padding: 12px 14px; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05); }
+  &:active { transform: scale(0.985); }
+  &--compact { padding: 12px 14px; }
 
   &__icon {
-    width: 42px;
-    height: 42px;
-    flex-shrink: 0;
-    border-radius: 14px;
-    background: rgba(78, 190, 194, 0.12);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: 13px;
+    background: var(--c-teal-tint);
+    color: var(--c-teal-600);
+    font-size: 21px;
+
+    &--done { background: var(--c-success-tint); color: var(--c-success); }
+    &--missed { background: var(--c-warning-tint); color: var(--c-warning-text); }
   }
 
   &__body { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
-  &__class { font-size: 11px; font-weight: 600; color: var(--c-teal-600); }
+  &__class { font-size: 12px; font-weight: 600; color: var(--c-teal-600); }
+
   &__title {
     font-size: 15px;
     font-weight: 700;
-    color: #234970;
+    color: var(--c-navy-900);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  &__meta { font-size: 12px; color: #6B7280; }
+
+  &__meta { font-size: 12px; color: var(--c-muted); }
+  &__meta-icon { font-size: 13px; vertical-align: -2px; }
 
   &__side { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
 }
 
 .due {
   font-size: 12px;
-  font-weight: 600;
-  color: #6B7280;
+  font-weight: 700;
+  color: var(--c-muted);
   white-space: nowrap;
 
-  &--urgent { color: #f59e0b; }
-  &--over { color: #EF4444; }
+  &--urgent { color: var(--c-warning-text); }
+  &--over { color: var(--c-danger); }
 }
 
 .score {
   font-size: 18px;
   font-weight: 800;
-  color: #234970;
+  color: var(--c-navy-900);
 
-  &--good { color: #10B981; }
-  &--mid { color: #f59e0b; }
-  &--low { color: #EF4444; }
-}
-
-.status {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 10px;
-  white-space: nowrap;
-
-  &--done { background: rgba(16, 185, 129, 0.1); color: #059669; }
-  &--progress { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+  &--good { color: var(--c-correct); }
+  &--mid { color: var(--c-warning-text); }
+  &--low { color: var(--c-danger); }
 }
 </style>

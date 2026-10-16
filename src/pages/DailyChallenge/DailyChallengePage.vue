@@ -8,6 +8,9 @@ import { useHeaderStore } from '@/shared/stores/useHeaderStore.ts'
 import { useNavStore } from '@/shared/stores/useNavStore.ts'
 import BsArrowLeft from '@iconify-vue/solar/alt-arrow-left-linear'
 import { useI18n } from 'vue-i18n'
+import DoneIcon from '@iconify-vue/solar/confetti-minimalistic-linear'
+import CheckIcon from '@iconify-vue/solar/check-circle-linear'
+import FireIcon from '@iconify-vue/solar/fire-linear'
 import { http } from '@/shared/api/http.ts'
 
 import SingleChoice from '@/features/quizPage/quiz/questions/SingleChoice.vue'
@@ -147,35 +150,38 @@ function goBack() {
 </script>
 
 <template>
-  <div class="daily-page">
-    <!-- Loading -->
-    <div v-if="loading" class="dc-loading">
-      <div class="spinner" />
+  <div class="daily ui-page">
+    <!-- Загрузка -->
+    <template v-if="loading">
+      <div class="ui-skeleton daily__skeleton-bar" />
+      <div class="ui-skeleton daily__skeleton-q" />
+      <div class="ui-skeleton daily__skeleton-opt" v-for="i in 4" :key="i" />
+    </template>
+
+    <!-- Итог -->
+    <div v-else-if="finished" class="finish ui-card">
+      <span class="finish__icon"><DoneIcon /></span>
+      <h2 class="finish__title">{{ $t('daily.finished') }}</h2>
+      <div class="finish__stats" v-if="challenge">
+        <span class="ui-chip ui-chip--teal"><CheckIcon />{{ $t('daily.correctOf', { n: correctCount, m: challenge.total_questions }) }}</span>
+        <span class="ui-chip ui-chip--warning" v-if="challenge.streak"><FireIcon />{{ $t('daily.streak') }}: {{ $t('plural.days', challenge.streak + 1) }}</span>
+      </div>
+      <button type="button" class="ui-btn ui-btn--primary ui-btn--block" @click="goBack">{{ $t('daily.toHome') }}</button>
     </div>
 
-    <!-- Finished -->
-    <div v-else-if="finished" class="dc-finished">
-      <div class="finish-icon">🎉</div>
-      <h2 class="finish-title">{{ $t('daily.finished') }}</h2>
-      <div class="finish-stats" v-if="challenge">
-        <span class="finish-stat">✅ {{ $t('daily.correctOf', { n: correctCount, m: challenge.total_questions }) }}</span>
-        <span class="finish-stat" v-if="challenge.streak">🔥 {{ $t('daily.streak') }}: {{ $t('plural.days', challenge.streak + 1) }}</span>
-      </div>
-      <button class="finish-btn" @click="goBack">{{ $t('daily.toHome') }}</button>
-    </div>
-
-    <!-- Question -->
-    <div v-else-if="currentQuestion" class="dc-question">
-      <div class="dc-progress-header">
-        <span>{{ $t('daily.questionOf', { n: currentIndex + 1, m: challenge?.total_questions }) }}</span>
-        <span class="dc-correct">✅ {{ correctCount }}</span>
+    <!-- Вопрос -->
+    <template v-else-if="currentQuestion">
+      <div class="progress">
+        <div class="progress__info">
+          <span class="progress__label">{{ $t('daily.questionOf', { n: currentIndex + 1, m: challenge?.total_questions }) }}</span>
+          <span class="ui-chip ui-chip--teal"><CheckIcon />{{ correctCount }}</span>
+        </div>
+        <div class="ui-progress">
+          <div class="ui-progress__fill" :style="{ width: (currentIndex / (challenge?.total_questions ?? 10) * 100) + '%' }" />
+        </div>
       </div>
 
-      <div class="dc-progress-bar">
-        <div class="dc-progress-fill" :style="{ width: (currentIndex / (challenge?.total_questions ?? 10) * 100) + '%' }" />
-      </div>
-
-      <div class="question-card" :key="currentQuestion.id">
+      <div class="question" :key="currentQuestion.id">
         <SingleChoice
           v-if="currentQuestion.type === 'single_choice'"
           :question="currentQuestion"
@@ -205,131 +211,68 @@ function goBack() {
           @answer="(v) => { currentAnswer = v }"
         />
       </div>
-    </div>
+    </template>
   </div>
 </template>
 
 <style scoped lang="scss">
-.daily-page {
-  min-height: 100vh;
-  background: transparent;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: calc(80px + var(--sat)) 20px calc(120px + var(--sab));
+.daily {
+  max-width: 760px;
+
+  &__skeleton-bar { height: 28px; }
+  &__skeleton-q { height: 120px; }
+  &__skeleton-opt { height: 58px; border-radius: var(--r-md); }
 }
 
-.dc-loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 300px;
-}
-
-.spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid rgba(0,0,0,0.1);
-  border-top-color: var(--c-teal-600);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* ── Question ── */
-.dc-question {
-  width: 100%;
-  max-width: 700px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.dc-progress-header {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-  color: #6B7280;
-  font-weight: 500;
-}
-
-.dc-correct {
-  font-weight: 600;
-  color: #10B981;
-}
-
-.dc-progress-bar {
-  height: 5px;
-  border-radius: 5px;
-  background: rgba(0,0,0,0.06);
-  overflow: hidden;
-}
-
-.dc-progress-fill {
-  height: 100%;
-  border-radius: 5px;
-  background: linear-gradient(90deg, var(--c-teal-400), var(--c-teal-600));
-  transition: width 0.3s ease;
-}
-
-.question-card {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 24px;
-  padding: 20px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.07);
-}
-
-/* ── Finished ── */
-.dc-finished {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  text-align: center;
-  padding-top: 60px;
-  max-width: 400px;
-}
-
-.finish-icon {
-  font-size: 64px;
-}
-
-.finish-title {
-  color: #234970;
-  margin: 0;
-}
-
-.finish-stats {
+.progress {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding: 0 6px;
+
+  &__info { display: flex; justify-content: space-between; align-items: center; }
+  &__label { font-size: 13px; font-weight: 700; color: var(--c-muted); }
+  :deep(.ui-chip svg) { font-size: 14px; }
 }
 
-.finish-stat {
-  font-size: 16px;
-  color: #4B5563;
-}
+.question { display: flex; flex-direction: column; }
 
-.finish-btn {
-  margin-top: 20px;
-  padding: 12px 32px;
-  background: var(--grad-primary);
-  color: #fff;
-  border: none;
-  border-radius: 16px;
-  font-size: 15px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: transform 0.2s;
+/* ── Итог ── */
+.finish {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  max-width: 440px;
+  width: 100%;
+  margin: 24px auto 0;
+  padding: 30px 20px 20px;
+  box-sizing: border-box;
+  text-align: center;
 
-  &:active {
-    transform: scale(0.97);
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 76px;
+    height: 76px;
+    border-radius: 26px;
+    background: var(--grad-primary);
+    color: #FFFFFF;
+    font-size: 38px;
+    box-shadow: var(--shadow-hero);
+  }
+
+  &__title { margin: 0; font-size: var(--fs-h1); font-weight: 800; color: var(--c-navy-900); }
+
+  &__stats {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 6px;
+
+    :deep(svg) { font-size: 14px; }
   }
 }
 </style>

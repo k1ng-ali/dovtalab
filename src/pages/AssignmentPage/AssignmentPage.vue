@@ -4,6 +4,14 @@ import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import BsArrowLeft from '@iconify-vue/solar/alt-arrow-left-linear'
+import SentIcon from '@iconify-vue/solar/plain-linear'
+import DoneIcon from '@iconify-vue/solar/confetti-minimalistic-linear'
+import GoodIcon from '@iconify-vue/solar/dumbbell-large-linear'
+import StudyIcon from '@iconify-vue/solar/book-2-linear'
+import SearchIcon from '@iconify-vue/solar/magnifer-linear'
+import ListIcon from '@iconify-vue/solar/notebook-linear'
+import TimerIcon from '@iconify-vue/solar/stopwatch-linear'
+import CalendarIcon from '@iconify-vue/solar/calendar-linear'
 import { useClassroomStore } from '@/features/classroom/store.ts'
 import AssignmentRunner from '@/features/classroom/components/AssignmentRunner.vue'
 import AssignmentReview from '@/features/classroom/components/AssignmentReview.vue'
@@ -133,191 +141,199 @@ function onRunError(message: string) {
 
 const shownScore = computed(() => finishResult.value?.score ?? assignment.value?.best_score ?? null)
 
-const scoreEmoji = computed(() => {
+const scoreIcon = computed(() => {
   const s = shownScore.value
-  if (s == null) return '📨'
-  return s >= 70 ? '🎉' : s >= 40 ? '💪' : '📚'
+  if (s == null) return SentIcon
+  return s >= 70 ? DoneIcon : s >= 40 ? GoodIcon : StudyIcon
 })
 
 </script>
 
 <template>
-  <div class="assignment-page">
-    <div class="page-body">
+  <div class="assignment ui-page">
 
-      <div v-if="isLoading && !assignment" class="skeleton skeleton--big" />
+    <div v-if="isLoading && !assignment" class="ui-skeleton assignment__skeleton" />
 
-      <div v-else-if="notFound" class="empty">
-        <p class="empty__icon">🔍</p>
-        <p class="empty__title">{{ t('classes.notFoundAssignment') }}</p>
+    <div v-else-if="notFound" class="ui-empty ui-card">
+      <SearchIcon class="ui-empty__icon" />
+      <p class="ui-empty__title">{{ t('classes.notFoundAssignment') }}</p>
+    </div>
+
+    <Transition v-else-if="assignment" name="slide" mode="out-in">
+
+      <!-- 1. Информация о задании -->
+      <div v-if="view === 'info'" key="info" class="stack">
+        <section class="hero ui-hero">
+          <span class="ui-chip ui-chip--on-dark hero__class">{{ assignment.classroom_title }}</span>
+          <h1 class="hero__title">{{ assignment.title }}</h1>
+          <span v-if="assignment.teacher_name" class="hero__teacher">
+            {{ t('classes.teacher', { name: assignment.teacher_name }) }}
+          </span>
+
+          <div class="hero__stats">
+            <div class="stat">
+              <ListIcon />
+              <b>{{ questionsCount(assignment) }}</b>
+              <span>{{ t('quiz.questions') }}</span>
+            </div>
+            <div class="stat">
+              <TimerIcon />
+              <b>{{ assignment.time_limit_min ? t('classes.minutes', { n: assignment.time_limit_min }) : '∞' }}</b>
+            </div>
+            <div class="stat">
+              <CalendarIcon />
+              <b :class="{ 'stat--over': assignment.student_status === 'missed' }">{{ dueLeft(assignment.due_at) }}</b>
+              <span>{{ assignment.due_at ? formatDateTime(assignment.due_at) : '' }}</span>
+            </div>
+          </div>
+
+          <div class="hero__status">
+            <span class="badge" :class="`badge--${assignment.student_status}`">
+              {{ t(`classes.status.${assignment.student_status}`) }}
+            </span>
+            <span v-if="assignment.best_score != null" class="hero__score">{{ assignment.best_score }}%</span>
+            <span class="hero__attempts">{{ attemptsText(assignment) }}</span>
+          </div>
+        </section>
+
+        <p v-if="errorText" class="error">{{ errorText }}</p>
+
+        <div v-if="assignment.description" class="card ui-card">
+          <h3 class="card__title">{{ t('classes.instruction') }}</h3>
+          <p class="card__text">{{ assignment.description }}</p>
+        </div>
+
+        <div class="card ui-card">
+          <h3 class="card__title">{{ t('classes.rules') }}</h3>
+          <ul class="rules">
+            <li v-for="r in rules" :key="r">{{ r }}</li>
+          </ul>
+        </div>
+
+        <template v-if="review && isDone">
+          <div class="ui-section-head">
+            <h3 class="ui-section-head__title">{{ t('classes.viewResult') }}</h3>
+          </div>
+          <AssignmentReview :review="review" />
+        </template>
+        <p v-else-if="isDone && !assignment.can_view_result" class="hint">{{ t('classes.resultHidden') }}</p>
       </div>
 
-      <Transition v-else-if="assignment" name="slide" mode="out-in">
+      <!-- 2. Прохождение -->
+      <div v-else-if="view === 'run'" key="run">
+        <AssignmentRunner :assignment="assignment" @finished="onFinished" @error="onRunError" />
+      </div>
 
-        <!-- 1. Информация о задании -->
-        <div v-if="view === 'info'" key="info" class="stack">
-          <div class="hero">
-            <span class="hero__class">{{ assignment.classroom_title }}</span>
-            <h1 class="hero__title">{{ assignment.title }}</h1>
-            <span v-if="assignment.teacher_name" class="hero__teacher">
-              {{ t('classes.teacher', { name: assignment.teacher_name }) }}
-            </span>
-
-            <div class="hero__stats">
-              <div class="stat">
-                <b>{{ questionsCount(assignment) }}</b>
-                <span>{{ t('quiz.questions') }}</span>
-              </div>
-              <div class="stat">
-                <b>{{ assignment.time_limit_min ? t('classes.minutes', { n: assignment.time_limit_min }) : '∞' }}</b>
-                <span>⏱</span>
-              </div>
-              <div class="stat">
-                <b :class="{ 'stat--over': assignment.student_status === 'missed' }">{{ dueLeft(assignment.due_at) }}</b>
-                <span>{{ assignment.due_at ? formatDateTime(assignment.due_at) : '' }}</span>
-              </div>
-            </div>
-
-            <div class="hero__status">
-              <span class="badge" :class="`badge--${assignment.student_status}`">
-                {{ t(`classes.status.${assignment.student_status}`) }}
-              </span>
-              <span v-if="assignment.best_score != null" class="hero__score">{{ assignment.best_score }}%</span>
-              <span class="hero__attempts">{{ attemptsText(assignment) }}</span>
-            </div>
-          </div>
-
-          <p v-if="errorText" class="error">{{ errorText }}</p>
-
-          <div v-if="assignment.description" class="card">
-            <h3 class="card__title">{{ t('classes.instruction') }}</h3>
-            <p class="card__text">{{ assignment.description }}</p>
-          </div>
-
-          <div class="card">
-            <h3 class="card__title">{{ t('classes.rules') }}</h3>
-            <ul class="rules">
-              <li v-for="r in rules" :key="r">{{ r }}</li>
-            </ul>
-          </div>
-
-          <template v-if="review && isDone">
-            <h3 class="section-title">{{ t('classes.viewResult') }}</h3>
-            <AssignmentReview :review="review" />
+      <!-- 3. Результат -->
+      <div v-else key="result" class="stack">
+        <div class="result ui-card">
+          <span class="result__icon"><component :is="scoreIcon" /></span>
+          <h2 class="result__title">{{ t('classes.submitted') }}</h2>
+          <template v-if="shownScore != null">
+            <div class="result__score">{{ shownScore }}%</div>
+            <p v-if="finishResult?.correct_count != null" class="result__sub">
+              {{ t('classes.correctCount') }}: {{ finishResult.correct_count }} / {{ finishResult.total_questions }}
+            </p>
           </template>
-          <p v-else-if="isDone && !assignment.can_view_result" class="hint">{{ t('classes.resultHidden') }}</p>
+          <p v-else class="result__sub">{{ t('classes.submittedAfterDue') }}</p>
         </div>
 
-        <!-- 2. Прохождение -->
-        <div v-else-if="view === 'run'" key="run">
-          <AssignmentRunner :assignment="assignment" @finished="onFinished" @error="onRunError" />
-        </div>
-
-        <!-- 3. Результат -->
-        <div v-else key="result" class="stack">
-          <div class="result">
-            <div class="result__icon">{{ scoreEmoji }}</div>
-            <h2 class="result__title">{{ t('classes.submitted') }}</h2>
-            <template v-if="shownScore != null">
-              <div class="result__score">{{ shownScore }}%</div>
-              <p v-if="finishResult?.correct_count != null" class="result__sub">
-                {{ t('classes.correctCount') }}: {{ finishResult.correct_count }} / {{ finishResult.total_questions }}
-              </p>
-            </template>
-            <p v-else class="result__sub">{{ t('classes.submittedAfterDue') }}</p>
+        <template v-if="review">
+          <div class="ui-section-head">
+            <h3 class="ui-section-head__title">{{ t('classes.viewResult') }}</h3>
           </div>
-
-          <template v-if="review">
-            <h3 class="section-title">{{ t('classes.viewResult') }}</h3>
-            <AssignmentReview :review="review" />
-          </template>
-        </div>
-      </Transition>
-    </div>
+          <AssignmentReview :review="review" />
+        </template>
+      </div>
+    </Transition>
   </div>
 </template>
 
 <style scoped lang="scss">
-.assignment-page {
-  min-height: 100vh;
-  background: transparent;
-  display: flex;
-  justify-content: center;
-  overflow-x: hidden;
-}
+.assignment {
+  max-width: 760px;
 
-.page-body {
-  padding: 20px;
-  padding-top: calc(80px + var(--sat));
-  padding-bottom: calc(110px + var(--sab));
-  max-width: 720px;
-  width: 100%;
-  box-sizing: border-box;
+  &__skeleton { height: 240px; border-radius: var(--r-xl); }
 }
 
 .stack { display: flex; flex-direction: column; gap: 14px; }
 
+/* ── Hero ── */
 .hero {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 20px;
-  border-radius: 24px;
-  background: var(--grad-primary);
-  color: #fff;
-  box-shadow: 0 8px 28px rgba(35, 73, 112, 0.25);
+  align-items: flex-start;
+  gap: 6px;
+  padding: 22px;
 
-  &__class { font-size: 12px; font-weight: 600; opacity: 0.85; }
-  &__title { margin: 0; font-size: 22px; font-weight: 800; line-height: 1.25; }
-  &__teacher { font-size: 13px; opacity: 0.85; }
+  &__class { margin-bottom: 4px; }
+  &__title { margin: 0; font-size: 24px; font-weight: 800; line-height: 1.2; }
+  &__teacher { font-size: 14px; color: rgba(255, 255, 255, 0.9); }
 
   &__stats {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
+    width: 100%;
     margin-top: 12px;
   }
 
-  &__status { display: flex; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+  &__status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin-top: 10px;
+  }
+
   &__score { font-size: 20px; font-weight: 800; }
-  &__attempts { font-size: 12px; opacity: 0.85; margin-left: auto; }
+  &__attempts { font-size: 13px; color: rgba(255, 255, 255, 0.9); }
 }
 
 .stat {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 10px 6px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.15);
-  text-align: center;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: rgba(255, 255, 255, 0.14);
 
-  b { font-size: 14px; white-space: nowrap; }
-  span { font-size: 11px; opacity: 0.8; }
-  &--over { color: #fecaca; }
+  svg { font-size: 18px; opacity: 0.9; margin-bottom: 2px; }
+  b { font-size: 15px; font-weight: 800; line-height: 1.2; }
+  span { font-size: 11px; color: rgba(255, 255, 255, 0.85); }
+
+  &--over { color: #FFD2B0; }
 }
 
 .badge {
   padding: 4px 12px;
-  border-radius: 20px;
+  border-radius: var(--r-pill);
   font-size: 12px;
   font-weight: 700;
   background: rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
 
-  &--completed { background: rgba(16, 185, 129, 0.9); }
-  &--late { background: rgba(245, 158, 11, 0.9); }
-  &--missed { background: rgba(239, 68, 68, 0.9); }
-  &--in_progress { background: rgba(59, 130, 246, 0.9); }
+  &--completed { background: #FFFFFF; color: var(--c-success); }
+  &--late { background: #FFFFFF; color: var(--c-warning-text); }
+  &--missed { background: #FFFFFF; color: var(--c-danger); }
+  &--in_progress { background: #FFFFFF; color: var(--c-teal-600); }
+}
+
+.error {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: var(--r-md);
+  background: var(--c-danger-tint);
+  color: var(--c-danger);
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .card {
-  padding: 16px;
-  background: rgba(255, 255, 255, 0.85);
-  border-radius: 20px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+  padding: 16px 18px;
 
-  &__title { margin: 0 0 8px; font-size: 15px; font-weight: 700; color: #234970; }
-  &__text { margin: 0; font-size: 14px; color: #374151; white-space: pre-line; line-height: 1.6; }
+  &__title { margin: 0 0 8px; font-size: 15px; font-weight: 700; color: var(--c-navy-900); }
+  &__text { margin: 0; font-size: 14px; line-height: 1.55; color: var(--c-ink); white-space: pre-line; }
 }
 
 .rules {
@@ -327,73 +343,45 @@ const scoreEmoji = computed(() => {
   flex-direction: column;
   gap: 6px;
   font-size: 14px;
-  color: #374151;
+  line-height: 1.45;
+  color: var(--c-ink);
+
+  li::marker { color: var(--c-teal-600); }
 }
 
-.section-title { margin: 8px 4px 0; font-size: 15px; font-weight: 700; color: #234970; }
+.hint { margin: 0; padding: 0 6px; font-size: 13px; color: var(--c-muted); text-align: center; }
 
-.hint { margin: 0; font-size: 13px; color: #6B7280; text-align: center; }
-
-.error {
-  margin: 0;
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: rgba(239, 68, 68, 0.08);
-  color: #EF4444;
-  font-size: 14px;
-}
-
+/* ── Результат ── */
 .result {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 28px 20px;
-  background: rgba(255, 255, 255, 0.85);
-  border-radius: 24px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.07);
+  gap: 8px;
+  padding: 30px 20px 24px;
   text-align: center;
 
-  &__icon { font-size: 52px; }
-  &__title { margin: 0; font-size: 20px; color: #234970; }
-  &__score {
-    font-size: 44px;
-    font-weight: 800;
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 76px;
+    height: 76px;
+    margin-bottom: 6px;
+    border-radius: 26px;
     background: var(--grad-primary);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: #FFFFFF;
+    font-size: 38px;
+    box-shadow: var(--shadow-hero);
   }
-  &__sub { margin: 0; font-size: 14px; color: #6B7280; }
+
+  &__title { margin: 0; font-size: var(--fs-h1); font-weight: 800; color: var(--c-navy-900); }
+  &__score { font-size: 44px; font-weight: 800; line-height: 1.1; color: var(--c-teal-600); }
+  &__sub { margin: 0; font-size: 14px; color: var(--c-muted); }
 }
 
-.empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 40px 20px;
-  text-align: center;
-
-  &__icon { font-size: 48px; margin: 0; }
-  &__title { margin: 0; font-size: 16px; font-weight: 700; color: #234970; }
-}
-
-.skeleton {
-  border-radius: 24px;
-  background: linear-gradient(90deg, rgba(0,0,0,0.04) 25%, rgba(0,0,0,0.07) 50%, rgba(0,0,0,0.04) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
-
-  &--big { height: 220px; }
-}
-
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-.slide-enter-active, .slide-leave-active { transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1); }
+/* ── Slide transition ── */
+.slide-enter-active,
+.slide-leave-active { transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1); }
 .slide-enter-from { opacity: 0; transform: translateX(30px); }
 .slide-leave-to { opacity: 0; transform: translateX(-30px); }
 </style>
