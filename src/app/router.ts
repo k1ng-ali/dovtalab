@@ -6,6 +6,8 @@ const LeaderPage = () => import("@/pages/LeaderPage/LeaderPage.vue");
 const DailyChallengePage = () => import("@/pages/DailyChallenge/DailyChallengePage.vue");
 const DuelsPage = () => import("@/pages/DuelsPage/DuelsPage.vue");
 const PrivacyPage = () => import("@/pages/PrivacyPage/PrivacyPage.vue");
+const ClassesPage = () => import("@/pages/ClassesPage/ClassesPage.vue");
+const AssignmentPage = () => import("@/pages/AssignmentPage/AssignmentPage.vue");
 
 const router = createRouter({
     history: createWebHistory(),
@@ -19,6 +21,10 @@ const router = createRouter({
         {path: '/daily', component: DailyChallengePage},
         {path: '/duels', component: DuelsPage},
         {path: '/duels/:duelId', component: DuelsPage},
+        // Классы и задания учителя; /join/:code — ссылка-приглашение в класс
+        {path: '/classes', component: ClassesPage},
+        {path: '/join/:code', component: ClassesPage},
+        {path: '/assignment/:assignmentId', component: AssignmentPage},
         // Публичная страница — доступна без авторизации (meta.public)
         {path: '/privacy', component: PrivacyPage, meta: {public: true}},
     ]

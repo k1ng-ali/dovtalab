@@ -161,6 +161,14 @@ const avatarError = ref(false)
         </div>
         <span class="passport-btn__arrow">›</span>
       </button>
+      <button class="passport-btn" @click="router.push('/classes')">
+        <span class="passport-btn__icon">🎓</span>
+        <div class="passport-btn__text">
+          <span class="passport-btn__title">{{ $t('profile.myClasses') }}</span>
+          <span class="passport-btn__sub">{{ $t('classes.joinHint') }}</span>
+        </div>
+        <span class="passport-btn__arrow">›</span>
+      </button>
     </div>
 
     <!-- ── Статистика ─────────────────────────────────────────────── -->

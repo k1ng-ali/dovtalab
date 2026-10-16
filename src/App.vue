@@ -14,6 +14,7 @@ import { consumePkceParams } from '@/features/auth/composables/useTelegramLogin'
 import {useNetwork} from "@/hooks/useNetwork.ts"
 import logoSvg from '@/assets/logo.svg'
 import { useI18n } from 'vue-i18n'
+import { classCodeFromStartParam } from '@/features/classroom/format.ts'
 
 const { t } = useI18n()
 const { isTelegramEnv, getInitData } = useTelegramEnv()
@@ -260,6 +261,12 @@ onMounted(async () => {
   }
 
   await initializeApp()
+
+  // Telegram Mini App открыт по приглашению в класс (startapp=class_CODE)
+  const classCode = classCodeFromStartParam()
+  if (classCode && authStore.isAuthenticated) {
+    await router.replace(`/join/${classCode}`)
+  }
 })
 
 onUnmounted(() => {

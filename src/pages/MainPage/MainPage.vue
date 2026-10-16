@@ -3,6 +3,7 @@ import Background from "@/pages/MainPage/Background.vue";
 import Leaderboard from "@/features/mainPage/leaderboard/Leaderboard.vue";
 import Statistics from "@/features/mainPage/statistic/Statistics.vue";
 import DailyChallenge from "@/features/mainPage/dailyChallenge/DailyChallenge.vue";
+import AssignmentsWidget from "@/features/classroom/components/AssignmentsWidget.vue";
 import ProBanner from "@/features/subscription/ProBanner.vue";
 import {useHeaderStore} from '@/shared/stores/useHeaderStore.ts'
 import {onMounted, onUnmounted, ref} from 'vue'
@@ -66,6 +67,7 @@ onUnmounted(() => {
 <template>
   <Background />
   <div class="content" ref="contentRef">
+    <AssignmentsWidget/>
     <DailyChallenge/>
     <ProBanner/>
     <Leaderboard/>
