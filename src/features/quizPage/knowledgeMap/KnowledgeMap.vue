@@ -258,7 +258,7 @@ const progressPercent = computed(() => {
   transition: background 0.3s ease;
 
   &.active {
-    background: linear-gradient(90deg, #4EBEC2, #234970);
+    background: linear-gradient(90deg, var(--c-teal-400), var(--c-teal-600));
   }
 }
 

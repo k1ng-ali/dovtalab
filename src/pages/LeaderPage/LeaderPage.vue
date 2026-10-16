@@ -4,7 +4,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue"
 import { useUserStore } from "@/features/user/store.ts"
 import { useHeaderStore } from "@/shared/stores/useHeaderStore.ts"
 import { useRouter } from "vue-router"
-import { BsArrowLeft } from "@kalimahapps/vue-icons"
+import BsArrowLeft from '@iconify-vue/solar/alt-arrow-left-linear'
 import {Capacitor, SystemBars, SystemBarsStyle} from "@capacitor/core";
 import { useI18n } from 'vue-i18n'
 

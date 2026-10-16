@@ -168,7 +168,7 @@ const optionClass = (id: number) => {
   font-weight: 700;
   color: #fff;
 
-  &.selected { background: #4EBEC2; border-color: #4EBEC2; }
+  &.selected { background: #4EBEC2; border-color: var(--c-teal-600); }
   &.correct  { background: #22c55e; border-color: #22c55e; }
   &.wrong    { background: #ef4444; border-color: #ef4444; }
 }

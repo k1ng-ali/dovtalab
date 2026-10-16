@@ -286,7 +286,7 @@ onUnmounted(() => {
   transition: box-shadow 0.2s ease, border-color 0.2s ease;
 
   &:focus-within {
-    border-color: #4EBEC2;
+    border-color: var(--c-teal-600);
     box-shadow: 0 4px 20px rgba(78, 190, 194, 0.15);
   }
 }

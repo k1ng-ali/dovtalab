@@ -58,7 +58,7 @@ const current = computed<AppLocale>(() => (locale.value as AppLocale) ?? getLoca
     &:active { transform: scale(0.95); }
 
     &--active {
-      background: linear-gradient(135deg, #4EBEC2, #234970);
+      background: var(--grad-primary);
       color: #fff;
       box-shadow: 0 2px 8px rgba(78, 190, 194, 0.35);
     }

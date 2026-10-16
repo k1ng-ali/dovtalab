@@ -483,7 +483,7 @@ const finishQuiz = () => {
   margin: 0 0 6px;
   font-size: 12px;
   font-weight: 700;
-  color: #4EBEC2;
+  color: var(--c-teal-600);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -521,7 +521,7 @@ const finishQuiz = () => {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #4EBEC2, #234970);
+  background: linear-gradient(90deg, var(--c-teal-400), var(--c-teal-600));
   border-radius: 8px;
   transition: width 0.35s ease;
 }
@@ -596,7 +596,7 @@ const finishQuiz = () => {
 .exam-progress-fill {
   height: 100%;
   border-radius: 6px;
-  background: linear-gradient(90deg, #4EBEC2, #234970);
+  background: linear-gradient(90deg, var(--c-teal-400), var(--c-teal-600));
   transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -708,7 +708,7 @@ const finishQuiz = () => {
 .finish-btn {
   margin-top: 16px;
   padding: 14px 32px;
-  background: linear-gradient(135deg, #4EBEC2, #234970);
+  background: var(--grad-primary);
   color: #fff;
   border: none;
   border-radius: 30px;

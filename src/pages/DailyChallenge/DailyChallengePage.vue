@@ -6,7 +6,7 @@ import type { DailyChallengeData } from '@/features/mainPage/dailyChallenge/api.
 import type { QuestionPublic, AttemptResult, UserAnswerPayload } from '@/features/quizPage/types.ts'
 import { useHeaderStore } from '@/shared/stores/useHeaderStore.ts'
 import { useNavStore } from '@/shared/stores/useNavStore.ts'
-import { BsArrowLeft } from '@kalimahapps/vue-icons'
+import BsArrowLeft from '@iconify-vue/solar/alt-arrow-left-linear'
 import { useI18n } from 'vue-i18n'
 import { http } from '@/shared/api/http.ts'
 
@@ -212,7 +212,7 @@ function goBack() {
 <style scoped lang="scss">
 .daily-page {
   min-height: 100vh;
-  background: #F6F6F6;
+  background: transparent;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -230,7 +230,7 @@ function goBack() {
   width: 32px;
   height: 32px;
   border: 3px solid rgba(0,0,0,0.1);
-  border-top-color: #4EBEC2;
+  border-top-color: var(--c-teal-600);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -271,7 +271,7 @@ function goBack() {
 .dc-progress-fill {
   height: 100%;
   border-radius: 5px;
-  background: linear-gradient(90deg, #4EBEC2, #234970);
+  background: linear-gradient(90deg, var(--c-teal-400), var(--c-teal-600));
   transition: width 0.3s ease;
 }
 
@@ -318,7 +318,7 @@ function goBack() {
 .finish-btn {
   margin-top: 20px;
   padding: 12px 32px;
-  background: linear-gradient(135deg, #4EBEC2, #234970);
+  background: var(--grad-primary);
   color: #fff;
   border: none;
   border-radius: 16px;

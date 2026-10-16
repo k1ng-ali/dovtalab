@@ -22,6 +22,7 @@
     "@capacitor/preferences": "^8.0.1",
     "@capacitor/share": "^8.0.1",
     "@capacitor/status-bar": "^8.0.2",
+    "@fontsource/onest": "^5.3.1",
     "@iconify-vue/fluent": "^1.0.5",
     "@iconify-vue/hugeicons": "^1.0.18",
     "@iconify-vue/line-md": "^1.0.7",

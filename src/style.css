@@ -1,11 +1,11 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: #222222;
-  background-color: #F6F6F6;
+  color-scheme: light;
+  color: #0F1B2D;
+  background-color: #E9EFF4;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;

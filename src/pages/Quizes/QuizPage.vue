@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import {onMounted, onUnmounted, watch} from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { BsArrowLeft, MdOutlinedMenuBook } from '@kalimahapps/vue-icons'
+import BsArrowLeft from '@iconify-vue/solar/alt-arrow-left-linear'
+import MdOutlinedMenuBook from '@iconify-vue/solar/notebook-linear'
 import Quizzes  from "@/features/quizPage/quizzes/Quizzes.vue"
 import QuizInfo from "@/features/quizPage/quizzes/QuizInfo.vue"
 import QuizRunner from "@/features/quizPage/quiz/QuizRunner.vue"
@@ -165,7 +166,7 @@ onUnmounted(() => headerStore.reset())
 <style scoped lang="scss">
 .quiz-page {
   min-height: 100vh;
-  background: #F6F6F6;
+  background: transparent;
   display: flex;
   justify-content: center;
   overflow-x: hidden;

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { QuizIn } from '@/features/quizPage/types.ts'
 import { computed } from 'vue'
-import { MdRoundFavorite } from '@kalimahapps/vue-icons'
+import MdRoundFavorite from '@iconify-vue/solar/heart-bold'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()

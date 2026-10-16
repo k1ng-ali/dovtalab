@@ -1,0 +1,409 @@
+/* ═══════════════════════════════════════════════════════════════
+   Dovtalab Design System 2.0 — токены и базовые классы.
+   Один файл на приложение и студию (держать копии одинаковыми).
+   Стиль: стекло в духе One UI 8.5 на мягком бирюзовом фоне,
+   плавающие шапка и навигатор, шрифт Onest, иконки Solar.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Цвет: бренд ── */
+  --c-navy-900: #172E4A;          /* заголовки, основной тёмный */
+  --c-navy-700: #234970;
+  --c-teal-600: #0B6B70;          /* текст-акцент, ссылки, «верно» (4.5:1 на белом) */
+  --c-teal-500: #0F7A80;          /* начало градиента под белым текстом */
+  --c-teal-400: #4EBEC2;          /* только декор: заливки, блики, точки */
+  --c-teal-200: #8FD9DC;
+  --c-teal-tint: rgba(78, 190, 194, 0.22);   /* выбор, активная вкладка */
+  --c-teal-tint-border: rgba(78, 190, 194, 0.38);
+
+  /* ── Цвет: нейтральные ── */
+  --c-ink: #0F1B2D;
+  --c-ink-2: #3E4C5E;
+  --c-muted: #556274;
+  --c-muted-2: #6B7A8C;
+  --c-line: rgba(23, 46, 74, 0.08);
+  --c-line-2: rgba(23, 46, 74, 0.15);
+  --c-ground: #E9EFF4;
+  --c-surface: #FFFFFF;
+
+  /* ── Цвет: данные и статусы ── */
+  --c-correct: #0B6B70;
+  --c-wrong: #E8833A;
+  --c-empty: #CBD3DE;
+  --c-success: #15803D;
+  --c-success-tint: rgba(21, 128, 61, 0.12);
+  --c-warning: #B45309;
+  --c-warning-text: #9A4A0C;
+  --c-warning-tint: rgba(232, 131, 58, 0.15);
+  --c-danger: #B91C1C;
+  --c-danger-tint: rgba(185, 28, 28, 0.1);
+
+  /* ── Градиенты ── */
+  --grad-primary: linear-gradient(135deg, #0F7A80 0%, #1B6680 50%, #1E3F63 100%);
+  --grad-hero: radial-gradient(circle at 100% 100%, rgba(143, 217, 220, 0.35), transparent 50%),
+               linear-gradient(135deg, #0F7A80 0%, #1B6680 50%, #1E3F63 100%);
+  --grad-brand-mark: linear-gradient(135deg, #4EBEC2, #234970);   /* логотип, без текста */
+  --grad-ground:
+    radial-gradient(circle at 0% 0%, rgba(78, 190, 194, 0.42), transparent 40%),
+    radial-gradient(circle at 100% 20%, rgba(35, 73, 112, 0.18), transparent 45%),
+    radial-gradient(circle at 0% 75%, rgba(78, 190, 194, 0.18), transparent 40%),
+    radial-gradient(circle at 100% 100%, rgba(143, 217, 220, 0.38), transparent 45%);
+
+  /* ── Стекло ── */
+  --glass-bg: rgba(255, 255, 255, 0.62);
+  --glass-bg-strong: rgba(255, 255, 255, 0.78);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.85);
+  --glass-border-bar: 2px solid rgba(255, 255, 255, 0.95);
+  --glass-blur: blur(24px) saturate(160%);
+  --shadow-card: 0 10px 30px rgba(23, 46, 74, 0.08);
+  --shadow-bar: 0 12px 32px rgba(23, 46, 74, 0.2);
+  --shadow-hero: 0 16px 36px rgba(35, 73, 112, 0.28);
+  --shadow-pop: 0 18px 48px rgba(23, 46, 74, 0.2);
+
+  /* ── Форма ── */
+  --r-xs: 10px;
+  --r-sm: 16px;      /* строки, опции, поля */
+  --r-md: 22px;      /* плитки */
+  --r-lg: 26px;      /* карточки */
+  --r-xl: 30px;      /* крупные блоки, hero */
+  --r-pill: 999px;   /* кнопки, бары, чипы */
+
+  /* ── Типографика (6 размеров) ── */
+  --font-ui: 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --fs-display: 30px;
+  --fs-h1: 24px;
+  --fs-h2: 18px;
+  --fs-body: 16px;
+  --fs-small: 14px;
+  --fs-caption: 12px;
+
+  /* ── Каркас ── */
+  --bar-gap: 14px;          /* отступ плавающих шапки/навигатора от краёв */
+  --sidebar-w: 236px;
+  --content-max: 1080px;
+}
+
+/* ── База ─────────────────────────────────────────────────────── */
+html, body {
+  font-family: var(--font-ui);
+}
+
+body {
+  color: var(--c-ink);
+  background-color: var(--c-ground);
+  background-image: var(--grad-ground);
+  background-attachment: fixed;
+}
+
+/* Иконки Solar (@iconify-vue) рендерятся без width/height — размер задаётся через font-size */
+svg[viewBox="0 0 24 24"]:not([width]) {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+/* ── Стеклянная карточка ─────────────────────────────────────── */
+.ui-card {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.ui-card--pad { padding: 16px 18px; }
+.ui-card--list { overflow: hidden; padding: 0; }
+
+/* Строка внутри .ui-card--list */
+.ui-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 12px 16px;
+  box-sizing: border-box;
+  color: var(--c-ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--c-line);
+}
+.ui-row:last-child { border-bottom: none; }
+
+/* ── Плавающий бар (шапка, навигатор) ────────────────────────── */
+.ui-bar {
+  background: rgba(255, 255, 255, 0.66);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: var(--glass-border-bar);
+  border-radius: var(--r-pill);
+  box-shadow: var(--shadow-bar);
+}
+
+/* ── Hero: единственный градиент на экране ───────────────────── */
+.ui-hero {
+  background: var(--grad-hero);
+  color: #FFFFFF;
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-hero);
+}
+
+/* ── Кнопки ──────────────────────────────────────────────────── */
+.ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 22px;
+  border: none;
+  border-radius: var(--r-pill);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, opacity 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.ui-btn:active:not(:disabled) { transform: scale(0.97); }
+.ui-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.ui-btn--primary {
+  background: var(--grad-primary);
+  color: #FFFFFF;
+  box-shadow: 0 6px 16px rgba(35, 73, 112, 0.25);
+}
+.ui-btn--light {
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--c-navy-900);
+  box-shadow: 0 6px 16px rgba(15, 27, 45, 0.16);
+}
+.ui-btn--secondary {
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--c-navy-900);
+  box-shadow: inset 0 0 0 1px var(--c-line-2);
+}
+.ui-btn--ghost {
+  background: transparent;
+  color: var(--c-teal-600);
+  padding: 0 12px;
+}
+.ui-btn--danger {
+  background: var(--c-danger-tint);
+  color: var(--c-danger);
+}
+.ui-btn--block { width: 100%; }
+.ui-btn--sm { min-height: 36px; padding: 0 14px; font-size: 13px; }
+
+/* Круглая иконочная кнопка (назад, закрыть, уведомления) */
+.ui-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(35, 73, 112, 0.08);
+  color: var(--c-navy-900);
+  font-size: 20px;
+  cursor: pointer;
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+.ui-icon-btn:active { transform: scale(0.94); background: rgba(35, 73, 112, 0.14); }
+
+/* ── Чипы / бейджи ───────────────────────────────────────────── */
+.ui-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  white-space: nowrap;
+  background: rgba(35, 73, 112, 0.08);
+  color: var(--c-ink-2);
+}
+.ui-chip--teal { background: var(--c-teal-tint); color: var(--c-teal-600); }
+.ui-chip--success { background: var(--c-success-tint); color: var(--c-success); }
+.ui-chip--warning { background: var(--c-warning-tint); color: var(--c-warning-text); }
+.ui-chip--danger { background: var(--c-danger-tint); color: var(--c-danger); }
+.ui-chip--on-dark { background: rgba(255, 255, 255, 0.2); color: #FFFFFF; }
+
+/* ── Сегменты (табы-пилюли) ──────────────────────────────────── */
+.ui-segmented {
+  display: flex;
+  gap: 4px;
+  padding: 5px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.5);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  border: var(--glass-border);
+}
+.ui-segmented__item {
+  flex: 1;
+  min-height: 38px;
+  padding: 0 14px;
+  border: none;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--c-ink-2);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+}
+.ui-segmented__item.active,
+.ui-segmented__item[aria-selected="true"] {
+  background: #FFFFFF;
+  color: var(--c-navy-900);
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(23, 46, 74, 0.1);
+}
+
+/* ── Заголовок секции ────────────────────────────────────────── */
+.ui-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 6px;
+}
+.ui-section-head__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--c-navy-900);
+}
+.ui-section-head__link {
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--c-teal-600);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+/* ── Плитка-метрика ──────────────────────────────────────────── */
+.ui-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 16px;
+  border-radius: var(--r-md);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  box-shadow: var(--shadow-card);
+}
+.ui-stat__label { font-size: var(--fs-caption); font-weight: 600; color: var(--c-muted); }
+.ui-stat__value { font-size: 22px; font-weight: 800; color: var(--c-navy-900); line-height: 1.2; }
+.ui-stat__hint { font-size: var(--fs-caption); color: var(--c-muted); }
+
+/* ── Иконка-плашка (инициалы предмета, иконка в строке) ──────── */
+.ui-tile-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: var(--c-teal-tint);
+  color: var(--c-teal-600);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+/* ── Прогресс ────────────────────────────────────────────────── */
+.ui-progress {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(23, 46, 74, 0.08);
+  overflow: hidden;
+}
+.ui-progress__fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--c-teal-600);
+  transition: width 0.4s ease;
+}
+
+/* ── Поле ввода ──────────────────────────────────────────────── */
+.ui-input {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 46px;
+  padding: 0 18px;
+  border-radius: var(--r-pill);
+  border: none;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: inset 0 0 0 1px var(--c-line-2);
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--c-ink);
+  outline: none;
+  transition: box-shadow 0.18s ease;
+}
+.ui-input:focus { box-shadow: inset 0 0 0 2px var(--c-teal-600); }
+.ui-input::placeholder { color: var(--c-muted-2); }
+
+/* ── Скелетон ────────────────────────────────────────────────── */
+.ui-skeleton {
+  border-radius: var(--r-lg);
+  background: linear-gradient(90deg, rgba(255,255,255,0.45) 25%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.45) 75%);
+  background-size: 200% 100%;
+  animation: ui-shimmer 1.4s infinite;
+}
+@keyframes ui-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Пустое состояние ────────────────────────────────────────── */
+.ui-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px 20px;
+  text-align: center;
+  color: var(--c-muted);
+}
+.ui-empty__icon { font-size: 40px; color: var(--c-teal-600); }
+.ui-empty__title { margin: 0; font-size: 17px; font-weight: 700; color: var(--c-navy-900); }
+.ui-empty__text { margin: 0; font-size: 14px; color: var(--c-muted); max-width: 320px; }
+
+/* ── Страница ────────────────────────────────────────────────── */
+.ui-page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding: calc(var(--sat) + 90px) 14px calc(var(--sab) + 120px);
+}
+@media (min-width: 1024px) {
+  .ui-page {
+    max-width: var(--content-max);
+    padding: 96px 24px 48px;
+  }
+}
+
+/* Уважение к настройке «меньше движения» */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

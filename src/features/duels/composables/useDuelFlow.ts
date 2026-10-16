@@ -1,7 +1,7 @@
 // src/features/duels/composables/useDuelFlow.ts
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { BsArrowLeft } from '@kalimahapps/vue-icons'
+import BsArrowLeft from '@iconify-vue/solar/alt-arrow-left-linear'
 import { useDuelsStore } from '../store.ts'
 import { useHeaderStore } from '@/shared/stores/useHeaderStore.ts'
 import { useNavStore } from '@/shared/stores/useNavStore.ts'

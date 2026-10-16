@@ -301,7 +301,7 @@ onUnmounted(() => {
   &__fill {
     height: 100%;
     border-radius: 3px;
-    background: linear-gradient(90deg, #4EBEC2, #234970);
+    background: linear-gradient(90deg, var(--c-teal-400), var(--c-teal-600));
     transition: width 0.3s ease;
   }
 }

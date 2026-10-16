@@ -97,7 +97,7 @@ function onInput() {
     color: #234970;
     outline: none;
 
-    &:focus { border-color: #4EBEC2; box-shadow: 0 0 0 3px rgba(78, 190, 194, 0.15); }
+    &:focus { border-color: var(--c-teal-600); box-shadow: 0 0 0 3px rgba(78, 190, 194, 0.15); }
     &::placeholder { letter-spacing: 0; font-weight: 500; font-family: inherit; color: #9CA3AF; text-transform: none; }
   }
 
@@ -105,7 +105,7 @@ function onInput() {
     padding: 12px 20px;
     border-radius: 30px;
     border: none;
-    background: linear-gradient(135deg, #4EBEC2, #234970);
+    background: var(--grad-primary);
     color: #fff;
     font-family: inherit;
     font-size: 14px;

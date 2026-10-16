@@ -168,7 +168,7 @@ const radioClass = (id: number) => {
   flex-shrink: 0;
   transition: border-color 0.2s, background 0.2s;
 
-  &.selected { border-color: #4EBEC2; }
+  &.selected { border-color: var(--c-teal-600); }
   &.correct  { border-color: #22c55e; background: #22c55e; }
   &.wrong    { border-color: #ef4444; background: #ef4444; }
 }

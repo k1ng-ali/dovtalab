@@ -346,7 +346,7 @@ async function activate(planId: string) {
   padding: 12px 32px;
   border: none;
   border-radius: 14px;
-  background: linear-gradient(135deg, #4EBEC2, #234970);
+  background: var(--grad-primary);
   color: #fff;
   font-size: 15px;
   font-weight: 600;

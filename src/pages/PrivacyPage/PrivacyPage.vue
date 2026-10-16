@@ -252,7 +252,7 @@ onBeforeUnmount(() => {
   overflow: hidden;
   padding: 28px 22px 24px;
   border-radius: 24px;
-  background: linear-gradient(135deg, #4EBEC2, #234970);
+  background: var(--grad-primary);
   color: #fff;
   box-shadow: 0 12px 32px rgba(35, 73, 112, 0.25);
 
@@ -395,7 +395,7 @@ onBeforeUnmount(() => {
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 1px;
-    color: #4EBEC2;
+    color: var(--c-teal-600);
   }
 
   &__title {
@@ -433,7 +433,7 @@ onBeforeUnmount(() => {
     margin-top: 14px;
     padding: 11px 20px;
     border-radius: 30px;
-    background: linear-gradient(135deg, #4EBEC2, #234970);
+    background: var(--grad-primary);
     color: #fff;
     font-size: 15px;
     font-weight: 600;
@@ -471,7 +471,7 @@ onBeforeUnmount(() => {
         width: 8px;
         height: 8px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #4EBEC2, #234970);
+        background: var(--grad-primary);
       }
     }
   }
@@ -506,7 +506,7 @@ onBeforeUnmount(() => {
   place-items: center;
   border: none;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4EBEC2, #234970);
+  background: var(--grad-primary);
   color: #fff;
   cursor: pointer;
   box-shadow: 0 4px 16px rgba(78, 190, 194, 0.35);

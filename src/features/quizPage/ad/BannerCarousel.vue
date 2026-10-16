@@ -52,7 +52,7 @@ const currentSlide = computed(() => slides.value[currentIndex.value])
 // Background style per slide
 const getSlideStyle = (slide: Slide) => {
   if (slide.type === 'continue') {
-    return { background: 'linear-gradient(135deg, #4EBEC2 0%, #234970 100%)' }
+    return { background: 'var(--grad-primary)' }
   }
   if (slide.banner?.background_type === 'image') {
     return {
@@ -61,7 +61,7 @@ const getSlideStyle = (slide: Slide) => {
       backgroundPosition: 'center',
     }
   }
-  return { background: slide.banner?.background_value || 'linear-gradient(135deg, #4EBEC2, #234970)' }
+  return { background: slide.banner?.background_value || 'var(--grad-primary)' }
 }
 
 // Navigation

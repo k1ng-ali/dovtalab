@@ -3,7 +3,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
-import { BsArrowLeft } from '@kalimahapps/vue-icons'
+import BsArrowLeft from '@iconify-vue/solar/alt-arrow-left-linear'
 import { useClassroomStore } from '@/features/classroom/store.ts'
 import AssignmentRunner from '@/features/classroom/components/AssignmentRunner.vue'
 import AssignmentReview from '@/features/classroom/components/AssignmentReview.vue'
@@ -240,7 +240,7 @@ const scoreEmoji = computed(() => {
 <style scoped lang="scss">
 .assignment-page {
   min-height: 100vh;
-  background: #F6F6F6;
+  background: transparent;
   display: flex;
   justify-content: center;
   overflow-x: hidden;
@@ -263,7 +263,7 @@ const scoreEmoji = computed(() => {
   gap: 4px;
   padding: 20px;
   border-radius: 24px;
-  background: linear-gradient(135deg, #4EBEC2, #234970);
+  background: var(--grad-primary);
   color: #fff;
   box-shadow: 0 8px 28px rgba(35, 73, 112, 0.25);
 
@@ -359,7 +359,7 @@ const scoreEmoji = computed(() => {
   &__score {
     font-size: 44px;
     font-weight: 800;
-    background: linear-gradient(135deg, #4EBEC2, #234970);
+    background: var(--grad-primary);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;

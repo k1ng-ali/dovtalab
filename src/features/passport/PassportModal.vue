@@ -231,7 +231,7 @@ const onDownload = async () => {
   &:active:not(:disabled) { transform: scale(0.97); }
 
   &--primary {
-    background: linear-gradient(135deg, #4EBEC2, #234970);
+    background: var(--grad-primary);
     color: #fff;
     box-shadow: 0 4px 16px rgba(78, 190, 194, 0.3);
   }

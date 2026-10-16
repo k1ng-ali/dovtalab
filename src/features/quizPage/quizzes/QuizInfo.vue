@@ -2,7 +2,8 @@
 import { ref, computed, onMounted } from 'vue'
 import type { QuizIn, ContextIn, QuizMode } from '@/features/quizPage/types.ts'
 import { useQuiz } from '@/features/quizPage/store.ts'
-import { MdRoundFavoriteBorder, MdRoundFavorite } from '@kalimahapps/vue-icons';
+import MdRoundFavoriteBorder from '@iconify-vue/solar/heart-linear'
+import MdRoundFavorite from '@iconify-vue/solar/heart-bold'
 import {useHeaderStore} from "@/shared/stores/useHeaderStore.ts";
 import KnowledgeMap from '@/features/quizPage/knowledgeMap/KnowledgeMap.vue'
 import ReviewBadge from '@/features/quizPage/review/ReviewBadge.vue'
@@ -623,7 +624,7 @@ const quickTestOptions = computed(() => {
 
   &.active {
     background: rgba(78, 190, 194, 0.15);
-    border-color: #4EBEC2;
+    border-color: var(--c-teal-600);
     color: #234970;
   }
 }

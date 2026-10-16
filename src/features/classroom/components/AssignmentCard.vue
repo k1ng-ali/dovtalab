@@ -92,7 +92,7 @@ const scoreClass = computed(() => {
   }
 
   &__body { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
-  &__class { font-size: 11px; font-weight: 600; color: #4EBEC2; }
+  &__class { font-size: 11px; font-weight: 600; color: var(--c-teal-600); }
   &__title {
     font-size: 15px;
     font-weight: 700;

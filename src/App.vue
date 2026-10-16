@@ -404,7 +404,8 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(160deg, #e8f4f8 0%, #f0f7ff 50%, #eef6f7 100%);
+  background-color: var(--c-ground);
+  background-image: var(--grad-ground);
   z-index: 1000;
 }
 
@@ -480,7 +481,7 @@ onUnmounted(() => {
   width: 40%;
   height: 100%;
   border-radius: 4px;
-  background: linear-gradient(90deg, #4EBEC2, #234970);
+  background: linear-gradient(90deg, var(--c-teal-400), var(--c-teal-600));
   animation: loader-slide 1.4s ease-in-out infinite;
 }
 
@@ -554,7 +555,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   padding: 12px 28px;
-  background: linear-gradient(135deg, #4EBEC2, #234970);
+  background: var(--grad-primary);
   color: #fff;
   border: none;
   border-radius: 30px;
@@ -606,5 +607,10 @@ onUnmounted(() => {
 .layout {
   min-height: 100%;
   margin-top: 0 !important;
+}
+
+/* Десктоп: контент правее плавающего сайдбара */
+@media (min-width: 1024px) {
+  .layout { padding-left: calc(var(--sidebar-w) + 18px); }
 }
 </style>

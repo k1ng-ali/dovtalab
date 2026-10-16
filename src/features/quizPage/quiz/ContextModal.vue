@@ -129,7 +129,7 @@ onUnmounted(() => window.removeEventListener('open-context-modal', onGlobalOpen)
   margin: 0 0 6px;
   font-size: 12px;
   font-weight: 700;
-  color: #4EBEC2;
+  color: var(--c-teal-600);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }

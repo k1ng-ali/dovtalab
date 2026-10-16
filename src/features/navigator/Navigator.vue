@@ -1,193 +1,299 @@
 <script setup lang="ts">
-import { AkHome, PhSealQuestion, PhSword, CgProfile } from '@kalimahapps/vue-icons';
+// Навигация: плавающая «пилюля» снизу на телефоне, стеклянный сайдбар на десктопе (≥1024px).
+// В режиме actions (тест, задание) вместо вкладок показываются кнопки действий.
+import { computed, type Component } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { computed } from 'vue'
-import { useNavStore } from '@/shared/stores/useNavStore.ts'
 import { useI18n } from 'vue-i18n'
+import { useNavStore } from '@/shared/stores/useNavStore.ts'
+import Home from '@iconify-vue/solar/home-2-linear'
+import HomeActive from '@iconify-vue/solar/home-2-bold-duotone'
+import Book from '@iconify-vue/solar/book-2-linear'
+import BookActive from '@iconify-vue/solar/book-2-bold-duotone'
+import Bolt from '@iconify-vue/solar/bolt-linear'
+import BoltActive from '@iconify-vue/solar/bolt-bold-duotone'
+import Users from '@iconify-vue/solar/users-group-rounded-linear'
+import UsersActive from '@iconify-vue/solar/users-group-rounded-bold-duotone'
+import User from '@iconify-vue/solar/user-linear'
+import UserActive from '@iconify-vue/solar/user-bold-duotone'
+
+interface Tab {
+  name: string
+  path: string
+  icon: Component
+  activeIcon: Component
+  match: (path: string) => boolean
+}
 
 const { t } = useI18n()
-
-const tabs = computed(() => [
-  { name: t('nav.home'), icon: AkHome,          path: "/" },
-  { name: t('nav.quizzes'),   icon: PhSealQuestion,  path: "/quiz" },
-  { name: t('nav.duels'), icon: PhSword, path: "/duels" },
-  { name: t('nav.profile'), icon: CgProfile,       path: "/profile" },
-])
-
-const route    = useRoute()
-const router   = useRouter()
+const route = useRoute()
+const router = useRouter()
 const navStore = useNavStore()
 
-const activeIndex = computed(() =>
-    tabs.value.findIndex(t => t.path === route.path)
-)
+const tabs = computed<Tab[]>(() => [
+  { name: t('nav.home'), path: '/', icon: Home, activeIcon: HomeActive,
+    match: p => p === '/' || p.startsWith('/leaders') || p.startsWith('/daily') },
+  { name: t('nav.quizzes'), path: '/quiz', icon: Book, activeIcon: BookActive,
+    match: p => p.startsWith('/quiz') },
+  { name: t('nav.duels'), path: '/duels', icon: Bolt, activeIcon: BoltActive,
+    match: p => p.startsWith('/duels') },
+  { name: t('nav.classes'), path: '/classes', icon: Users, activeIcon: UsersActive,
+    match: p => p.startsWith('/classes') || p.startsWith('/join') || p.startsWith('/assignment') },
+  { name: t('nav.profile'), path: '/profile', icon: User, activeIcon: UserActive,
+    match: p => p.startsWith('/profile') },
+])
 
-const onTab = (index: number) => {
-  const tab = tabs.value[index]
-  if (tab) router.push(tab.path)
+const activeIndex = computed(() => tabs.value.findIndex(tab => tab.match(route.path)))
+
+function go(tab: Tab) {
+  if (route.path !== tab.path) router.push(tab.path)
 }
 </script>
 
 <template>
-  <div class="navigator">
-    <!-- ── Режим: стандартные вкладки ───────────────────────── -->
-    <div v-if="navStore.mode === 'tabs'" class="container">
-      <div
-          v-for="(tab, i) in tabs"
-          :key="i"
-          class="item"
-          :class="{ active: activeIndex === i }"
-          @click="onTab(i)"
-      >
-        <component :is="tab.icon" class="icon" />
-        <p class="title">{{ tab.name }}</p>
-      </div>
-    </div>
+  <!-- ── Десктоп: плавающий сайдбар ───────────────────────────── -->
+  <nav class="sidebar" :aria-label="t('nav.home')">
+    <button type="button" class="brand" @click="router.push('/')">
+      <span class="brand__mark" aria-hidden="true" />
+      <span class="brand__name">Dovtalab</span>
+      <span class="brand__beta">beta</span>
+    </button>
+    <button
+        v-for="(tab, i) in tabs"
+        :key="tab.path"
+        type="button"
+        class="side-item"
+        :class="{ active: activeIndex === i }"
+        :aria-current="activeIndex === i ? 'page' : undefined"
+        @click="go(tab)"
+    >
+      <component :is="activeIndex === i ? tab.activeIcon : tab.icon" class="side-item__icon" />
+      <span>{{ tab.name }}</span>
+    </button>
+  </nav>
 
-    <!-- ── Режим: кастомные кнопки действий ─────────────────── -->
-    <div v-else class="container actions-container">
+  <!-- ── Нижняя «пилюля»: вкладки (телефон) или действия (везде) ── -->
+  <div class="dock" :class="{ 'dock--actions': navStore.mode !== 'tabs' }">
+    <nav v-if="navStore.mode === 'tabs'" class="pill ui-bar" :aria-label="t('nav.home')">
+      <button
+          v-for="(tab, i) in tabs"
+          :key="tab.path"
+          type="button"
+          class="tab"
+          :class="{ active: activeIndex === i }"
+          :aria-current="activeIndex === i ? 'page' : undefined"
+          @click="go(tab)"
+      >
+        <component :is="activeIndex === i ? tab.activeIcon : tab.icon" class="tab__icon" />
+        <span class="tab__label">{{ tab.name }}</span>
+      </button>
+    </nav>
+
+    <div v-else class="pill pill--actions ui-bar">
       <button
           v-for="(btn, i) in navStore.actions"
           :key="i"
-          class="action-btn"
-          :class="[`action-btn--${btn.variant ?? 'default'}`, { disabled: btn.disabled }]"
+          type="button"
+          class="action"
+          :class="[`action--${btn.variant ?? 'default'}`]"
           :disabled="btn.disabled"
           @click="btn.onClick"
       >
-        <component v-if="btn.icon" :is="btn.icon" class="action-icon" />
-        <span class="action-label">{{ btn.label }}</span>
+        <component v-if="btn.icon" :is="btn.icon" class="action__icon" />
+        <span>{{ btn.label }}</span>
       </button>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-.navigator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* ═══ Нижняя пилюля ═══ */
+.dock {
   position: fixed;
-  bottom: 0;
   left: 0;
-  width: 100%;
-  padding-bottom: calc(16px + var(--sab));
+  right: 0;
+  bottom: calc(var(--sab) + 16px);
   z-index: 100;
-  background: linear-gradient(
-          to top,
-          rgba(255, 255, 255, 0.95) 1%,
-          rgba(255, 255, 255, 0.7) 50%,
-          rgba(255, 255, 255, 0) 80%
-  );
-  box-sizing: border-box;
-  min-height: 80px;
-}
-
-/* ── Общий контейнер ── */
-.container {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  gap: 10px;
-  background: rgba(255, 255, 255, 0.6);
-  border: 2px solid rgba(255, 255, 255, 1);
-  backdrop-filter: blur(10px);
-  padding: 5px;
-  border-radius: 50px;
-  box-shadow: rgba(34, 34, 34, 0.3) 0 0 20px;
-  user-select: none;
-  transition: all 0.25s ease;
-  min-height: 48px;
-}
-
-/* ── Вкладки ── */
-.item {
   display: flex;
+  justify-content: center;
+  padding: 0 var(--bar-gap);
+  pointer-events: none;
+
+  @media (min-width: 1024px) {
+    left: calc(var(--sidebar-w) + 18px);
+    &:not(.dock--actions) { display: none; }
+  }
+}
+
+.pill {
+  display: flex;
+  gap: 2px;
+  padding: 5px;
+  pointer-events: auto;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.tab {
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
-  padding: 6px 14px;
-  border-radius: 30px;
-  cursor: pointer;
-  transition: all 0.25s ease;
+  gap: 2px;
+  width: 66px;
+  height: 56px;
+  border: 1px solid transparent;
+  border-radius: var(--r-pill);
   background: transparent;
-  color: #8A94A6;
+  color: var(--c-muted-2);
+  font-family: inherit;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background 0.25s ease, color 0.25s ease;
+  -webkit-tap-highlight-color: transparent;
 
-  .icon {
-    transition: all 0.25s ease;
-    font-size: 22px;
-  }
-
-  .title {
-    margin: 0;
-    font-size: 11px;
-    font-weight: 500;
-  }
+  &__icon { font-size: 23px; }
+  &__label { font-size: 11px; font-weight: 500; line-height: 1.1; }
 
   &.active {
-    background: rgba(78, 190, 194, 0.25);
-    color: #234970;
-    font-weight: 600;
-    border: 1px solid rgba(78, 190, 194, 0.3);
+    background: var(--c-teal-tint);
+    border-color: var(--c-teal-tint-border);
+    color: var(--c-navy-900);
 
-    .icon { fill: #234970; }
+    .tab__label { font-weight: 700; }
+  }
+
+  &:active { transform: scale(0.95); }
+
+  @media (max-width: 360px) {
+    width: 58px;
+    &__label { font-size: 10px; }
   }
 }
 
-/* ── Кнопки действий ── */
-.actions-container {
-  grid-auto-columns: auto;
+/* Режим действий */
+.pill--actions {
+  gap: 6px;
   padding: 6px;
-  gap: 8px;
 }
 
-.action-btn {
-  display: flex;
+.action {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 10px 20px;
-  border-radius: 30px;
+  min-height: 46px;
+  padding: 0 20px;
   border: none;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
+  border-radius: var(--r-pill);
   font-family: inherit;
-  transition: all 0.2s ease;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
   white-space: nowrap;
+  transition: transform 0.18s ease, opacity 0.18s ease;
 
-  &:active:not(.disabled) {
-    transform: scale(0.96);
-  }
+  &:active:not(:disabled) { transform: scale(0.96); }
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
 
-  &.disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-  }
+  &__icon { font-size: 18px; }
 
-  /* Варианты */
   &--default {
-    background: rgba(255, 255, 255, 0.8);
-    color: #234970;
-    border: 1.5px solid rgba(35, 73, 112, 0.2);
+    background: rgba(255, 255, 255, 0.85);
+    color: var(--c-navy-900);
+    box-shadow: inset 0 0 0 1px var(--c-line-2);
   }
 
   &--primary {
-    background: linear-gradient(135deg, #4EBEC2, #234970);
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(78, 190, 194, 0.4);
+    background: var(--grad-primary);
+    color: #FFFFFF;
+    box-shadow: 0 6px 16px rgba(35, 73, 112, 0.25);
   }
 
   &--ghost {
     background: transparent;
-    color: #8A94A6;
+    color: var(--c-muted);
+  }
+}
+
+/* ═══ Сайдбар (десктоп) ═══ */
+.sidebar {
+  display: none;
+
+  @media (min-width: 1024px) {
+    position: fixed;
+    top: 18px;
+    bottom: 18px;
+    left: 18px;
+    z-index: 100;
+    width: var(--sidebar-w);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 18px 12px;
+    border-radius: 32px;
+    background: rgba(255, 255, 255, 0.6);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
+    backdrop-filter: blur(28px) saturate(160%);
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 16px 40px rgba(23, 46, 74, 0.12);
+  }
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 10px 22px;
+  border: none;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+
+  &__mark {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    background: var(--grad-brand-mark);
   }
 
-  .action-icon {
-    font-size: 18px;
-  }
+  &__name { font-size: 18px; font-weight: 800; color: var(--c-navy-900); }
 
-  .action-label {
-    line-height: 1;
+  &__beta {
+    padding: 2px 8px;
+    border-radius: var(--r-pill);
+    background: var(--c-teal-tint);
+    color: var(--c-teal-600);
+    font-size: 11px;
+    font-weight: 700;
+  }
+}
+
+.side-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: #4B5A6D;
+  font-family: inherit;
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+
+  &__icon { font-size: 21px; }
+
+  &:hover { background: rgba(255, 255, 255, 0.6); }
+
+  &.active {
+    background: var(--c-teal-tint);
+    border-color: var(--c-teal-tint-border);
+    color: var(--c-navy-900);
+    font-weight: 700;
   }
 }
 </style>

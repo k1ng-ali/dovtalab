@@ -231,7 +231,7 @@ onMounted(async () =>{
       border-bottom: 1px solid rgba(35, 73, 112, 0.3);
       transition: all 0.2s ease;
 
-      &:hover { color: #4EBEC2; border-color: #4EBEC2; }
+      &:hover { color: var(--c-teal-600); border-color: var(--c-teal-600); }
     }
   }
 }
@@ -324,7 +324,7 @@ onMounted(async () =>{
     font-weight: 800;
     letter-spacing: -1px;
     line-height: 1.15;
-    background: linear-gradient(135deg, #4EBEC2, #234970);
+    background: var(--grad-primary);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -467,13 +467,13 @@ onMounted(async () =>{
     border: 1.5px solid rgba(35, 73, 112, 0.15);
     color: #234970;
 
-    &:hover { border-color: #4EBEC2; background: #fff; }
+    &:hover { border-color: var(--c-teal-600); background: #fff; }
   }
 
   &--primary {
     margin-top: 4px;
     border: none;
-    background: linear-gradient(135deg, #4EBEC2, #234970);
+    background: var(--grad-primary);
     color: #fff;
     box-shadow: 0 4px 16px rgba(78, 190, 194, 0.35);
 
@@ -535,7 +535,7 @@ onMounted(async () =>{
   transition: all 0.2s ease;
 
   &:focus-within {
-    border-color: #4EBEC2;
+    border-color: var(--c-teal-600);
     box-shadow: 0 0 0 4px rgba(78, 190, 194, 0.15);
   }
 

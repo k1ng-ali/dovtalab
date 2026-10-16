@@ -156,7 +156,7 @@ async function handleAnswer(answer: UserAnswerPayload) {
 <style scoped lang="scss">
 .duels-page {
   min-height: 100vh;
-  background: #f6f6f6;
+  background: transparent;
   display: flex;
   justify-content: center;
   overflow-x: hidden;

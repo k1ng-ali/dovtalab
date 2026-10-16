@@ -167,13 +167,13 @@ const rightState = (id: number) => {
   display: flex; flex-direction: column; justify-content: center; gap: 3px;
   &:active { transform: scale(0.97); }
   &.right { text-align: right; align-items: flex-end; }
-  &.active   { border-color: #4EBEC2; background: rgba(78,190,194,0.1); box-shadow: 0 4px 14px rgba(78,190,194,0.25); }
+  &.active   { border-color: var(--c-teal-600); background: rgba(78,190,194,0.1); box-shadow: 0 4px 14px rgba(78,190,194,0.25); }
   &.matched  { border-color: rgba(35,73,112,0.3); background: rgba(35,73,112,0.07); }
   &.correct  { border-color: rgba(34,197,94,0.7);  background: rgba(34,197,94,0.1);  }
   &.wrong    { border-color: rgba(239,68,68,0.7);  background: rgba(239,68,68,0.08); }
 }
 
-.pair-badge { font-size: 10px; color: #4EBEC2; font-weight: 600; }
+.pair-badge { font-size: 10px; color: var(--c-teal-600); font-weight: 600; }
 
 .pairs-summary {
   background: rgba(255,255,255,0.7); border-radius: 16px; padding: 14px 16px;
@@ -183,7 +183,7 @@ const rightState = (id: number) => {
 .pair-row {
   display: flex; align-items: center; gap: 8px; font-size: 13px; color: #374151;
   padding: 4px 6px; border-radius: 8px; transition: background 0.2s;
-  .arrow { color: #4EBEC2; font-weight: 700; }
+  .arrow { color: var(--c-teal-600); font-weight: 700; }
   .pair-icon { margin-left: auto; font-size: 14px; }
   &.correct { background: rgba(34,197,94,0.08); color: #166534; }
   &.wrong   { background: rgba(239,68,68,0.08); color: #991b1b; }

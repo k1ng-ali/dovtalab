@@ -70,192 +70,159 @@ const headerStore = useHeaderStore()
 </template>
 
 <style scoped lang="scss">
+/* Плавающая стеклянная шапка: отступ от краёв, на десктопе — правее сайдбара */
 .header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   position: fixed;
-  top: 0;
+  top: calc(var(--sat) + var(--bar-gap));
   left: 0;
-  width: 100%;
-  padding: 20px 0;
+  right: 0;
   z-index: 99;
-  padding-top: calc(16px + var(--sat));
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--bar-gap);
+  pointer-events: none;
   transition: opacity 0.25s ease, transform 0.25s ease;
 
-  background: linear-gradient(
-          to bottom,
-          rgba(255, 255, 255, 0.5) 1%,
-          rgba(255, 255, 255, 0.3) 50%,
-          rgba(255, 255, 255, 0) 80%
-  );
+  @media (min-width: 1024px) {
+    top: 18px;
+    left: calc(var(--sidebar-w) + 18px);
+  }
 
   &.hidden {
     opacity: 0;
-    pointer-events: none;
     transform: translateY(-10px);
+
+    .container { pointer-events: none; }
   }
 }
 
 .container {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  min-width: 50%;
-  max-width: calc(100% - 40px);
-  background: rgba(255, 255, 255, 0.6);
-  border: 2px solid rgba(255, 255, 255, 1);
-  backdrop-filter: blur(5px);
-  padding: 5px 5px 5px 10px;
-  border-radius: 50px;
-  box-shadow: rgba(34, 34, 34, 0.3) 0 0 20px;
-  user-select: none;
-  gap: 8px;
-
-  /* Нужно для того, чтобы оверлей не вылезал за скруглённые края */
   position: relative;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: min(320px, 100%);
+  max-width: 640px;
+  min-height: 52px;
+  padding: 5px;
+  box-sizing: border-box;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.66);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: var(--glass-border-bar);
+  box-shadow: 0 10px 30px rgba(23, 46, 74, 0.14);
+  user-select: none;
+  pointer-events: auto;
+}
+
+.path {
+  flex: 1;
+  margin: 0;
+  padding: 0 12px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--c-navy-900);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spacer {
+  width: 42px;
+  flex-shrink: 0;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 42px;
+  height: 42px;
+  padding: 0 12px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: var(--r-pill);
+  background: rgba(35, 73, 112, 0.08);
+  color: var(--c-navy-900);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform 0.18s ease, background 0.18s ease;
+
+  &:active { transform: scale(0.94); background: rgba(35, 73, 112, 0.14); }
+
+  .btn-icon { font-size: 20px; }
+
+  &--right {
+    background: var(--c-teal-tint);
+    color: var(--c-teal-600);
+  }
 }
 
 .actions-container {
   display: flex;
   width: 100%;
-  gap: 20px;
+  gap: 6px;
 }
 
 .actions-btn {
-  width: 100%;
-  align-items: center;
-  background: rgba(35, 73, 112, 0.08);
+  flex: 1;
+  min-height: 40px;
+  padding: 0 14px;
   border: none;
-  border-radius: 30px;
-  padding: 6px 12px;
-  font-size: 13px;
-  font-weight: 600;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--c-ink-2);
   font-family: inherit;
-  color: #234970;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
   white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
 
   &--active {
-    background: rgba(78, 190, 194, 0.25);
-    color: #234970;
-    font-weight: 600;
-    border: 1px solid rgba(78, 190, 194, 0.3);
+    background: #FFFFFF;
+    color: var(--c-navy-900);
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(23, 46, 74, 0.1);
   }
 }
 
-.path {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 600;
-  color: #234970;
-  flex: 1;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding: 4px 0;
-}
-
-.spacer {
-  width: 36px;
-  flex-shrink: 0;
-}
-
-.action-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(35, 73, 112, 0.08);
-  border: none;
-  border-radius: 30px;
-  padding: 6px 12px;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: inherit;
-  color: #234970;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-  white-space: nowrap;
-
-  &:active {
-    background: rgba(35, 73, 112, 0.15);
-    transform: scale(0.95);
-  }
-
-  .btn-icon {
-    font-size: 18px;
-  }
-
-  &--right {
-    background: rgba(78, 190, 194, 0.18);
-    color: #234970;
-
-    &:active {
-      background: rgba(78, 190, 194, 0.3);
-    }
-  }
-}
-
-/* ─── Оверлей уведомления ─────────────────────────────── */
+/* ─── Уведомление поверх шапки ───────────────────────────── */
 .notification-overlay {
-  /* Занимает всё пространство .container, не смещает соседние элементы */
   position: absolute;
   inset: 0;
   z-index: 2;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
+  padding: 0 16px;
+  border-radius: inherit;
   font-size: 15px;
   font-weight: 700;
-  letter-spacing: 0.01em;
-  border-radius: inherit; /* берёт border-radius от .container */
+  text-align: center;
 
-  &--success {
-    background: #E6F7ED;
-    color: #166534;
-  }
-
-  &--error {
-    background: #FCEEEE;
-    color: #991b1b;
-  }
+  &--success { background: #E3F4EE; color: #0B5E4F; }
+  &--error   { background: #FCEDE3; color: #8A3A07; }
 }
 
-/* ─── Анимация появления / исчезновения ───────────────── */
-.notify-enter-active {
-  animation: notify-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.notify-leave-active {
-  animation: notify-fade-out 0.3s ease forwards;
-}
+.notify-enter-active { animation: notify-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.notify-leave-active { animation: notify-fade-out 0.3s ease forwards; }
 
 @keyframes notify-pop {
-  from {
-    opacity: 0;
-    transform: scale(0.85);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 @keyframes notify-fade-out {
-  from {
-    opacity: 1;
-    transform: scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: scale(0.9);
-  }
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.9); }
 }
 </style>

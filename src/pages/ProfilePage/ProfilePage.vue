@@ -273,7 +273,7 @@ const avatarError = ref(false)
   flex-direction: column;
   gap: 24px;
   min-height: 100vh;
-  background: #F6F6F6;
+  background: transparent;
   max-width: 900px;
   margin: 0 auto;   // ← вместо margin-left: calc(...)
   width: 100%;
@@ -353,7 +353,7 @@ const avatarError = ref(false)
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #4EBEC2, #234970);
+    background: var(--grad-primary);
     color: #fff;
     font-size: 30px;
     font-weight: 700;
@@ -553,7 +553,7 @@ const avatarError = ref(false)
   padding: 0;
 
   &.on {
-    background: linear-gradient(135deg, #4EBEC2, #234970);
+    background: var(--grad-primary);
   }
 
   &.loading {

@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { Modal } from 'ant-design-vue'
 import { useI18n } from 'vue-i18n'
-import { BsArrowLeft } from '@kalimahapps/vue-icons'
+import BsArrowLeft from '@iconify-vue/solar/alt-arrow-left-linear'
 import { useClassroomStore } from '@/features/classroom/store.ts'
 import JoinClassCard from '@/features/classroom/components/JoinClassCard.vue'
 import AssignmentCard from '@/features/classroom/components/AssignmentCard.vue'
@@ -153,7 +153,7 @@ function leave(c: StudentClassroom) {
 <style scoped lang="scss">
 .classes-page {
   min-height: 100vh;
-  background: #F6F6F6;
+  background: transparent;
   display: flex;
   justify-content: center;
 }
