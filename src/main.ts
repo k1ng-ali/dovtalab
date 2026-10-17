@@ -12,6 +12,9 @@ import './shared/styles/design.css'
 import App from './App.vue'
 import router from "./app/router.ts";
 import i18n from './shared/i18n'
+import { setupTelegramChrome } from './shared/lib/telegramChrome'
+
+setupTelegramChrome()
 
 const app = createApp(App)
 

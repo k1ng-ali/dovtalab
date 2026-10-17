@@ -13,11 +13,13 @@
   -moz-osx-font-smoothing: grayscale;
 
   /* Safe area: env() работает в WebView 140+ (Capacitor SystemBars пробрасывает insets),
-     --safe-area-inset-* — переменные, которые Capacitor инжектит сам для старых WebView */
-  --sat: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
-  --sab: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
-  --sal: max(env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px));
-  --sar: max(env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px));
+     --safe-area-inset-* — переменные, которые Capacitor инжектит сам для старых WebView,
+     --tg-safe-area-inset-* — системные зоны в Telegram Mini App, а --tg-content-safe-area-inset-*
+     прибавляется сверху: это кнопки Telegram в полноэкранном режиме */
+  --sat: calc(max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px), var(--tg-safe-area-inset-top, 0px)) + var(--tg-content-safe-area-inset-top, 0px));
+  --sab: calc(max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px), var(--tg-safe-area-inset-bottom, 0px)) + var(--tg-content-safe-area-inset-bottom, 0px));
+  --sal: max(env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px), var(--tg-safe-area-inset-left, 0px));
+  --sar: max(env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px), var(--tg-safe-area-inset-right, 0px));
 
   /* ── Breakpoints ── */
   --bp-md: 768px;
