@@ -31,7 +31,7 @@ const navStore = useNavStore()
 
 const tabs = computed<Tab[]>(() => [
   { name: t('nav.home'), path: '/', icon: Home, activeIcon: HomeActive,
-    match: p => p === '/' || p.startsWith('/leaders') || p.startsWith('/daily') },
+    match: p => p === '/' || p.startsWith('/leaders') || p.startsWith('/league') || p.startsWith('/daily') },
   { name: t('nav.quizzes'), path: '/quiz', icon: Book, activeIcon: BookActive,
     match: p => p.startsWith('/quiz') },
   { name: t('nav.duels'), path: '/duels', icon: Bolt, activeIcon: BoltActive,

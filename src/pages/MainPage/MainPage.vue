@@ -12,6 +12,8 @@ import TodayHero from '@/features/mainPage/home/TodayHero.vue'
 import WeeklyChart from '@/features/mainPage/home/WeeklyChart.vue'
 import ContinueList from '@/features/mainPage/home/ContinueList.vue'
 import RankCard from '@/features/mainPage/home/RankCard.vue'
+import LeagueCard from '@/features/league/components/LeagueCard.vue'
+import { useLeagueStore } from '@/features/league/store.ts'
 import ProBanner from '@/features/subscription/ProBanner.vue'
 import { useHeaderStore } from '@/shared/stores/useHeaderStore.ts'
 import { useNavStore } from '@/shared/stores/useNavStore.ts'
@@ -29,6 +31,7 @@ const userStore = useUserStore()
 const statStore = useStats()
 const leadersStore = useLeadersStore()
 const classroomStore = useClassroomStore()
+const leagueStore = useLeagueStore()
 
 const daily = ref<DailyChallengeData | null>(null)
 const isLoading = ref(true)
@@ -56,6 +59,7 @@ onMounted(async () => {
     statStore.fetchStats(),
     statStore.fetchAttemptsHistory(0, 8),
     leadersStore.fetchLeaders(),
+    leagueStore.fetchLeague(),
     classroomStore.fetchAll(),
     getDailyChallenge().then(r => { daily.value = r.data }),
   ])
@@ -99,6 +103,7 @@ onUnmounted(() => {
         <ContinueList :attempts="statStore.attempts" />
 
         <div class="home__mobile-only">
+          <LeagueCard :league="leagueStore.league" />
           <RankCard :leaders="leadersStore.leaders" :user-id="userStore.user?.id ?? null" />
           <ProBanner />
         </div>
@@ -119,6 +124,7 @@ onUnmounted(() => {
           </span>
         </button>
 
+        <LeagueCard :league="leagueStore.league" />
         <RankCard :leaders="leadersStore.leaders" :user-id="userStore.user?.id ?? null" />
         <ProBanner />
       </aside>

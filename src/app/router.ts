@@ -3,6 +3,7 @@ const MainPage = () => import("@/pages/MainPage/MainPage.vue");
 const QuizPage = () => import("@/pages/Quizes/QuizPage.vue")
 const ProfilePage = () =>  import("@/pages/ProfilePage/ProfilePage.vue")
 const LeaderPage = () => import("@/pages/LeaderPage/LeaderPage.vue");
+const LeaguePage = () => import("@/pages/LeaguePage/LeaguePage.vue");
 const DailyChallengePage = () => import("@/pages/DailyChallenge/DailyChallengePage.vue");
 const DuelsPage = () => import("@/pages/DuelsPage/DuelsPage.vue");
 const PrivacyPage = () => import("@/pages/PrivacyPage/PrivacyPage.vue");
@@ -18,6 +19,8 @@ const router = createRouter({
         {path: '/quiz/:hashCode', component: QuizPage},
         {path: '/profile', component: ProfilePage },
         {path: '/leaders', component: LeaderPage},
+        // Недельная лига: группа до 30 игроков своего уровня
+        {path: '/league', component: LeaguePage},
         {path: '/daily', component: DailyChallengePage},
         {path: '/duels', component: DuelsPage},
         {path: '/duels/:duelId', component: DuelsPage},

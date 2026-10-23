@@ -492,4 +492,31 @@ export default {
     rankGap: '{n} xp to rank {r}',
     rankOut: 'You\'re not in the top 50 yet',
   },
+
+  // ── League (weekly league) ──
+  league: {
+    pageTitle: 'Weekly league',
+    weekly: 'Weekly league',
+    title: '{tier} league',
+    tiers: ['Bronze', 'Silver', 'Gold', 'Emerald', 'Sapphire', 'Ruby', 'Diamond'],
+    endsIn: 'Week ends in: {left}',
+    leftDays: '{d}d {h}h',
+    leftHours: '{h}h',
+    promoteRule: 'Top {n} move up',
+    demoteRule: 'Bottom {n} move down',
+    promoteZone: 'Promotion zone',
+    demoteZone: 'Demotion zone',
+    result: {
+      promoted: 'Last week: #{rank}, {points} xp — you moved up to the {tier} league!',
+      stayed: 'Last week: #{rank}, {points} xp — you stay in the {tier} league',
+      demoted: 'Last week: #{rank}, {points} xp — {tier} league. You can climb back this week!',
+    },
+    player: 'Player',
+    errorTitle: 'Could not load the league',
+    notJoinedTitle: 'The league opens with your first points',
+    notJoinedText: 'Answer correctly in tests, duels and the daily challenge to join a group of 30 players of your level.',
+    hint: 'League points are this week’s points in the app and the Telegram bot. A new week starts on Monday.',
+    cardJoin: 'Earn points this week',
+    cardPlace: '#{rank} of {size} · {points} xp',
+  },
 }
