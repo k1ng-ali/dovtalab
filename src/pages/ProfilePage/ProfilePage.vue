@@ -13,6 +13,7 @@ import ClassesIcon from '@iconify-vue/solar/square-academic-cap-linear'
 import TimerIcon from '@iconify-vue/solar/stopwatch-linear'
 import GlobeIcon from '@iconify-vue/solar/globus-linear'
 import ArrowRight from '@iconify-vue/solar/alt-arrow-right-linear'
+import PlugIcon from '@iconify-vue/solar/plug-circle-linear'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -163,6 +164,14 @@ const avatarError = ref(false)
           <span class="link__text">
             <b>{{ $t('profile.myClasses') }}</b>
             <span>{{ $t('classes.joinHint') }}</span>
+          </span>
+          <ArrowRight class="link__arrow" />
+        </button>
+        <button type="button" class="ui-row link" @click="router.push('/connections')">
+          <span class="ui-tile-icon link__icon"><PlugIcon /></span>
+          <span class="link__text">
+            <b>{{ $t('mcp.connectionsTitle') }}</b>
+            <span>{{ $t('mcp.connectionsHint') }}</span>
           </span>
           <ArrowRight class="link__arrow" />
         </button>

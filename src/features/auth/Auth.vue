@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import TelegramLoginButton from "@/features/auth/TelegramLoginButton.vue";
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import {onMounted, reactive, ref} from "vue";
 import type {SuperUser} from "./types.ts"
 import {useAuthStore} from "@/features/auth/store.ts";
@@ -15,7 +15,11 @@ import CupIcon from '@iconify-vue/solar/cup-star-linear'
 
 const { t } = useI18n()
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
+
+// После входа остаёмся на странице, которую открывали (deep link, экран согласия /connect?request_id=…)
+const afterLogin = () => router.replace(route.fullPath || '/')
 
 // ── State ──
 const isAccessMode = ref<boolean>(false)
@@ -32,7 +36,7 @@ const FEATURES = [
 
 // ── Actions ──
 async function onSuccess() {
-  await router.push('/')
+  await afterLogin()
 }
 
 const openMiniApp = () => {
@@ -50,7 +54,7 @@ const accessLogin = async () => {
   try {
     await authStore.accessPass(formState)
     message.success(t('auth.success'))
-    await router.push('/')
+    await afterLogin()
   } catch (error: any) {
     message.error(error.response?.data?.detail || t('auth.invalidCode'))
     formState.access_code = ''

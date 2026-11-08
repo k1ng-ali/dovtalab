@@ -9,6 +9,8 @@ const DuelsPage = () => import("@/pages/DuelsPage/DuelsPage.vue");
 const PrivacyPage = () => import("@/pages/PrivacyPage/PrivacyPage.vue");
 const ClassesPage = () => import("@/pages/ClassesPage/ClassesPage.vue");
 const AssignmentPage = () => import("@/pages/AssignmentPage/AssignmentPage.vue");
+const ConnectPage = () => import("@/pages/ConnectPage/ConnectPage.vue");
+const ConnectionsPage = () => import("@/pages/ConnectionsPage/ConnectionsPage.vue");
 
 const router = createRouter({
     history: createWebHistory(),
@@ -28,6 +30,9 @@ const router = createRouter({
         {path: '/classes', component: ClassesPage},
         {path: '/join/:code', component: ClassesPage},
         {path: '/assignment/:assignmentId', component: AssignmentPage},
+        // Подключение ИИ-приложений (MCP): экран согласия OAuth и список выданных доступов
+        {path: '/connect', component: ConnectPage},
+        {path: '/connections', component: ConnectionsPage},
         // Публичная страница — доступна без авторизации (meta.public)
         {path: '/privacy', component: PrivacyPage, meta: {public: true}},
     ]
