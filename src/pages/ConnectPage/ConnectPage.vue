@@ -10,6 +10,7 @@ import ShieldIcon from '@iconify-vue/solar/shield-check-linear'
 import WarnIcon from '@iconify-vue/solar/danger-triangle-linear'
 import PlugIcon from '@iconify-vue/solar/plug-circle-linear'
 import McpScopeList from '@/features/mcp/components/McpScopeList.vue'
+import SubscriptionModal from '@/features/subscription/SubscriptionModal.vue'
 import { useMcpStore } from '@/features/mcp/store.ts'
 import { useHeaderStore } from '@/shared/stores/useHeaderStore.ts'
 import { useNavStore } from '@/shared/stores/useNavStore.ts'
@@ -25,6 +26,21 @@ const requestId = computed(() => {
   return typeof raw === 'string' && /^[\w-]{8,128}$/.test(raw) ? raw : ''
 })
 const info = computed(() => mcpStore.authorization)
+// Отказ из-за подписки не тратит запрос: после оформления снова показываем согласие
+const showSubModal = ref(false)
+
+function onSubscribed() {
+  showSubModal.value = false
+  if (requestId.value) mcpStore.fetchAuthorization(requestId.value)
+}
+
+// Причина ошибки по коду ответа: 403 — нет подписки, 404/409 — запрос истёк или использован, иначе — сбой
+const errorKind = computed<'subscription' | 'expired' | 'failed'>(() => {
+  const status = mcpStore.errorStatus
+  if (status === 403) return 'subscription'
+  if (status === 404 || status === 409) return 'expired'
+  return 'failed'
+})
 const hasWrite = computed(() => info.value?.scopes.some(s => s.scope.endsWith(':write')) ?? false)
 
 // Решение принято: куда возвращаемся (ссылка-запасной вариант, если браузер не перешёл сам)
@@ -77,11 +93,19 @@ onMounted(() => {
         <div class="ui-skeleton connect__skeleton-card" />
       </div>
 
-      <!-- 3. Запрос истёк / не найден / MCP выключен -->
+      <!-- 3. Ошибка: нет подписки / запрос истёк или использован / сбой сервера -->
       <div v-else-if="view === 'error'" key="error" class="ui-empty ui-card">
         <WarnIcon class="ui-empty__icon" />
-        <p class="ui-empty__title">{{ t('mcp.expiredTitle') }}</p>
-        <p class="ui-empty__text">{{ t('mcp.expiredText') }}</p>
+        <p class="ui-empty__title">{{ t(`mcp.${errorKind}Title`) }}</p>
+        <p class="ui-empty__text">{{ t(`mcp.${errorKind}Text`) }}</p>
+        <button
+            v-if="errorKind === 'subscription'"
+            type="button"
+            class="ui-btn ui-btn--primary ui-btn--sm"
+            @click="showSubModal = true"
+        >
+          {{ t('mcp.subscriptionAction') }}
+        </button>
       </div>
 
       <!-- 4. Согласие -->
@@ -141,6 +165,8 @@ onMounted(() => {
         </a>
       </div>
     </Transition>
+
+    <SubscriptionModal :visible="showSubModal" @close="showSubModal = false" @activated="onSubscribed" />
   </div>
 </template>
 
