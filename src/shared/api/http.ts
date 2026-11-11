@@ -71,6 +71,17 @@ http.interceptors.response.use(
             return Promise.reject(error)
         }
 
+        // Гостю закрыт раздел (дуэль, подписка, класс…): на действие пользователя — окно входа.
+        // Фоновые GET-запросы падают тихо, чтобы окно не всплывало само по себе.
+        if (
+            error.response?.status === 403 &&
+            error.response?.data?.detail === 'guest_forbidden' &&
+            (originalRequest.method ?? 'get').toLowerCase() !== 'get'
+        ) {
+            auth.promptLogin()
+            return Promise.reject(error)
+        }
+
         // 3. Обработка 401 Unauthorized
         if (error.response?.status === 401 && !originalRequest._retry) {
             if (isRefreshing) {

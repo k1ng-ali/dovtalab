@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - release
+  # Раз в сутки пересобираем SEO-страницы тестов (/tests, sitemap.xml) из публичного API.
+  # GitHub запускает cron только из ветки по умолчанию — файл должен быть и в main.
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
@@ -20,6 +25,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: release
 
       - name: Setup Node
         uses: actions/setup-node@v4

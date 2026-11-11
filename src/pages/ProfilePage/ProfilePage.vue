@@ -7,6 +7,8 @@ import {useRouter} from "vue-router";
 import {Capacitor, SystemBars, SystemBarsStyle} from "@capacitor/core";
 import { useI18n } from 'vue-i18n'
 import PassportModal from '@/features/passport/PassportModal.vue'
+import GuestBanner from '@/features/auth/GuestBanner.vue'
+import { useAuthStore } from '@/features/auth/store.ts'
 import LogoutIcon from '@iconify-vue/solar/logout-2-linear'
 import PassportIcon from '@iconify-vue/solar/passport-linear'
 import ClassesIcon from '@iconify-vue/solar/square-academic-cap-linear'
@@ -47,6 +49,7 @@ onMounted(async () => {
   }
 })
 
+const authStore = useAuthStore()
 const user   = computed(() => userStore.user)
 const config = computed(() => userStore.config)
 const is_creator = computed(() => userStore.is_creator)
@@ -127,6 +130,8 @@ const avatarError = ref(false)
     </template>
 
     <template v-else>
+      <GuestBanner v-if="authStore.isGuest" />
+
       <!-- ── Карточка пользователя ── -->
       <section class="me ui-card">
         <img

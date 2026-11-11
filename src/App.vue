@@ -135,6 +135,22 @@ async function handleTelegramCallback(url: string) {
   }
 }
 
+// ── Гостевой режим по ссылке ──────────────────────────────────────────────────
+// Статические SEO-страницы /tests/… ведут на /quiz/КОД?guest=1: без сессии сразу открываем
+// гостевой режим вместо экрана входа. Ботам гостевой аккаунт не создаём.
+const BOT_UA = /bot|crawl|spider|slurp|preview|lighthouse|headless/i
+
+function wantsGuest(): boolean {
+  const params = new URLSearchParams(window.location.search)
+  return params.get('guest') === '1' && !BOT_UA.test(navigator.userAgent) && !navigator.webdriver
+}
+
+function withoutGuestParam(path: string): string {
+  const url = new URL(path, window.location.origin)
+  url.searchParams.delete('guest')
+  return url.pathname + url.search + url.hash
+}
+
 // ── Network availability check (reliable on Capacitor) ────────────────────────
 
 async function checkNetworkAvailable(): Promise<boolean> {
@@ -226,11 +242,19 @@ async function initializeApp() {
   // 3. Обычный браузер — пробуем тихий рефреш (есть кука)
   try {
     await authStore.refresh()
-    await router.replace(intendedPath)
+    await router.replace(withoutGuestParam(intendedPath))
   } catch (e: any) {
     if (!e.response || e.code === 'ERR_NETWORK' || e.code === 'ECONNABORTED') {
       connectionError.value = true
       connectionErrorMessage.value = t('splash.serverUnavailable')
+    } else if (wantsGuest()) {
+      // 4. Пришёл со страницы теста — сразу в гостевой режим
+      try {
+        await authStore.loginAsGuest()
+        await router.replace(withoutGuestParam(intendedPath))
+      } catch {
+        authStore.setError("error")
+      }
     } else {
       authStore.setError("error")
     }
@@ -349,6 +373,13 @@ onUnmounted(() => {
     </div>
   </Transition>
 
+  <!-- ═══ Окно входа для гостя (поверх приложения) ═══ -->
+  <Transition name="fade">
+    <div v-if="authStore.loginPromptOpen && authStore.isGuest && !isPublicRoute" class="login-prompt">
+      <Auth prompt />
+    </div>
+  </Transition>
+
   <!-- ═══ Публичные страницы (без авторизации и layout) ═══ -->
   <router-view v-if="isPublicRoute" />
 
@@ -366,6 +397,12 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.login-prompt {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+}
+
 /* ── Transitions ── */
 .fade-enter-active,
 .fade-leave-active { transition: opacity 0.35s ease; }

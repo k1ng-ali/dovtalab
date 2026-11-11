@@ -164,6 +164,18 @@ export default {
     popupBlocked: 'Popup was blocked by the browser',
     stateMismatch: 'Security check failed. Please try signing in again',
     popupClosed: 'Sign-in window was closed',
+    guestContinue: 'Continue without signing in',
+    guestError: 'Could not open guest mode',
+    guestPromptTitle: 'Sign in to continue',
+    guestPromptSubtitle: 'Duels, classes, league and ranking need an account. Your completed tests will be saved to it',
+  },
+
+  // ── Guest mode ──
+  guest: {
+    badge: 'Guest',
+    bannerTitle: 'You are in guest mode',
+    bannerDesc: 'Sign in with Telegram to join the ranking, play duels and keep your progress',
+    signIn: 'Sign in',
   },
 
   // ── Units ──

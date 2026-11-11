@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TelegramLoginButton from "@/features/auth/TelegramLoginButton.vue";
 import { useRoute, useRouter } from 'vue-router'
-import {onMounted, reactive, ref} from "vue";
+import {computed, onMounted, reactive, ref} from "vue";
 import type {SuperUser} from "./types.ts"
 import {useAuthStore} from "@/features/auth/store.ts";
 import { message } from 'ant-design-vue'
@@ -12,14 +12,41 @@ import logoSvg from '@/assets/logo.svg'
 import BookIcon from '@iconify-vue/solar/book-2-linear'
 import BoltIcon from '@iconify-vue/solar/bolt-linear'
 import CupIcon from '@iconify-vue/solar/cup-star-linear'
+import CloseIcon from '@iconify-vue/solar/close-circle-linear'
+import { useTelegramEnv } from '@/features/auth/composables/useTelegramEnv'
+
+// prompt — окно входа поверх приложения для гостя: можно закрыть, нет кнопки «без входа»
+const props = defineProps<{ prompt?: boolean }>()
 
 const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 
-// После входа остаёмся на странице, которую открывали (deep link, экран согласия /connect?request_id=…)
-const afterLogin = () => router.replace(route.fullPath || '/')
+// После входа остаёмся на странице, которую открывали (deep link, экран согласия /connect?request_id=…),
+// а из окна входа гостя — переходим туда, куда он не смог попасть
+const afterLogin = () => {
+  const target = authStore.loginRedirect || route.fullPath || '/'
+  authStore.closeLoginPrompt()
+  return router.replace(target)
+}
+
+// Гостевой режим — только в браузере и приложении; в Telegram Mini App вход автоматический
+const { isTelegramEnv } = useTelegramEnv()
+const canUseGuest = computed(() => !props.prompt && !isTelegramEnv)
+const isGuestStarting = ref(false)
+
+const continueAsGuest = async () => {
+  if (isGuestStarting.value) return
+  isGuestStarting.value = true
+  try {
+    await authStore.loginAsGuest()
+  } catch {
+    message.error(t('auth.guestError'))
+  } finally {
+    isGuestStarting.value = false
+  }
+}
 
 // ── State ──
 const isAccessMode = ref<boolean>(false)
@@ -83,6 +110,9 @@ onMounted(async () =>{
     </div>
 
     <div class="auth__top">
+      <button v-if="prompt" class="icon-btn auth__close" type="button" :aria-label="$t('common.close')" @click="authStore.closeLoginPrompt()">
+        <CloseIcon />
+      </button>
       <LangSwitch />
     </div>
 
@@ -93,9 +123,15 @@ onMounted(async () =>{
           <div class="hero__glow" />
           <img :src="logoSvg" alt="Dovtalab" class="hero__logo" />
         </div>
-        <p class="hero__welcome">{{ $t('auth.welcome') }}</p>
-        <h1 class="hero__brand">Dovtalab</h1>
-        <p class="hero__subtitle">{{ $t('auth.subtitle') }}</p>
+        <template v-if="prompt">
+          <h1 class="hero__brand hero__brand--prompt">{{ $t('auth.guestPromptTitle') }}</h1>
+          <p class="hero__subtitle">{{ $t('auth.guestPromptSubtitle') }}</p>
+        </template>
+        <template v-else>
+          <p class="hero__welcome">{{ $t('auth.welcome') }}</p>
+          <h1 class="hero__brand">Dovtalab</h1>
+          <p class="hero__subtitle">{{ $t('auth.subtitle') }}</p>
+        </template>
 
         <div class="features">
           <span v-for="f in FEATURES" :key="f.key" class="features__chip">
@@ -116,6 +152,11 @@ onMounted(async () =>{
           />
 
           <div class="divider"><span>{{ $t('auth.or') }}</span></div>
+
+          <button v-if="canUseGuest" class="btn btn--outline" type="button" :disabled="isGuestStarting" @click="continueAsGuest">
+            <span v-if="isGuestStarting" class="spinner" />
+            {{ $t('auth.guestContinue') }}
+          </button>
 
           <button class="btn btn--outline" type="button" @click="openMiniApp">
             <svg class="btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -206,6 +247,12 @@ onMounted(async () =>{
     z-index: 1;
     display: flex;
     justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__close {
+    margin-right: auto;
   }
 
   &__body {
@@ -336,6 +383,11 @@ onMounted(async () =>{
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+
+    &--prompt {
+      font-size: 28px;
+      letter-spacing: -0.5px;
+    }
   }
 
   &__subtitle {
@@ -528,6 +580,8 @@ onMounted(async () =>{
 
   svg { width: 18px; height: 18px; }
   &:active { transform: scale(0.92); }
+
+  &.auth__close svg { width: 22px; height: 22px; }
 }
 
 /* ── Field ──────────────────────────────────── */
@@ -597,6 +651,7 @@ onMounted(async () =>{
   .hero__logo-wrap { width: 84px; height: 84px; margin-bottom: 6px; }
   .hero__logo { width: 64px; height: 64px; }
   .hero__brand { font-size: 32px; }
+  .hero__brand--prompt { font-size: 24px; }
   .features { margin-top: 12px; }
   .auth__body { gap: 16px; }
 }

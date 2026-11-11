@@ -15,6 +15,8 @@ import RankCard from '@/features/mainPage/home/RankCard.vue'
 import LeagueCard from '@/features/league/components/LeagueCard.vue'
 import { useLeagueStore } from '@/features/league/store.ts'
 import ProBanner from '@/features/subscription/ProBanner.vue'
+import GuestBanner from '@/features/auth/GuestBanner.vue'
+import { useAuthStore } from '@/features/auth/store.ts'
 import { useHeaderStore } from '@/shared/stores/useHeaderStore.ts'
 import { useNavStore } from '@/shared/stores/useNavStore.ts'
 import { useUserStore } from '@/features/user/store.ts'
@@ -32,6 +34,9 @@ const statStore = useStats()
 const leadersStore = useLeadersStore()
 const classroomStore = useClassroomStore()
 const leagueStore = useLeagueStore()
+const authStore = useAuthStore()
+// Гостю лига, классы и вызов дня закрыты — не запрашиваем их
+const isGuest = computed(() => authStore.isGuest)
 
 const daily = ref<DailyChallengeData | null>(null)
 const isLoading = ref(true)
@@ -59,9 +64,11 @@ onMounted(async () => {
     statStore.fetchStats(),
     statStore.fetchAttemptsHistory(0, 8),
     leadersStore.fetchLeaders(),
-    leagueStore.fetchLeague(),
-    classroomStore.fetchAll(),
-    getDailyChallenge().then(r => { daily.value = r.data }),
+    ...(isGuest.value ? [] : [
+      leagueStore.fetchLeague(),
+      classroomStore.fetchAll(),
+      getDailyChallenge().then(r => { daily.value = r.data }),
+    ]),
   ])
   isLoading.value = false
 })
@@ -78,6 +85,7 @@ onUnmounted(() => {
     <div class="home__grid">
       <!-- ── Основная колонка ── -->
       <div class="home__main">
+        <GuestBanner v-if="isGuest" />
         <div v-if="isLoading" class="ui-skeleton home__skeleton-hero" />
         <TodayHero v-else :assignment="assignment" :daily="daily" />
 
@@ -103,9 +111,9 @@ onUnmounted(() => {
         <ContinueList :attempts="statStore.attempts" />
 
         <div class="home__mobile-only">
-          <LeagueCard :league="leagueStore.league" />
+          <LeagueCard v-if="!isGuest" :league="leagueStore.league" />
           <RankCard :leaders="leadersStore.leaders" :user-id="userStore.user?.id ?? null" />
-          <ProBanner />
+          <ProBanner v-if="!isGuest" />
         </div>
       </div>
 
@@ -124,9 +132,9 @@ onUnmounted(() => {
           </span>
         </button>
 
-        <LeagueCard :league="leagueStore.league" />
+        <LeagueCard v-if="!isGuest" :league="leagueStore.league" />
         <RankCard :leaders="leadersStore.leaders" :user-id="userStore.user?.id ?? null" />
-        <ProBanner />
+        <ProBanner v-if="!isGuest" />
       </aside>
     </div>
   </div>
